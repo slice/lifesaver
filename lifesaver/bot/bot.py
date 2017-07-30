@@ -5,9 +5,9 @@ from discord.ext import commands
 
 class Bot(commands.Bot):
     """
-    A commands.Bot that provides useful utilities.
+    A ``commands.Bot`` subclass that provides useful utilities.
     """
-    def __init__(self, *args, extensions_path=None, **kwargs):
+    def __init__(self, *args, extensions_path, **kwargs):
         super().__init__(*args, **kwargs)
 
         #: The path from which to load extensions from, relative to the current directory.

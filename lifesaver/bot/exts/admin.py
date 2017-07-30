@@ -3,6 +3,8 @@ from lifesaver.bot import Cog
 
 
 class Admin(Cog):
+    """A cog that provides commands related to administration of the bot."""
+
     @commands.command()
     @commands.is_owner()
     async def reload(self, ctx):
