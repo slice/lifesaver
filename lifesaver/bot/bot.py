@@ -13,7 +13,7 @@ class Bot(commands.Bot):
         #: The path from which to load extensions from, relative to the current directory.
         self.extensions_path = extensions_path
 
-        #: A list of extensions names to reload when calling Bot.reload().
+        #: A list of extensions names to reload when calling Bot.load_all()
         self._extension_load_list = []
 
     def _rebuild_load_list(self):
@@ -30,7 +30,7 @@ class Bot(commands.Bot):
         self._extension_load_list = paths + ['lifesaver.bot.exts.admin']
 
     def load_all(self, *, unload_first=False):
-        """Loads all extensions in the load list."""
+        """Loads all extensions in the extensions path."""
         self._rebuild_load_list()
 
         for extension_name in self._extension_load_list:
