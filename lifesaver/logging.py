@@ -9,7 +9,7 @@ def setup_logging(time_formatting='%Y-%m-%d %H:%M', hush=None):
     The ``websockets`` and ``discord`` root loggers are set to logging.INFO.
 
     :param time_formatting: Sets the time formatting.
-    :param hush: A list of additional loggers to hush.
+    :param hush: A list of additional logger names to set to logging.INFO.
     """
     # Set the root logger's info to INFO.
     root_logger = logging.getLogger()
