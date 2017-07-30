@@ -12,7 +12,8 @@ setup(
     name='discord.py-lifesaver',
     version='0.0.0',
     keywords='discord discord.py',
-    description='A set of utilities to aid the average Discord.py developer.',
+    description=('Lifesaver is an extremely opinionated bot foundation that provides a bunch of '
+                 'handy utilities to the average Discord.py developer.'),
     long_description=long_description,
 
     url='https://github.com/slice/discord.py-lifesaver',
