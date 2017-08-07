@@ -1,11 +1,14 @@
 from pathlib import Path
 
+import discord
 from discord.ext import commands
 
 
-class Bot(commands.Bot):
+class BotBase(commands.bot.BotBase):
     """
-    A ``commands.Bot`` subclass that provides useful utilities.
+    A ``commands.bot.BotBase`` subclass that provides useful utilities.
+
+    You should not be inheriting/using this class directly.
     """
     def __init__(self, *args, extensions_path, **kwargs):
         super().__init__(*args, **kwargs)
@@ -43,3 +46,25 @@ class Bot(commands.Bot):
             self.load_extension(extension_name)
 
         self.dispatch('lf_bot_load_all', unload_first)
+
+
+class Bot(BotBase, discord.Client):
+    """
+    A bot class that provides useful utilities.
+    """
+    pass
+
+
+class Selfbot(BotBase, discord.Client):
+    """
+    A selfbot class that provides useful utilities.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, self_bot=True, **kwargs)
+
+
+class AutoShardedBot(BotBase, discord.AutoShardedClient):
+    """
+    An automatically sharded bot class that provides useful utilities.
+    """
+    pass
