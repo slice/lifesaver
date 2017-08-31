@@ -3,6 +3,8 @@ from pathlib import Path
 import discord
 from discord.ext import commands
 
+from .context import LifesaverContext
+
 INCLUDED_EXTENSIONS = (
     'lifesaver.bot.exts.admin',
     'lifesaver.bot.exts.health'
@@ -59,6 +61,9 @@ class BotBase(commands.bot.BotBase):
         # Ignore bots if applicable.
         if self.ignore_bots and message.author.bot:
             return
+
+        ctx = await self.get_context(message, cls=LifesaverContext)
+        await self.invoke(ctx)
 
 
 class Bot(BotBase, discord.Client):
