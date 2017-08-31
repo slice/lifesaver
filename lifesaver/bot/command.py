@@ -2,12 +2,15 @@ from discord.ext import commands
 
 
 class LifesaverCommand(commands.Command):
-    def __init__(self, *args, **kwargs):
-        """
-        :param typing: Specifies whether to send a typing indicator when invoking this command.
-        """
+    """
+    A :class:`commands.Command` subclass that implements additional useful features.
+    """
+
+    def __init__(self, *args, typing: bool = False, **kwargs):
         super().__init__(*args, **kwargs)
-        self.typing = kwargs.get('typing', False)
+
+        #: Specifies whether to send typing indicators while the command is running.
+        self.typing = typing
 
     async def invoke(self, ctx):
         if self.typing:
@@ -18,6 +21,9 @@ class LifesaverCommand(commands.Command):
 
 
 def command(*args, **kwargs):
+    """
+    :func:`commands.command`, but uses :class:`LifesaverCommand` instead.
+    """
     return commands.command(*args, **kwargs, cls=LifesaverCommand)
 
 

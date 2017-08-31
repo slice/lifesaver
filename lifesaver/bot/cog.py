@@ -9,4 +9,4 @@ class Cog:
         self.bot = bot
 
         #: The logger for this cog.
-        self.log = logging.getLogger('cog.' + type(self).__name__.lower())
+        self.log = logging.getLogger('cog.' + type(self).__name__.lower())  # type: logging.Logger
