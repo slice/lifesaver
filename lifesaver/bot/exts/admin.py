@@ -1,11 +1,11 @@
 from discord.ext import commands
-from lifesaver.bot import Cog
+from lifesaver.bot import Cog, command
 
 
 class Admin(Cog):
     """A cog that provides commands related to administration of the bot."""
 
-    @commands.command()
+    @command()
     @commands.is_owner()
     async def reload(self, ctx):
         """Reloads all extensions."""
@@ -16,11 +16,11 @@ class Admin(Cog):
         else:
             await ctx.send('\N{OK HAND SIGN}')
 
-    @commands.command(aliases=['shutdown', 'poweroff'])
+    @command(aliases=['shutdown'])
     @commands.is_owner()
     async def die(self, ctx):
         """Kills the bot."""
-        await ctx.send('\N{WAVING HAND SIGN}')
+        await ctx.send('\N{WAVING HAND SIGN} Bye!')
         await ctx.bot.logout()
 
 
