@@ -3,6 +3,11 @@ from pathlib import Path
 import discord
 from discord.ext import commands
 
+INCLUDED_EXTENSIONS = (
+    'lifesaver.bot.exts.admin',
+    'lifesaver.bot.exts.health'
+)
+
 
 class BotBase(commands.bot.BotBase):
     """
@@ -28,9 +33,9 @@ class BotBase(commands.bot.BotBase):
 
         # Build a list of extensions to load.
         exts_path = Path(self.extensions_path)
-        paths = [transform_path(x) for x in exts_path.glob('**/*.py') if x.name != '__init__.py']
+        paths = tuple(transform_path(x) for x in exts_path.glob('**/*.py') if x.name != '__init__.py')
 
-        self._extension_load_list = paths + ['lifesaver.bot.exts.admin']
+        self._extension_load_list = paths + INCLUDED_EXTENSIONS
 
     def load_all(self, *, unload_first=False):
         """
