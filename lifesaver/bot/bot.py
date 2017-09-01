@@ -33,7 +33,7 @@ class BotBase(commands.bot.BotBase):
 
     You should not be inheriting/using this class directly.
     """
-    def __init__(self, cfg, **kwargs):
+    def __init__(self, cfg: BotConfig, **kwargs):
         super().__init__(cfg.command_prefix, **kwargs)
 
         #: The bot's :class:`BotConfig`.
@@ -69,12 +69,14 @@ class BotBase(commands.bot.BotBase):
 
         self._extension_load_list = paths
 
-    def load_all(self, *, unload_first: bool=False, exclude_default: bool=False):
+    def load_all(self, *, unload_first=False, exclude_default=False):
         """
         Loads all extensions in the extensions path.
 
         :param unload_first: Specifies whether to unload an extension before loading it.
+        :type unload_first: bool
         :param exclude_default: Specifies whether to leave out default extensions.
+        :type exclude_default: bool
         """
         self._rebuild_load_list()
 
@@ -93,6 +95,7 @@ class BotBase(commands.bot.BotBase):
         if self.cfg.ignore_bots and message.author.bot:
             return
 
+        # Grab a context, then invoke it.
         ctx = await self.get_context(message, cls=LifesaverContext)
         await self.invoke(ctx)
 
