@@ -1,5 +1,6 @@
 from discord.ext import commands
-from lifesaver.bot import Cog, command
+from lifesaver.bot import Cog
+from discord.ext.commands import command
 
 
 class Admin(Cog):

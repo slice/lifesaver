@@ -1,4 +1,5 @@
-from lifesaver.bot import Cog, command
+from discord.ext.commands import command
+from lifesaver.bot import Cog
 
 
 class Health(Cog):
