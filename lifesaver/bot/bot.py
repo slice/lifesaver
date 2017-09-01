@@ -27,7 +27,10 @@ class BotBase(commands.bot.BotBase):
         self.ignore_bots = ignore_bots
 
         #: A list of extensions names to reload when calling Bot.load_all().
-        self._extension_load_list = []
+        self._extension_load_list = ()  # type: tuple
+
+        #: A list of included extensions built into lifesaver to load.
+        self._included_extensions = INCLUDED_EXTENSIONS  # type: tuple
 
     def _rebuild_load_list(self):
         """Rebuilds the load list."""
@@ -40,17 +43,21 @@ class BotBase(commands.bot.BotBase):
         exts_path = Path(self.extensions_path)
         paths = tuple(transform_path(x) for x in exts_path.glob('**/*.py') if x.name != '__init__.py')
 
-        self._extension_load_list = paths + INCLUDED_EXTENSIONS
+        self._extension_load_list = paths
 
     def load_all(self, *, unload_first: bool=False, exclude_default: bool=False):
         """
         Loads all extensions in the extensions path.
 
         :param unload_first: Specifies whether to unload an extension before loading it.
+        :param exclude_default: Specifies whether to leave out default extensions.
         """
         self._rebuild_load_list()
 
-        for extension_name in self._extension_load_list:
+        load_list = self._extension_load_list if exclude_default\
+            else (self._extension_load_list + self._included_extensions)
+
+        for extension_name in load_list:
             if unload_first:
                 self.unload_extension(extension_name)
             self.load_extension(extension_name)
