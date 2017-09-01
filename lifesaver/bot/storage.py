@@ -92,6 +92,9 @@ class AsyncJSONStorage(AsyncStorage):
     def get(self, key):
         return self._data.get(str(key))
 
+    def all(self):
+        return self._data
+
     def __contains__(self, key):
         return str(key) in self._data
 
