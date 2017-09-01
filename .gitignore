@@ -4,6 +4,10 @@
 # Idea
 /.idea
 
+# Testing
+/sample/config.yml
+/sample/test.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
