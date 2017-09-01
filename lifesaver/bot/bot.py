@@ -17,7 +17,7 @@ class BotBase(commands.bot.BotBase):
 
     You should not be inheriting/using this class directly.
     """
-    def __init__(self, *args, extensions_path: str, ignore_bots: bool = True, **kwargs):
+    def __init__(self, *args, extensions_path: str, ignore_bots: bool=True, **kwargs):
         super().__init__(*args, **kwargs)
 
         #: The path from which to load extensions from, relative to the current directory.
@@ -42,7 +42,7 @@ class BotBase(commands.bot.BotBase):
 
         self._extension_load_list = paths + INCLUDED_EXTENSIONS
 
-    def load_all(self, *, unload_first=False):
+    def load_all(self, *, unload_first: bool=False, exclude_default: bool=False):
         """
         Loads all extensions in the extensions path.
 
