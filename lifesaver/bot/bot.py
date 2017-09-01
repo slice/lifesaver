@@ -62,7 +62,7 @@ class BotBase(commands.bot.BotBase):
                 self.unload_extension(extension_name)
             self.load_extension(extension_name)
 
-        self.dispatch('lf_bot_load_all', unload_first)
+        self.dispatch('load_all', unload_first)
 
     async def on_message(self, message: discord.Message):
         # Ignore bots if applicable.
