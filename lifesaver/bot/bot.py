@@ -8,7 +8,8 @@ from .context import LifesaverContext
 
 INCLUDED_EXTENSIONS = (
     'lifesaver.bot.exts.admin',
-    'lifesaver.bot.exts.health'
+    'lifesaver.bot.exts.health',
+    'lifesaver.bot.exts.exec'
 )
 
 
