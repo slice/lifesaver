@@ -17,6 +17,13 @@ class Admin(Cog):
         else:
             await ctx.send('\N{OK HAND SIGN}')
 
+    @command()
+    @commands.is_owner()
+    async def unload(self, ctx, ext):
+        """Unloads an extension."""
+        ctx.bot.unload_extension(ext)
+        await ctx.send('\N{OK HAND SIGN}')
+
     @command(aliases=['shutdown'])
     @commands.is_owner()
     async def die(self, ctx):
