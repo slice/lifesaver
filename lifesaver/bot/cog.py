@@ -16,7 +16,13 @@ class Cog:
         self._scheduled_tasks = []
 
         # Bypass Python's name mangling.
-        setattr(self, '_' + type(self).__name__ + '__unload', self.__unload)
+        unload_key = '_' + type(self).__name__ + '__unload'
+
+        # Grab the original unload function defined in the subclass.
+        self._original_unload = getattr(self, unload_key, None)
+
+        # Override the unload function with our own.
+        setattr(self, unload_key, self.__unload)
 
         # Iterate over all keys in myself.
         for key in dir(self):
@@ -52,6 +58,10 @@ class Cog:
         for scheduled_task in self._scheduled_tasks:
             self.log.info('Cancelling scheduled task: %s', scheduled_task)
             scheduled_task.cancel()
+
+        # Call original unload.
+        if self._original_unload:
+            self._original_unload()
 
     @classmethod
     def every(cls, interval: int, **kwargs):
