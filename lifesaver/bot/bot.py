@@ -9,7 +9,8 @@ from .context import LifesaverContext
 INCLUDED_EXTENSIONS = (
     'lifesaver.bot.exts.admin',
     'lifesaver.bot.exts.health',
-    'lifesaver.bot.exts.exec'
+    'lifesaver.bot.exts.exec',
+    'lifesaver.bot.exts.errors'
 )
 
 
@@ -98,6 +99,10 @@ class BotBase(commands.bot.BotBase):
         # Grab a context, then invoke it.
         ctx = await self.get_context(message, cls=LifesaverContext)
         await self.invoke(ctx)
+
+    async def on_command_error(self, ctx: commands.Context, exception: Exception):
+        # handled by errors.py
+        pass
 
 
 class Bot(BotBase, discord.Client):
