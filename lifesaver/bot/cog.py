@@ -55,6 +55,13 @@ class Cog:
 
     @classmethod
     def every(cls, interval: int, **kwargs):
+        """
+        A decorator that designates this function to be executed every ``n`` second(s).
+
+        :param interval: The time interval in seconds.
+        :param wait_until_ready: Waits until the bot is ready before scheduling.
+        :param initial_sleep: Specifies whether to sleep first.
+        """
         def outer(func):
             if not inspect.iscoroutinefunction(func):
                 raise TypeError('Scheduled method is not a coroutine')
