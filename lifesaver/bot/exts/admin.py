@@ -2,6 +2,9 @@ from discord.ext import commands
 from lifesaver.bot import Cog
 from discord.ext.commands import command
 
+from lifesaver.bot.exts.errors import get_traceback
+from lifesaver.utils import codeblock
+
 
 class Admin(Cog):
     """A cog that provides commands related to administration of the bot."""
@@ -13,7 +16,8 @@ class Admin(Cog):
         try:
             ctx.bot.load_all(unload_first=True)
         except Exception as exc:
-            await ctx.send(f'Error!\n```py\n{exc}\n```')
+            error = codeblock(get_traceback(exc), lang='py')
+            await ctx.send(error)
         else:
             await ctx.send('\N{OK HAND SIGN}')
 
