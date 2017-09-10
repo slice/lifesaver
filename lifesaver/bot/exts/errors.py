@@ -5,7 +5,7 @@ import uuid
 import datetime
 import discord
 from discord.ext import commands
-from discord.ext.commands import command, group
+from discord.ext.commands import group
 
 from lifesaver.bot import Cog
 from lifesaver.bot.storage import AsyncJSONStorage

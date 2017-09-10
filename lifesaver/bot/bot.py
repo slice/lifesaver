@@ -119,17 +119,13 @@ class BotBase(commands.bot.BotBase):
 
 
 class Bot(BotBase, discord.Client):
-    """
-    A bot class that provides useful utilities.
-    """
+    """A bot class that provides useful utilities."""
     def run(self):
         super().run(self.cfg.token)
 
 
 class Selfbot(BotBase, discord.Client):
-    """
-    A selfbot class that provides useful utilities.
-    """
+    """A selfbot class that provides useful utilities."""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, self_bot=True, **kwargs)
 
@@ -138,8 +134,6 @@ class Selfbot(BotBase, discord.Client):
 
 
 class AutoShardedBot(BotBase, discord.AutoShardedClient):
-    """
-    An automatically sharded bot class that provides useful utilities.
-    """
+    """An automatically sharded bot class that provides useful utilities."""
     def run(self):
         super().run(self.cfg.token)

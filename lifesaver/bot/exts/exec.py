@@ -36,13 +36,16 @@ log = logging.getLogger(__name__)
 class Code(commands.Converter):
     def __init__(self, *, wrap_code=False, strip_ticks=True, indent_width=4, implicit_return=False):
         """
-        Code converter.
+        Code convereter.
 
-        Args:
-            wrap_code: Specifies whether to wrap the resulting code in a function.
-            strip_ticks: Specifies whether to strip the code of formatting-related backticks.
-            indent_width: Specifies the indent width, if wrapping.
-            implicit_return: Automatically adds a return statement, when wrapping code.
+        :param wrap_code: Specifies whether to wrap the resulting code in a function.
+        :type wrap_code: bool
+        :param strip_ticks: Specifies whether to strip the code of Markdown-related backticks.
+        :type strip_ticks: bool
+        :param indent_width: Specifies the indent width, if wrapping.
+        :type indent_width: int
+        :param implicit_return: Automatically adds a return statement, if wrapping.
+        :type implicit_return: bool
         """
         self.wrap_code = wrap_code
         self.strip_ticks = strip_ticks
