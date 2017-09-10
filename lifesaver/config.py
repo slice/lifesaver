@@ -1,16 +1,19 @@
+from typing import Any
+
 from ruamel.yaml import YAML
 
 NO_DEFAULT = object()
 
 
 class Field:
-    def __init__(self, type, *, default=NO_DEFAULT, optional: bool=False):
-        self.type = type
+    def __init__(self, field_type, *, default=NO_DEFAULT, optional: bool=False):
+        self.type = field_type
         self.default = default
         self.optional = optional
 
 
 class ConfigError(Exception):
+    """An error thrown by the Config loader."""
     pass
 
 
@@ -34,7 +37,7 @@ class Config:
             # was provided, so just fall back to None.
             value = data.get(key, None if field.default is NO_DEFAULT else field.default)
 
-            if not isinstance(value, field.type):
+            if field.type is not Any and not isinstance(value, field.type):
                 raise ConfigError('Expected field value of type "{}" for {}, instead got value of type "{}".'
                                   .format(type(field.type).__name__, key, type(value).__name__))
 
