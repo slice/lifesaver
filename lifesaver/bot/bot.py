@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 import discord
 from discord.ext import commands
@@ -25,7 +26,14 @@ class BotConfig(Config):
     ignore_bots = Field(bool, default=True)
 
     #: The command prefix to use.
-    command_prefix = Field(str)
+    command_prefix = Field(Any)
+
+    #: Specifies whether mentions should count as prefixes, too.
+    command_prefix_include_mentions = Field(bool, default=True)
+
+
+def _convert_to_list(thing) -> list:
+    return [thing] if not isinstance(thing, list) else thing
 
 
 class BotBase(commands.bot.BotBase):
@@ -35,7 +43,12 @@ class BotBase(commands.bot.BotBase):
     You should not be inheriting/using this class directly.
     """
     def __init__(self, cfg: BotConfig, **kwargs):
-        super().__init__(cfg.command_prefix, **kwargs)
+        super().__init__(
+            # command prefix
+            commands.when_mentioned_or(*_convert_to_list(cfg.command_prefix)) if cfg.command_prefix_include_mentions \
+                else cfg.command_prefix,
+            **kwargs
+        )
 
         #: The bot's :class:`BotConfig`.
         self.cfg = cfg
