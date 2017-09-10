@@ -10,10 +10,17 @@ class Sample(Cog):
 
         self.tags = AsyncJSONStorage('tags.json')
 
+    def __unload(self):
+        print('Original unload.')
+
     @command()
     async def sample(self, ctx):
         """ A sample command. """
         await ctx.send('Hello!')
+
+    @Cog.every(10, wait_until_ready=True)
+    async def scheduled(self):
+        pass
 
     @group(invoke_without_command=True)
     async def tag(self, ctx, *, key):
