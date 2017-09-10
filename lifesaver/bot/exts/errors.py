@@ -14,9 +14,9 @@ from lifesaver.bot.storage import AsyncJSONStorage
 from lifesaver.utils import codeblock
 
 
-def get_traceback(exc: Exception):
+def get_traceback(exc: Exception, *, limit=7) -> str:
     return '\n'.join(traceback.format_exception(
-        type(exc), exc, exc.__traceback__
+        type(exc), exc, exc.__traceback__, limit=limit
     ))
 
 
