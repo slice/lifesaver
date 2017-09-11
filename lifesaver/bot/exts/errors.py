@@ -60,7 +60,7 @@ class Errors(Cog):
         ago = str(datetime.datetime.utcnow() - created)
 
         embed = discord.Embed(title=f'Insect {insect_id}')
-        embed.add_field(name='Created', value=f'{created} ({ago} ago~)', inline=False)
+        embed.add_field(name='Created', value=f'{created} ({ago} ago)', inline=False)
         await ctx.send(codeblock(insect['traceback'], lang='py'), embed=embed)
 
     @errors.command()
