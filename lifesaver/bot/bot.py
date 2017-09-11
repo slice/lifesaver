@@ -1,3 +1,4 @@
+import importlib
 import logging
 from pathlib import Path
 from typing import Any
@@ -88,6 +89,12 @@ class BotBase(commands.bot.BotBase):
         # Build a list of extensions to load.
         exts_path = Path(self.cfg.extensions_path)
         paths = tuple(transform_path(x) for x in exts_path.glob('**/*.py') if x.name != '__init__.py')
+
+        def _ext_filter(path: str):
+            module = importlib.import_module(path)
+            return hasattr(module, 'setup')
+
+        paths = tuple(filter(_ext_filter, paths))
 
         self._extension_load_list = paths
 
