@@ -33,6 +33,9 @@ class BotConfig(Config):
     #: The bot's description.
     description = Field(str, default='A Discord bot.')
 
+    #: Specifies whether to PM help or not.
+    pm_help = Field(bool, default=None)
+
     #: Specifies whether mentions should count as prefixes, too.
     command_prefix_include_mentions = Field(bool, default=True)
 
@@ -55,7 +58,11 @@ class BotBase(commands.bot.BotBase):
             # command prefix
             commands.when_mentioned_or(*_convert_to_list(cfg.command_prefix)) if cfg.command_prefix_include_mentions \
                 else cfg.command_prefix,
+
+            # other bot stuff
             description=self.cfg.description,
+            pm_help=self.cfg.pm_help,
+
             **kwargs
         )
 
