@@ -28,6 +28,9 @@ class BotConfig(Config):
     #: The command prefix to use.
     command_prefix = Field(Any)
 
+    #: The bot's description.
+    description = Field(str, default='A Discord bot.')
+
     #: Specifies whether mentions should count as prefixes, too.
     command_prefix_include_mentions = Field(bool, default=True)
 
@@ -43,15 +46,17 @@ class BotBase(commands.bot.BotBase):
     You should not be inheriting/using this class directly.
     """
     def __init__(self, cfg: BotConfig, **kwargs):
+        #: The bot's :class:`BotConfig`.
+        self.cfg = cfg
+
         super().__init__(
             # command prefix
             commands.when_mentioned_or(*_convert_to_list(cfg.command_prefix)) if cfg.command_prefix_include_mentions \
                 else cfg.command_prefix,
+            description=self.cfg.description,
             **kwargs
         )
 
-        #: The bot's :class:`BotConfig`.
-        self.cfg = cfg
 
         #: A list of extensions names to reload when calling Bot.load_all().
         self._extension_load_list = ()  # type: tuple
