@@ -34,7 +34,7 @@ class BotConfig(Config):
     description = Field(str, default='A Discord bot.')
 
     #: Specifies whether to PM help or not.
-    pm_help = Field(bool, default=None)
+    pm_help = Field(Any, default=None)
 
     #: Specifies whether mentions should count as prefixes, too.
     command_prefix_include_mentions = Field(bool, default=True)
