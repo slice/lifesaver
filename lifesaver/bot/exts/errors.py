@@ -47,7 +47,7 @@ class Errors(Cog):
         """Manages errors."""
         pass
 
-    @errors.command()
+    @errors.command(aliases=['show', 'info'])
     async def view(self, ctx, insect_id: str):
         """Views an error by insect ID."""
         all_insects = self.insects.get('insects') or []
