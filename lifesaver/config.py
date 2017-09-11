@@ -43,6 +43,9 @@ class Config:
 
             self.__dict__[key] = value
 
+        if not getattr(self, 'strict', False):
+            self.__dict__.update(data)
+
     @classmethod
     def load(cls, file):
         """
