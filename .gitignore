@@ -1,6 +1,14 @@
 # Built docs
 /docs/build
 
+# Idea
+/.idea
+
+# Testing
+/sample/config.yml
+/sample/test.py
+/sample/*.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
