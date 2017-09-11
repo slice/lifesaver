@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -57,6 +58,8 @@ class BotBase(commands.bot.BotBase):
             **kwargs
         )
 
+        #: The bot's logger.
+        self.log = logging.getLogger(__name__)
 
         #: A list of extensions names to reload when calling Bot.load_all().
         self._extension_load_list = ()  # type: tuple
@@ -108,6 +111,9 @@ class BotBase(commands.bot.BotBase):
             self.load_extension(extension_name)
 
         self.dispatch('load_all', unload_first)
+
+    async def on_ready(self):
+        self.log.info('Ready! %s (%d)', self.user, self.user.id)
 
     async def on_message(self, message: discord.Message):
         # Ignore bots if applicable.
