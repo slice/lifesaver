@@ -29,6 +29,7 @@ setup(
         'Programming Language :: Python :: 3'
     ],
 
-    packages=['lifesaver'],
+    packages=['lifesaver', 'lifesaver.bot', 'lifesaver.utils',
+              'lifesaver.bot.exts'],
     dependency_links=['git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py']
 )
