@@ -1,8 +1,9 @@
+import datetime
+import os
+import pathlib
 import time
 import traceback
 import uuid
-
-import datetime
 from collections import OrderedDict
 
 import discord
@@ -14,10 +15,20 @@ from lifesaver.bot.storage import AsyncJSONStorage
 from lifesaver.utils import codeblock
 
 
-def get_traceback(exc: Exception, *, limit=7) -> str:
-    return ''.join(traceback.format_exception(
+def get_traceback(exc: Exception, *, limit=7, hide_paths=False) -> str:
+    formatted = ''.join(traceback.format_exception(
         type(exc), exc, exc.__traceback__, limit=limit
     ))
+
+    if hide_paths:
+        # censor cwd
+        formatted = formatted.replace(os.getcwd(), '/...')
+
+        # hide packages directory
+        packages_dir = str(pathlib.Path(discord.__file__).parent.parent.resolve())
+        formatted = formatted.replace(packages_dir, '/packages')
+
+    return formatted
 
 
 class Errors(Cog):
@@ -26,16 +37,14 @@ class Errors(Cog):
         self.insects = AsyncJSONStorage('./insects.json')
 
     async def _save_insect(self, error: Exception):
-        # grab insect list
         insects = self.insects.get('insects') or []
 
-        # append to array
         insect_id = str(uuid.uuid4())
         insects.append(
             {
                 'id': insect_id,
                 'creation_time': time.time(),
-                'traceback': get_traceback(error)
+                'traceback': get_traceback(error, hide_paths=True)
             }
         )
 
