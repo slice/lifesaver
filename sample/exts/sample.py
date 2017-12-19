@@ -43,7 +43,7 @@ class Sample(Cog):
         if key in self.tags:
             return await ctx.send('Tag already exists.')
         await self.tags.put(key, value)
-        await ctx.send('\N{OK HAND SIGN}')
+        await ctx.ok()
 
 
 def setup(bot):

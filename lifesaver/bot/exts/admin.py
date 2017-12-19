@@ -16,14 +16,14 @@ class Admin(Cog):
             await ctx.send('An error has occurred while reloading.')
             self.log.exception('Cog load error:')
         else:
-            await ctx.send('\N{OK HAND SIGN}')
+            await ctx.ok()
 
     @command()
     @commands.is_owner()
     async def unload(self, ctx, ext):
         """Unloads an extension."""
         ctx.bot.unload_extension(ext)
-        await ctx.send('\N{OK HAND SIGN}')
+        await ctx.ok()
 
     @command(aliases=['shutdown'])
     @commands.is_owner()
