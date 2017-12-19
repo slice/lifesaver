@@ -32,6 +32,12 @@ class Admin(Cog):
         await ctx.send('\N{WAVING HAND SIGN} Bye!')
         await ctx.bot.logout()
 
+    @command(hidden=True)
+    @commands.is_owner()
+    async def __throw(self, ctx):
+        """Throws an exception."""
+        raise RuntimeError('__throw') from None
+
 
 def setup(bot):
     bot.add_cog(Admin(bot))
