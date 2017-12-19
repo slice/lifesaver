@@ -12,7 +12,7 @@ def codeblock(code: str, *, lang: str='') -> str:
     return "```{}\n{}\n```".format(lang, code)
 
 
-def truncate(text: str, desired_length: int) -> str:
+def truncate(text: str, desired_length: int, *, suffix: str='...') -> str:
     """
     Truncates text.
 
@@ -24,6 +24,6 @@ def truncate(text: str, desired_length: int) -> str:
     :rtype: str
     """
     if len(text) > desired_length:
-        return text[:desired_length-3] + '...'
+        return text[:desired_length-len(suffix)] + suffix
     else:
         return text
