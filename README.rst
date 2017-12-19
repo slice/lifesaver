@@ -4,7 +4,7 @@ discord.py-lifesaver
 .. image:: https://img.shields.io/badge/python-3.6-blue.svg
 
 .. image:: https://img.shields.io/badge/License-MIT-blue.svg
-  :target: https://github.com/slice/lifesaver/blob/master/LICENSE
+  :target: https://github.com/slice/lifesaver/blob/master/LICENSE.md
 
 Lifesaver is an extremely opinionated bot foundation built on top of
 `discord.py@rewrite <https://github.com/Rapptz/discord.py/tree/rewrite/>`__.
