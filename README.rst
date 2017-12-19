@@ -11,5 +11,38 @@ Lifesaver is an extremely opinionated bot foundation built on top of
 
 Please be aware that this library contains lots of opinionated features
 and hand-holding, and this isn't really meant to be used by anyone — this
-repository is open-source just for the sake of being open-source, for curious
-eyes.
+repository is open-source just for the sake of being open-source, and for
+curious eyes that may be watching.
+
+Features
+--------
+
+* Cog baseclass
+
+  * ``Cog.every``: A decorator that makes the cog execute some function every *n* seconds with automatic setup and cancellation, along with some customization features.
+
+* Custom command class
+
+  * ``command(typing=True)``: Automatically send typing events while this command runs
+
+* Included extensions (can be disabled!)
+
+  * Administration extension
+
+    * Bot shutdown command
+
+    * Reload/unload
+
+  * Smart code evaluation at runtime
+
+  * Ping command
+
+  * Errors extension
+
+    * View errors that happen in your bot with a simple "insect" system
+
+    * Basic error handlers for common errors
+
+* Handy utilities
+
+* Built-in storage facilities
