@@ -74,7 +74,7 @@ class Errors(Cog):
         await ctx.send(codeblock(insect['traceback'], lang='py'), embed=embed)
 
     @errors.command()
-    async def throw(self, ctx, *, message):
+    async def throw(self, ctx, *, message='Error!'):
         """Throws an intentional error. Used for debugging."""
         raise RuntimeError(f'Intentional error: {message}')
 
