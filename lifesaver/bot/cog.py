@@ -14,27 +14,23 @@ class Cog:
         self.log = logging.getLogger('cog.' + type(self).__name__.lower())  # type: logging.Logger
 
         self._scheduled_tasks = []
+        self._setup_schedules()
 
+    def _setup_schedules(self):
         # Bypass Python's name mangling.
         unload_key = '_' + type(self).__name__ + '__unload'
 
         # Grab the original unload function defined in the subclass.
         self._original_unload = getattr(self, unload_key, None)
+        setattr(self, unload_key, self.__unload)  # Override.
 
-        # Override the unload function with our own.
-        setattr(self, unload_key, self.__unload)
-
-        # Iterate over all keys in myself.
         for key in dir(self):
-            # This thing doesn't have a _schedule, so it's probably not scheduled.
             if not hasattr(getattr(self, key), '_schedule'):
                 continue
 
-            # Grab the function, and the schedule metadata.
             func = getattr(self, key)
             schedule = func._schedule
 
-            # Wrap the entire function in a loop that runs forever.
             async def wrapped():
                 if 'wait_until_ready' in schedule:
                     await self.bot.wait_until_ready()
@@ -45,21 +41,16 @@ class Cog:
                     await func()
                     await asyncio.sleep(schedule['interval'])
 
-            # Create (and run) the task.
             task = self.bot.loop.create_task(wrapped())
-
-            # Keep track of the tasks.
             self._scheduled_tasks.append(task)
 
     def __unload(self):
         self.log.info('Unloading!')
 
-        # Cancel all scheduled tasks.
         for scheduled_task in self._scheduled_tasks:
             self.log.info('Cancelling scheduled task: %s', scheduled_task)
             scheduled_task.cancel()
 
-        # Call original unload.
         if self._original_unload:
             self._original_unload()
 
@@ -76,12 +67,9 @@ class Cog:
             if not inspect.iscoroutinefunction(func):
                 raise TypeError('Scheduled method is not a coroutine')
 
-            # Add some scheduling metadata.
             func._schedule = {
                 'interval': interval
             }
-
-            # Add all kwargs.
             func._schedule.update(kwargs)
 
             return func

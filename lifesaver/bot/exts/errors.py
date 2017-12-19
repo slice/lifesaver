@@ -54,7 +54,7 @@ class Errors(Cog):
         insect = discord.utils.find(lambda insect: insect['id'] == insect_id, all_insects)
 
         if not insect:
-            return await ctx.send('An insect with that ID wasn\'t found.')
+            return await ctx.send("An insect with that ID wasn't found.")
 
         created = datetime.datetime.fromtimestamp(insect['creation_time'])
         ago = str(datetime.datetime.utcnow() - created)

@@ -1,4 +1,4 @@
-def codeblock(code: str, *, lang: str = '') -> str:
+def codeblock(code: str, *, lang: str='') -> str:
     """
     Constructs a Markdown codeblock.
 

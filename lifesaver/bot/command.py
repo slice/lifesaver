@@ -25,5 +25,3 @@ def command(*args, **kwargs):
     :func:`commands.command`, but uses :class:`LifesaverCommand` instead.
     """
     return commands.command(*args, **kwargs, cls=LifesaverCommand)
-
-
