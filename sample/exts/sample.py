@@ -1,5 +1,5 @@
 from discord.ext import commands
-from discord.ext.commands import command, group
+from discord.ext.commands import group
 from lifesaver.bot import Cog, command
 from lifesaver.bot.storage import AsyncJSONStorage
 
@@ -41,7 +41,8 @@ class Sample(Cog):
     async def make(self, ctx, key: commands.clean_content, *, value: commands.clean_content):
         """ Creates a tag. """
         if key in self.tags:
-            return await ctx.send('Tag already exists.')
+            await ctx.send('Tag already exists.')
+            return
         await self.tags.put(key, value)
         await ctx.ok()
 
