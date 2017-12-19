@@ -95,12 +95,16 @@ class Errors(Cog):
             if not isinstance(error, error_type):
                 continue
 
-            prefix, append_message = info
-            return await ctx.send(prefix + (f': {error}' if append_message else ''))
+            prefix, prepend_message = info
+            return await ctx.send(prefix + (f': {error}' if prepend_message else ''))
 
         if isinstance(error, commands.CommandInvokeError):
             insect_id = await self._save_insect(error)
-            await ctx.send(f'A fatal error has occurred while running that command. Insect ID: `{insect_id}`')
+            await ctx.send(
+                'A fatal error has occurred while running that command. ' +
+                f'Please report this error ID to the bot owner: `{insect_id}` ' +
+                'Thanks!'
+            )
             self.log.error('Fatal error. ' + get_traceback(error))
 
 
