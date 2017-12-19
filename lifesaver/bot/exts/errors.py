@@ -30,16 +30,17 @@ class Errors(Cog):
         insects = self.insects.get('insects') or []
 
         # append to array
-        id = str(uuid.uuid4())
-        insects = insects + [
-            {'id': id, 'creation_time': time.time(), 'traceback': get_traceback(error)}
-        ]
+        insect_id = str(uuid.uuid4())
+        insects.append(
+            {
+                'id': insect_id,
+                'creation_time': time.time(),
+                'traceback': get_traceback(error)
+            }
+        )
 
-        # save insects
         await self.insects.put('insects', insects)
-
-        # return of new insect
-        return id
+        return insect_id
 
     @group(hidden=True)
     @commands.is_owner()
