@@ -8,14 +8,14 @@ class LifesaverContext(Context):
         Makes the bot respond with an emoji in acknowledgement to a action.
         """
         actions = [
-            self.message.add_reaction(emoji),
-            self.send(emoji),
-            self.author.send(emoji)
+            self.message.add_reaction,
+            self.send,
+            self.author.send
         ]
 
         for action in actions:
             try:
-                await action
+                await action(emoji)
                 break
             except discord.HTTPException:
                 pass
