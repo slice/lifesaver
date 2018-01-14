@@ -73,7 +73,7 @@ class BotBase(commands.bot.BotBase):
         self._included_extensions = INCLUDED_EXTENSIONS  # type: tuple
 
     @classmethod
-    def with_config(cls, config: str = 'config.yml') -> 'BotBase':
+    def with_config(cls, config: str = 'config.yml'):
         """
         Creates a bot instance with a configuration file.
 
@@ -84,8 +84,7 @@ class BotBase(commands.bot.BotBase):
 
         Returns
         -------
-        BotBase
-            The created bot instance.
+        The created bot instance.
         """
         return cls(BotConfig.load(config))
 
