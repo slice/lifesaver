@@ -43,6 +43,7 @@ class AsyncJSONStorage(AsyncStorage):
 
         https://github.com/Rapptz/RoboDanny/blob/rewrite/cogs/utils/config.py
     """
+
     def __init__(self, file, *, loop=None):
         """
         Parameters

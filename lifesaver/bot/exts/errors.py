@@ -16,9 +16,7 @@ from lifesaver.utils import codeblock
 
 
 def get_traceback(exc: Exception, *, limit: int = 7, hide_paths: bool = False) -> str:
-    formatted = ''.join(traceback.format_exception(
-        type(exc), exc, exc.__traceback__, limit=limit
-    ))
+    formatted = ''.join(traceback.format_exception(type(exc), exc, exc.__traceback__, limit=limit))
 
     if hide_paths:
         # censor cwd
@@ -40,13 +38,11 @@ class Errors(Cog):
         insects = self.insects.get('insects') or []
 
         insect_id = str(uuid.uuid4())
-        insects.append(
-            {
-                'id': insect_id,
-                'creation_time': time.time(),
-                'traceback': get_traceback(error, hide_paths=True)
-            }
-        )
+        insects.append({
+            'id': insect_id,
+            'creation_time': time.time(),
+            'traceback': get_traceback(error, hide_paths=True)
+        })
 
         await self.insects.put('insects', insects)
         return insect_id
@@ -81,6 +77,7 @@ class Errors(Cog):
     async def on_command_error(self, ctx: Context, error: Exception):
         """Default error handler."""
 
+        # yapf: disable
         error_handlers = OrderedDict([
             (commands.BotMissingPermissions, ('Whoops!', True)),
             (commands.MissingPermissions, ('Whoops!', True)),
@@ -90,6 +87,7 @@ class Errors(Cog):
             (commands.UserInputError, ('User input error', True)),
             (commands.CheckFailure, ('Permissions error', True))
         ])
+        # yapf: enable
 
         for error_type, info in error_handlers.items():
             if not isinstance(error, error_type):
@@ -100,11 +98,8 @@ class Errors(Cog):
 
         if isinstance(error, commands.CommandInvokeError):
             insect_id = await self._save_insect(error)
-            await ctx.send(
-                'A fatal error has occurred while running that command. ' +
-                f'Please report this error ID to the bot owner: `{insect_id}` ' +
-                'Thanks!'
-            )
+            await ctx.send('A fatal error has occurred while running that command. ' +
+                           f'Please report this error ID to the bot owner: `{insect_id}` ' + 'Thanks!')
             self.log.error('Fatal error. ' + get_traceback(error))
 
 

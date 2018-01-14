@@ -1,4 +1,4 @@
-def codeblock(code: str, *, lang: str='') -> str:
+def codeblock(code: str, *, lang: str = '') -> str:
     """
     Constructs a Markdown codeblock.
 
@@ -17,7 +17,7 @@ def codeblock(code: str, *, lang: str='') -> str:
     return "```{}\n{}\n```".format(lang, code)
 
 
-def truncate(text: str, desired_length: int, *, suffix: str='...') -> str:
+def truncate(text: str, desired_length: int, *, suffix: str = '...') -> str:
     """
     Truncates text. Three periods will be inserted as a suffix by default, but this can be changed.
 
@@ -31,6 +31,6 @@ def truncate(text: str, desired_length: int, *, suffix: str='...') -> str:
         The text to insert before the desired length is reached. By default, this is "..." to indicate truncation.
     """
     if len(text) > desired_length:
-        return text[:desired_length-len(suffix)] + suffix
+        return text[:desired_length - len(suffix)] + suffix
     else:
         return text

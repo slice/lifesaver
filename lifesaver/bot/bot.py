@@ -9,12 +9,8 @@ from discord.ext import commands
 from lifesaver.config import Config, Field
 from .context import Context
 
-INCLUDED_EXTENSIONS = (
-    'lifesaver.bot.exts.admin',
-    'lifesaver.bot.exts.health',
-    'lifesaver.bot.exts.exec',
-    'lifesaver.bot.exts.errors'
-)
+INCLUDED_EXTENSIONS = ('lifesaver.bot.exts.admin', 'lifesaver.bot.exts.health', 'lifesaver.bot.exts.exec',
+                       'lifesaver.bot.exts.errors')
 
 
 class BotConfig(Config):
@@ -50,6 +46,7 @@ class BotBase(commands.bot.BotBase):
 
     You should not be inheriting/using this class directly.
     """
+
     def __init__(self, cfg: BotConfig, **kwargs):
         #: The bot's :class:`BotConfig`.
         self.cfg = cfg
@@ -153,12 +150,14 @@ class BotBase(commands.bot.BotBase):
 
 class Bot(BotBase, discord.Client):
     """A bot class that provides useful utilities."""
+
     def run(self):
         super().run(self.cfg.token)
 
 
 class Selfbot(BotBase, discord.Client):
     """A selfbot class that provides useful utilities."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, self_bot=True, **kwargs)
 
@@ -168,5 +167,6 @@ class Selfbot(BotBase, discord.Client):
 
 class AutoShardedBot(BotBase, discord.AutoShardedClient):
     """An automatically sharded bot class that provides useful utilities."""
+
     def run(self):
         super().run(self.cfg.token)

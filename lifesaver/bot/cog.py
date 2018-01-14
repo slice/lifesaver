@@ -63,14 +63,14 @@ class Cog:
         :param wait_until_ready: Waits until the bot is ready before scheduling.
         :param initial_sleep: Specifies whether to sleep first.
         """
+
         def outer(func):
             if not inspect.iscoroutinefunction(func):
                 raise TypeError('Scheduled method is not a coroutine')
 
-            func._schedule = {
-                'interval': interval
-            }
+            func._schedule = {'interval': interval}
             func._schedule.update(kwargs)
 
             return func
+
         return outer

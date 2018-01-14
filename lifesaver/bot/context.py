@@ -12,7 +12,7 @@ class Context(commands.Context):
         self._paginator.add_line(line)
         return self
 
-    async def send_pages(self, *, prefix: str='```', suffix: str='```'):
+    async def send_pages(self, *, prefix: str = '```', suffix: str = '```'):
         self._paginator.prefix = prefix
         self._paginator.suffix = suffix
         for page in self._paginator.pages:
@@ -20,11 +20,7 @@ class Context(commands.Context):
 
     async def ok(self, emoji='\N{OK HAND SIGN}'):
         """Makes the bot respond with an emoji in acknowledgement to an action performed by the user."""
-        actions = [
-            self.message.add_reaction,
-            self.send,
-            self.author.send
-        ]
+        actions = [self.message.add_reaction, self.send, self.author.send]
 
         for action in actions:
             try:
