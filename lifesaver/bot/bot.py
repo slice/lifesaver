@@ -109,7 +109,8 @@ class BotBase(commands.bot.BotBase):
 
     def load_all(self, *, unload_first: bool = False, exclude_default: bool = False):
         """
-        Loads all extensions in the extensions path.
+        Loads all extensions in the extensions load list. The load list is always rebuilt first when called.
+        When done, ``load_all`` is dispatched with the value of ``unload_first``.
 
         Parameters
         ----------
