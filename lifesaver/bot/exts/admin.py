@@ -26,6 +26,7 @@ SOFTWARE.
 from discord.ext import commands
 
 from lifesaver.bot import command, Cog, Context
+from lifesaver.utils import shell, escape_backticks
 
 
 class Admin(Cog):
@@ -42,6 +43,15 @@ class Admin(Cog):
             self.log.exception('Cog load error:')
         else:
             await ctx.ok()
+
+    @command(name='shell', aliases=['sh'])
+    @commands.is_owner()
+    async def _shell(self, ctx: Context, *, command):
+        """Runs a shell command on the system."""
+        output = await shell(command)
+        for line in output.split('\n'):
+            ctx += escape_backticks(line)
+        await ctx.send_pages()
 
     @command()
     @commands.is_owner()
