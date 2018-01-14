@@ -33,9 +33,8 @@ from collections import OrderedDict
 
 import discord
 from discord.ext import commands
-from discord.ext.commands import group
 
-from lifesaver.bot import Cog, Context
+from lifesaver.bot import group, Cog, Context
 from lifesaver.bot.storage import AsyncJSONStorage
 from lifesaver.utils import codeblock
 

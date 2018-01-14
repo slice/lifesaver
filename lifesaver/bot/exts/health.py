@@ -23,9 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from discord.ext.commands import command
-
-from lifesaver.bot import Cog, Context
+from lifesaver.bot import command, Cog, Context
 
 
 class Health(Cog):

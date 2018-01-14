@@ -24,9 +24,8 @@ SOFTWARE.
 """
 
 from discord.ext import commands
-from discord.ext.commands import command
 
-from lifesaver.bot import Cog, Context
+from lifesaver.bot import command, Cog, Context
 
 
 class Admin(Cog):
