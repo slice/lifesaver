@@ -33,8 +33,8 @@ import io
 import logging
 import textwrap
 import traceback
-from contextlib import redirect_stdout
-from typing import Dict, Any, List, TypeVar, Callable
+from contextlib import redirect_stdout, suppress
+from typing import Dict, Any, List, TypeVar, Callable, Union
 
 import discord
 from discord.ext import commands
@@ -110,13 +110,20 @@ def create_environment(cog: 'Exec', ctx: Context) -> Dict[Any, Any]:
         with open(file_name, 'rb') as fp:
             return await ctx.send(file=discord.File(fp))
 
-    async def send(*args, **kwargs) -> discord.Message:
-        """Shortcut to send()."""
-        return await ctx.send(*args, **kwargs)
-
     def better_dir(*args, **kwargs) -> List[str]:
         """dir(), but without magic methods."""
         return [n for n in dir(*args, **kwargs) if not n.endswith('__') and not n.startswith('__')]
+
+    def get_member(specifier: Union[int, str]) -> discord.Member:
+        if not ctx.guild:
+            raise RuntimeError('Cannot use member grabber in a DM context.')
+
+        def _finder(member: discord.Member) -> bool:
+            # id, name#discrim, display name, name
+            return member.id == specifier or str(member) == specifier or member.display_name == specifier \
+                   or member.name == specifier
+
+        return discord.utils.find(_finder, ctx.guild.members)
 
     T = TypeVar('T')
 
@@ -147,16 +154,16 @@ def create_environment(cog: 'Exec', ctx: Context) -> Dict[Any, Any]:
         '_get': discord.utils.get,
         '_find': discord.utils.find,
         '_upload': upload,
-        '_send': send,
+        '_send': ctx.send,
 
         # grabbers
         '_g': grabber(ctx.bot.guilds),
         '_u': grabber(ctx.bot.users),
-        '_c': grabber(list(ctx.bot.get_all_channels())),
+        '_c': ctx.bot.get_channel,
+        '_m': get_member,
 
         # last result
         '_': cog.last_result,
-        '_p': cog.previous_code,
         'dir': better_dir,
     }
 
@@ -167,7 +174,7 @@ def create_environment(cog: 'Exec', ctx: Context) -> Dict[Any, Any]:
 
 
 def format_syntax_error(e: SyntaxError) -> str:
-    """ Formats a SyntaxError. """
+    """Formats a SyntaxError."""
     if e.text is None:
         return '```py\n{0.__class__.__name__}: {0}\n```'.format(e)
     # display a nice arrow
@@ -179,7 +186,6 @@ class Exec(Cog):
         super().__init__(*args, **kwargs)
 
         self.last_result = None
-        self.previous_code = None
 
     async def execute(self, ctx: Context, code: str):
         log.info('Eval: %s', code)
@@ -194,7 +200,8 @@ class Exec(Cog):
             exec(compile(code, '<exec>', 'exec'), env)
         except SyntaxError as e:
             # send pretty syntax errors
-            return await ctx.send(format_syntax_error(e))
+            await ctx.send(format_syntax_error(e))
+            return
 
         # grab the defined function
         func = env['func']
@@ -205,23 +212,18 @@ class Exec(Cog):
                 ret = await func()
         except Exception:
             # something went wrong :(
-            try:
+            with suppress(discord.HTTPException):
                 await ctx.message.add_reaction('\N{EXCLAMATION QUESTION MARK}')
-            except (discord.HTTPException, discord.Forbidden):
-                # failed to add failure tick, hmm.
-                pass
 
             # send stream and what we have
-            return await ctx.send(codeblock(traceback.format_exc(limit=7), lang='py'))
+            await ctx.send(codeblock(traceback.format_exc(limit=7), lang='py'))
+            return
 
         # code was good, grab stdout
         stream = stdout.getvalue()
 
-        try:
+        with suppress(discord.HTTPException):
             await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
-        except (discord.HTTPException, discord.Forbidden):
-            # couldn't add the reaction, ignore
-            pass
 
         # set the last result, but only if it's not none
         if ret is not None:
@@ -238,23 +240,10 @@ class Exec(Cog):
             # message was under 2k chars, just send!
             await ctx.send(message)
 
-    @command(name='retry', hidden=True)
-    @commands.is_owner()
-    async def retry(self, ctx):
-        """ Retries the previously executed Python code. """
-        if not self.previous_code:
-            return await ctx.send('No previous code.')
-
-        await self.execute(ctx, self.previous_code)
-
     @command(name='eval', aliases=['exec', 'debug'])
     @commands.is_owner()
     async def _eval(self, ctx, *, code: Code(wrap_code=True, implicit_return=True)):
-        """ Executes Python code. """
-
-        # store previous code
-        self.previous_code = code
-
+        """Executes Python code."""
         await self.execute(ctx, code)
 
 
