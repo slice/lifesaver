@@ -50,6 +50,13 @@ class Admin(Cog):
         ctx.bot.unload_extension(ext)
         await ctx.ok()
 
+    @command()
+    @commands.is_owner()
+    async def load(self, ctx: Context, ext):
+        """Loads an extension."""
+        ctx.bot.load_extension(ext)
+        await ctx.ok()
+
     @command(aliases=['shutdown'])
     @commands.is_owner()
     async def die(self, ctx: Context):
