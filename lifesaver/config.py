@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict
 
 from ruamel.yaml import YAML
 
@@ -47,21 +47,29 @@ class Config:
             self.__dict__.update(data)
 
     @classmethod
-    def load(cls, file):
+    def load(cls, file: str) -> 'Config':
         """
         Creates a new :class:`Config` and loads a YAML file into it.
 
-        :param file: The filename to load from.
-        :type file: str
-        :return: The newly created configuration.
+        Parameters
+        ----------
+        file : str
+            The filename to load YAML from.
+
+        Returns
+        -------
+        Config
+            The loaded configuration instance.
         """
         with open(file, 'r') as fp:
             yaml = fp.read()
             return cls(YAML(typ='safe').load(yaml), loaded_from=file)
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         """
-        :return: This :class:`Config` as a dict.
-        :rtype: dict
+        Returns
+        -------
+        dict of str: any
+            This configuration as a dict.
         """
         return self.__dict__

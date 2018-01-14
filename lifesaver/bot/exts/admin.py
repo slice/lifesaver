@@ -1,6 +1,7 @@
 from discord.ext import commands
-from lifesaver.bot import Cog
 from discord.ext.commands import command
+
+from lifesaver.bot import Cog, Context
 
 
 class Admin(Cog):
@@ -8,11 +9,11 @@ class Admin(Cog):
 
     @command()
     @commands.is_owner()
-    async def reload(self, ctx):
+    async def reload(self, ctx: Context):
         """Reloads all extensions."""
         try:
             ctx.bot.load_all(unload_first=True)
-        except Exception as exc:
+        except Exception:
             await ctx.send('An error has occurred while reloading.')
             self.log.exception('Cog load error:')
         else:
@@ -20,14 +21,14 @@ class Admin(Cog):
 
     @command()
     @commands.is_owner()
-    async def unload(self, ctx, ext):
+    async def unload(self, ctx: Context, ext):
         """Unloads an extension."""
         ctx.bot.unload_extension(ext)
         await ctx.ok()
 
     @command(aliases=['shutdown'])
     @commands.is_owner()
-    async def die(self, ctx):
+    async def die(self, ctx: Context):
         """Kills the bot."""
         await ctx.send('\N{WAVING HAND SIGN} Bye!')
         await ctx.bot.logout()

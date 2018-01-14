@@ -1,58 +1,57 @@
 """
-Handy exec (eval, debug) cog. Allows you to run code on the bot during runtime. This cog is a combination of the
-exec commands of other bot authors, allowing for maximum efficiency:
+Handy exec (eval, debug) cog. Allows you to run code on the bot during runtime. This cog is a combination of the exec
+commands of other bot authors:
 
 Credit:
-    - Rapptz (Danny)
+    - Rapptz
         - https://github.com/Rapptz/RoboDanny/blob/master/cogs/repl.py#L31-L75
-    - b1naryth1ef (Andrei)
+    - b1naryth1ef
         - https://github.com/b1naryth1ef/b1nb0t/blob/master/b1nb0t/plugins/util.py#L229-L266
-
-Features:
-    - Strips code markup (code blocks, inline code markup)
-    - Access to last result with _
-    - _get and _find instantly available without having to import discord
-    - Redirects stdout so you can print()
-    - Sane syntax error reporting
-    - Quickly retry evaluations
-    - Implicit return
 """
-
 import io
 import logging
 import textwrap
 import traceback
 from contextlib import redirect_stdout
+from typing import Dict, Any, List, TypeVar, Callable
 
 import discord
 from discord.ext import commands
 
-from lifesaver.bot import Cog
+from lifesaver.bot import Cog, Context, command
 from lifesaver.utils import codeblock
 
 log = logging.getLogger(__name__)
 
+IMPLICIT_RETURN_STOP_WORDS = {
+    'continue', 'break', 'raise', 'yield', 'with', 'assert', 'del', 'import',
+    'pass', 'return', 'from'
+}
+
 
 class Code(commands.Converter):
-    def __init__(self, *, wrap_code=False, strip_ticks=True, indent_width=4, implicit_return=False):
+    def __init__(self, *, wrap_code: bool = False, strip_ticks: bool = True, indent_width: int = 4,
+                 implicit_return: bool = False):
         """
-        Code convereter.
+        Transforms code in certain ways.
 
-        :param wrap_code: Specifies whether to wrap the resulting code in a function.
-        :type wrap_code: bool
-        :param strip_ticks: Specifies whether to strip the code of Markdown-related backticks.
-        :type strip_ticks: bool
-        :param indent_width: Specifies the indent width, if wrapping.
-        :type indent_width: int
-        :param implicit_return: Automatically adds a return statement, if wrapping.
-        :type implicit_return: bool
+        Parameters
+        ----------
+        wrap_code : bool
+            Specifies whether to wrap the resulting code in a function.
+        strip_ticks : bool
+            Specifies whether to strip the code of Markdown-related backticks.
+        indent_width : int
+            Specifies the indent width, if wrapping.
+        implicit_return : bool
+            Automatically adds a return statement, if wrapping.
         """
         self.wrap_code = wrap_code
         self.strip_ticks = strip_ticks
         self.indent_width = indent_width
         self.implicit_return = implicit_return
 
-    async def convert(self, ctx, arg) -> str:
+    async def convert(self, ctx: Context, arg: str) -> str:
         result = arg
 
         if self.strip_ticks:
@@ -71,12 +70,79 @@ class Code(commands.Converter):
             last_line = result.splitlines()[-1]
 
             # if the last line isn't indented and not returning, add it
-            if not last_line[4:].startswith(' ') and 'return' not in last_line:
+            first_word = last_line.strip().split(' ')[0]
+            no_stop = all(first_word != word for word in IMPLICIT_RETURN_STOP_WORDS)
+            if not last_line[4:].startswith(' ') and no_stop:
                 last_line = (' ' * self.indent_width) + 'return ' + last_line[4:]
 
             result = '\n'.join(result.splitlines()[:-1] + [last_line])
 
         return result
+
+
+def create_environment(cog: 'Exec', ctx: Context) -> Dict[Any, Any]:
+    async def upload(file_name: str) -> discord.Message:
+        """Shortcut to upload a file."""
+        with open(file_name, 'rb') as fp:
+            return await ctx.send(file=discord.File(fp))
+
+    async def send(*args, **kwargs) -> discord.Message:
+        """Shortcut to send()."""
+        return await ctx.send(*args, **kwargs)
+
+    def better_dir(*args, **kwargs) -> List[str]:
+        """dir(), but without magic methods."""
+        return [
+            n for n in dir(*args, **kwargs)
+            if not n.endswith('__') and not n.startswith('__')
+        ]
+
+    T = TypeVar('T')
+
+    def grabber(lst: List[T]) -> Callable[[int], T]:
+        """Returns a function that, when called, grabs an item by ID from a list of objects with an ID."""
+
+        def _grabber_function(thing_id: int) -> T:
+            return discord.utils.get(lst, id=thing_id)
+
+        return _grabber_function
+
+    env = {
+        'bot': ctx.bot,
+        'ctx': ctx,
+        'msg': ctx.message,
+        'guild': ctx.guild,
+        'channel': ctx.channel,
+        'me': ctx.message.author,
+        'cog': cog,
+
+        # modules
+        'discord': discord,
+        'commands': commands,
+        'command': commands.command,
+        'group': commands.group,
+
+        # utilities
+        '_get': discord.utils.get,
+        '_find': discord.utils.find,
+        '_upload': upload,
+        '_send': send,
+
+        # grabbers
+        '_g': grabber(ctx.bot.guilds),
+        '_u': grabber(ctx.bot.users),
+        '_c': grabber(list(ctx.bot.get_all_channels())),
+
+        # last result
+        '_': cog.last_result,
+        '_p': cog.previous_code,
+        'dir': better_dir,
+    }
+
+    # add globals to environment
+    env.update(globals())
+
+    return env
 
 
 def format_syntax_error(e: SyntaxError) -> str:
@@ -94,40 +160,10 @@ class Exec(Cog):
         self.last_result = None
         self.previous_code = None
 
-    async def execute(self, ctx, code):
+    async def execute(self, ctx: Context, code: str):
         log.info('Eval: %s', code)
 
-        async def upload(file_name: str) -> discord.Message:
-            with open(file_name, 'rb') as fp:
-                return await ctx.send(file=discord.File(fp))
-
-        async def send(*args, **kwargs) -> discord.Message:
-            return await ctx.send(*args, **kwargs)
-
-        env = {
-            'bot': ctx.bot,
-            'ctx': ctx,
-            'msg': ctx.message,
-            'guild': ctx.guild,
-            'channel': ctx.channel,
-            'me': ctx.message.author,
-
-            # modules
-            'discord': discord,
-            'commands': commands,
-
-            # utilities
-            '_get': discord.utils.get,
-            '_find': discord.utils.find,
-            '_upload': upload,
-            '_send': send,
-
-            # last result
-            '_': self.last_result,
-            '_p': self.previous_code
-        }
-
-        env.update(globals())
+        env = create_environment(self, ctx)
 
         # simulated stdout
         stdout = io.StringIO()
@@ -181,7 +217,7 @@ class Exec(Cog):
             # message was under 2k chars, just send!
             await ctx.send(message)
 
-    @commands.command(name='retry', hidden=True)
+    @command(name='retry', hidden=True)
     @commands.is_owner()
     async def retry(self, ctx):
         """ Retries the previously executed Python code. """
@@ -190,7 +226,7 @@ class Exec(Cog):
 
         await self.execute(ctx, self.previous_code)
 
-    @commands.command(name='eval', aliases=['exec', 'debug'])
+    @command(name='eval', aliases=['exec', 'debug'])
     @commands.is_owner()
     async def _eval(self, ctx, *, code: Code(wrap_code=True, implicit_return=True)):
         """ Executes Python code. """

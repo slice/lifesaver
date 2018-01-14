@@ -1,13 +1,13 @@
 import importlib
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, Union, List
 
 import discord
 from discord.ext import commands
 
 from lifesaver.config import Config, Field
-from .context import LifesaverContext
+from .context import Context
 
 INCLUDED_EXTENSIONS = (
     'lifesaver.bot.exts.admin',
@@ -40,7 +40,7 @@ class BotConfig(Config):
     command_prefix_include_mentions = Field(bool, default=True)
 
 
-def _convert_to_list(thing) -> list:
+def _convert_to_list(thing: Any) -> Union[Any, List[Any]]:
     return [thing] if not isinstance(thing, list) else thing
 
 
@@ -76,13 +76,19 @@ class BotBase(commands.bot.BotBase):
         self._included_extensions = INCLUDED_EXTENSIONS  # type: tuple
 
     @classmethod
-    def with_config(cls, config='config.yml'):
+    def with_config(cls, config: str = 'config.yml') -> 'BotBase':
         """
         Creates a bot instance with a configuration file.
 
-        :param config: The path to the configuration file.
-        :type config: str
-        :return: The bot instance.
+        Parameters
+        ----------
+        config : str
+            The path to the configuration file.
+
+        Returns
+        -------
+        BotBase
+            The created bot instance.
         """
         return cls(BotConfig.load(config))
 
@@ -90,7 +96,7 @@ class BotBase(commands.bot.BotBase):
         """Rebuilds the load list."""
 
         # Transforms a path like ``exts/hi.py`` to ``exts.hi``.
-        def transform_path(path):
+        def transform_path(path: Path) -> str:
             return str(path).replace('/', '.').replace('.py', '')
 
         # Build a list of extensions to load.
@@ -105,18 +111,20 @@ class BotBase(commands.bot.BotBase):
 
         self._extension_load_list = paths
 
-    def load_all(self, *, unload_first=False, exclude_default=False):
+    def load_all(self, *, unload_first: bool = False, exclude_default: bool = False):
         """
         Loads all extensions in the extensions path.
 
-        :param unload_first: Specifies whether to unload an extension before loading it.
-        :type unload_first: bool
-        :param exclude_default: Specifies whether to leave out default extensions.
-        :type exclude_default: bool
+        Parameters
+        ----------
+        unload_first : bool
+            Specifies whether to unload extensions before loading them.
+        exclude_default : bool
+            Specifies whether to leave out default extensions.
         """
         self._rebuild_load_list()
 
-        load_list = self._extension_load_list if exclude_default\
+        load_list = self._extension_load_list if exclude_default \
             else (self._extension_load_list + self._included_extensions)
 
         for extension_name in load_list:
@@ -135,7 +143,7 @@ class BotBase(commands.bot.BotBase):
             return
 
         # Grab a context, then invoke it.
-        ctx = await self.get_context(message, cls=LifesaverContext)
+        ctx = await self.get_context(message, cls=Context)
         await self.invoke(ctx)
 
     async def on_command_error(self, ctx: commands.Context, exception: Exception):

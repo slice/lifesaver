@@ -2,9 +2,7 @@ from discord.ext import commands
 
 
 class LifesaverCommand(commands.Command):
-    """
-    A :class:`commands.Command` subclass that implements additional useful features.
-    """
+    """A :class:`commands.Command` subclass that implements additional useful features."""
 
     def __init__(self, *args, typing: bool = False, **kwargs):
         super().__init__(*args, **kwargs)
@@ -21,7 +19,5 @@ class LifesaverCommand(commands.Command):
 
 
 def command(*args, **kwargs):
-    """
-    :func:`commands.command`, but uses :class:`LifesaverCommand` instead.
-    """
+    """:func:`commands.command`, but uses :class:`LifesaverCommand` instead."""
     return commands.command(*args, **kwargs, cls=LifesaverCommand)

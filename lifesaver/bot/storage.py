@@ -1,6 +1,8 @@
 import asyncio
 import json
 import uuid
+from typing import Any
+
 from abc import ABC, abstractmethod
 
 import os
@@ -8,26 +10,28 @@ import os
 
 class AsyncStorage(ABC):
     @abstractmethod
-    async def put(self, key, value):
+    async def put(self, key: str, value: Any):
         """
         Puts a value into storage.
 
-        :param key: The key.
-        :type key: str
-        :param value: The value to store.
-        :type value: any
+        Parameters
+        ----------
+        key : str
+            The key.
+        value : str
+            The value to insert.
         """
         raise NotImplementedError
 
     @abstractmethod
-    def get(self, key):
+    def get(self, key: str):
         """
         Returns a value from storage.
 
-        :param key: The key.
-        :type key: str
-        :return: The value.
-        :rtype: any
+        Parameters
+        ----------
+        key : str
+            The key.
         """
 
 
@@ -41,9 +45,12 @@ class AsyncJSONStorage(AsyncStorage):
     """
     def __init__(self, file, *, loop=None):
         """
-        :param file: The file to save to.
-        :type file: str
-        :param loop: The ``asyncio`` event loop to use.
+        Parameters
+        ----------
+        file : str
+            The file to save to.
+        loop : asyncio.AbstractEventLoop
+            The event loop to use.
         """
         self.file = file
         self._data = {}

@@ -10,12 +10,12 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import group
 
-from lifesaver.bot import Cog
+from lifesaver.bot import Cog, Context
 from lifesaver.bot.storage import AsyncJSONStorage
 from lifesaver.utils import codeblock
 
 
-def get_traceback(exc: Exception, *, limit=7, hide_paths=False) -> str:
+def get_traceback(exc: Exception, *, limit: int = 7, hide_paths: bool = False) -> str:
     formatted = ''.join(traceback.format_exception(
         type(exc), exc, exc.__traceback__, limit=limit
     ))
@@ -53,12 +53,12 @@ class Errors(Cog):
 
     @group(hidden=True)
     @commands.is_owner()
-    async def errors(self, ctx):
+    async def errors(self, ctx: Context):
         """Manages errors."""
         pass
 
     @errors.command(aliases=['show', 'info'])
-    async def view(self, ctx, insect_id: str):
+    async def view(self, ctx: Context, insect_id):
         """Views an error by insect ID."""
         all_insects = self.insects.get('insects') or []
         insect = discord.utils.find(lambda insect: insect['id'] == insect_id, all_insects)
@@ -73,12 +73,12 @@ class Errors(Cog):
         embed.add_field(name='Created', value=f'{created} ({ago} ago)', inline=False)
         await ctx.send(codeblock(insect['traceback'], lang='py'), embed=embed)
 
-    @errors.command()
-    async def throw(self, ctx, *, message='Error!'):
+    @errors.command(hidden=True)
+    async def throw(self, ctx: Context, *, message='Error!'):
         """Throws an intentional error. Used for debugging."""
         raise RuntimeError(f'Intentional error: {message}')
 
-    async def on_command_error(self, ctx: commands.Context, error: Exception):
+    async def on_command_error(self, ctx: Context, error: Exception):
         """Default error handler."""
 
         error_handlers = OrderedDict([
