@@ -22,7 +22,7 @@ def setup_logging(time_formatting: str = '%Y-%m-%d %H:%M', hush: List[str] = Non
     root_logger.setLevel(logging.DEBUG)
 
     # formatters
-    fmt = logging.Formatter('[{asctime}] [{levelname: <7}] {name}: {message}', time_formatting, style='{')
+    fmt = logging.Formatter('[{asctime}] [{levelname}] {name}: {message}', time_formatting, style='{')
 
     # enable debug logging for us, but not for discord
     default_hush = ['websockets', 'discord']
