@@ -1,7 +1,7 @@
+import asyncio
 from discord.ext import commands
-from discord.ext.commands import group
 
-from lifesaver.bot import Cog, command, Context
+from lifesaver.bot import Cog, group, command, Context
 from lifesaver.bot.storage import AsyncJSONStorage
 from lifesaver.utils.formatting import codeblock
 
@@ -14,6 +14,15 @@ class Sample(Cog):
 
     def __unload(self):
         print('Original unload.')
+
+    @group()
+    async def samplegroup(self, ctx: Context):
+        pass
+
+    @samplegroup.command(typing=True)
+    async def subcommand(self, ctx: Context):
+        await asyncio.sleep(5)
+        await ctx.send('yo!')
 
     @command()
     async def pages_example(self, ctx: Context):
