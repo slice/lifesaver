@@ -143,7 +143,7 @@ class BotBase(commands.bot.BotBase):
         ctx = await self.get_context(message, cls=Context)
         await self.invoke(ctx)
 
-    async def on_command_error(self, ctx: commands.Context, exception: Exception):
+    async def on_command_error(self, ctx: Context, exception: Exception):
         # handled by errors.py
         pass
 
