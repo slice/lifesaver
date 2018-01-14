@@ -1,10 +1,12 @@
 discord.py-lifesaver
 ====================
 
-.. image:: https://img.shields.io/badge/python-3.6-blue.svg
+.. |py3| image:: https://img.shields.io/badge/python-3.6-blue.svg
 
-.. image:: https://img.shields.io/badge/License-MIT-blue.svg
-  :target: https://github.com/slice/lifesaver/blob/master/LICENSE.md
+.. |license| image:: https://img.shields.io/badge/License-MIT-blue.svg
+  :target: https://github.com/slice/lifesaver/blob/master/LICENSE
+
+|py3| |license|
 
 Lifesaver is an extremely opinionated bot foundation built on top of
 `discord.py@rewrite <https://github.com/Rapptz/discord.py/tree/rewrite/>`__.
@@ -19,11 +21,15 @@ Features
 
 * Cog baseclass
 
-  * ``Cog.every``: A decorator that makes the cog execute some function every *n* seconds with automatic setup and cancellation, along with some customization features.
+  * ``Cog.every``: A decorator that makes the cog execute some function
+    every *n* seconds with automatic setup and cancellation, along with
+    some customization features.
 
 * Custom command class
 
   * ``command(typing=True)``: Automatically send typing events while this command runs
+
+  * Command group support
 
 * Included extensions (can be disabled!)
 
@@ -32,6 +38,8 @@ Features
     * Bot shutdown command
 
     * Reload/unload
+
+    * Shell
 
   * Smart code evaluation at runtime
 
