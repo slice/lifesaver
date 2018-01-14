@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 """
+
+Some code taken from: https://github.com/b1naryth1ef/b1nb0t/
+
+=================================================================================
+
 MIT License
 
 Copyright (c) 2017 - 2018 slice
+Copyright (c) 2015 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
