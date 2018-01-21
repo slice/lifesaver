@@ -26,10 +26,8 @@ from typing import Callable, Any, Type, Union, List, Set
 
 import discord
 
-from lifesaver.bot import Context
 
-
-async def history_reducer(ctx: Context, reducer: Callable[[discord.Message], Any], *, ignore_duplicates=False,
+async def history_reducer(ctx, reducer: Callable[[discord.Message], Any], *, ignore_duplicates=False,
                           result_container_type: Type = list, **kwargs) -> Union[List, Set]:
     """
     Iterates through message history, and outputs a list of items determined by a function that receives each
