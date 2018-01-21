@@ -22,6 +22,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+from typing import List, Any
+
+
+def format_list(lst: List[Any]) -> str:
+    """
+    Returns a string representing a list as an ordered list. List numerals are padded to ensure that there are at
+    least 3 digits.
+
+    Parameters
+    ----------
+    lst : list of any
+        The list to format.
+
+    Returns
+    -------
+    str
+        The formatted string.
+    """
+    return '\n'.join('`{:03d}`: {}'.format(index + 1, value) for index, value in enumerate(lst))
 
 
 def escape_backticks(text: str) -> str:

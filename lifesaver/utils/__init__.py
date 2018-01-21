@@ -25,3 +25,5 @@ SOFTWARE.
 
 from .formatting import *
 from .system import *
+from .messages import *
+
