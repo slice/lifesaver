@@ -24,7 +24,5 @@ setup(
         'Programming Language :: Python :: 3'
     ],
     packages=['lifesaver', 'lifesaver.bot', 'lifesaver.utils', 'lifesaver.bot.exts'],
-    dependency_links=[
-        'git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py',
-        'ruamel.yaml'
-    ])
+    install_requires=['ruamel.yaml'],
+    dependency_links=['git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py'])
