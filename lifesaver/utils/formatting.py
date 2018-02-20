@@ -22,6 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+import datetime
 from typing import List, Any
 
 
@@ -58,6 +59,59 @@ def escape_backticks(text: str) -> str:
         The escaped text.
     """
     return text.replace('\N{GRAVE ACCENT}', '\N{MODIFIER LETTER GRAVE ACCENT}')
+
+
+SECOND = 1
+MINUTE = SECOND * 60
+HOUR = MINUTE * 60
+DAY = HOUR * 24
+WEEK = DAY * 7
+MONTH = DAY * 30
+YEAR = DAY * 365
+
+
+def human_delta(delta, *, short: bool = True) -> str:
+    """
+    Converts to a human readable time delta.
+    Parameters
+    ----------
+    delta : Union[int, float, datetime.datetime, datetime.timedelta]
+        The amount of time to convert
+    short : bool
+        Controls whether only the three biggest units of time end up in the result or all. Defaults to True.
+    Returns
+    -------
+    str
+        A human readable version of the time.
+    """
+    if isinstance(delta, datetime.datetime):
+        delta = datetime.datetime.utcnow() - delta
+
+    if isinstance(delta, datetime.timedelta):
+        delta = delta.total_seconds()
+
+    if isinstance(delta, float):
+        delta = int(delta)
+
+    if delta <= 0:
+        return "0s"
+
+    years, rest = divmod(delta, YEAR)
+    months, rest = divmod(rest, MONTH)
+    days, rest = divmod(rest, DAY)
+    hours, rest = divmod(rest, HOUR)
+    minutes, seconds = divmod(rest, MINUTE)
+
+    periods = [("y", years), ("mo", months), ("d", days), ("h", hours), ("m", minutes), ("s", seconds)]
+    periods = [f"{value}{name}" for name, value in periods if value > 0]
+
+    if len(periods) > 2:
+        if short:
+            # only the biggest three
+            return f'{periods[0]}, {periods[1]} and {periods[2]}'
+
+        return f'{", ".join(periods[:-1])} and {periods[-1]}'
+    return " and ".join(periods)
 
 
 def codeblock(code: str, *, lang: str = '', escape: bool = True) -> str:
