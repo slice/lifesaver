@@ -125,8 +125,8 @@ class AsyncJSONStorage(AsyncStorage):
         del self._data[str(key)]
         await self.save()
 
-    def get(self, key):
-        return self._data.get(str(key))
+    def get(self, key, *args):
+        return self._data.get(str(key), *args)
 
     def all(self):
         return self._data
