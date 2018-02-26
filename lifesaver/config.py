@@ -46,12 +46,9 @@ class Config:
     def __init__(self, data, *, loaded_from=None):
         self.loaded_from = loaded_from
 
-        # For every field specified...
         for key in dir(self):
-            # Get the field object provided.
             field = getattr(self, key)
 
-            # Not a field, skip.
             if not isinstance(field, Field):
                 continue
 

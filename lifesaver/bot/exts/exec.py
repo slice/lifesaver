@@ -50,11 +50,7 @@ IMPLICIT_RETURN_STOP_WORDS = {
 
 
 class Code(commands.Converter):
-    def __init__(self,
-                 *,
-                 wrap_code: bool = False,
-                 strip_ticks: bool = True,
-                 indent_width: int = 4,
+    def __init__(self, *, wrap_code: bool = False, strip_ticks: bool = True, indent_width: int = 4,
                  implicit_return: bool = False):
         """
         Transforms code in certain ways.
