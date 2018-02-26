@@ -9,6 +9,7 @@ class BreadFeed(Cog):
 
     @Cog.every(5)
     async def publish_to_subscribers(self):
+        print('Publishing.')
         for subscriber in self.subscribers:
             user = self.bot.get_user(subscriber)
 
