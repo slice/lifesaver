@@ -54,7 +54,6 @@ class Cog:
                 continue
 
             schedule = func._schedule
-            del func._schedule
 
             async def wrapped():
                 if 'wait_until_ready' in schedule:
