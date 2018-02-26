@@ -40,6 +40,38 @@ class Context(commands.Context):
         self._paginator.add_line(line)
         return self
 
+    async def confirm(self, title: str, message: str = None, *, color: discord.Color = discord.Color.red()) -> bool:
+        """
+        Waits for confirmation by the user.
+
+        Parameters
+        ----------
+        title : str
+            The title of the confirmation prompt.
+        message : str
+            The message (description) of the confirmation prompt.
+        color : :class:`discord.Color`
+            The color of the embed.
+
+        Returns
+        -------
+        bool
+            Whether the user confirmed or not.
+        """
+
+        embed = discord.Embed(title=title, description=message, color=color)
+        message: discord.Message = await self.send(embed=embed)
+
+        reactions = {'\N{WHITE HEAVY CHECK MARK}', '\N{CROSS MARK}'}
+        for emoji in reactions:
+            await message.add_reaction(emoji)
+
+        def check(reaction: discord.Reaction, user: discord.User) -> bool:
+            return user == self.author and reaction.message.id == message.id and reaction.emoji in reactions
+
+        reaction, _ = await self.bot.wait_for('reaction_add', check=check)
+        return reaction.emoji == '\N{WHITE HEAVY CHECK MARK}'
+
     async def wait_for_response(self) -> discord.Message:
         """
         Waits for a message response from the message author, then returns the
