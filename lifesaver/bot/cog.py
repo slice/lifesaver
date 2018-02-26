@@ -45,16 +45,16 @@ class Cog:
         # Bypass Python's name mangling.
         unload_key = '_' + type(self).__name__ + '__unload'
 
-        # Grab the original unload function defined in the subclass.
         self._original_unload = getattr(self, unload_key, None)
         setattr(self, unload_key, self.__unload)  # Override.
 
         for key in dir(self):
-            if not hasattr(getattr(self, key), '_schedule'):
+            func = getattr(self, key)
+            if not hasattr(func, '_schedule'):
                 continue
 
-            func = getattr(self, key)
             schedule = func._schedule
+            del func._schedule
 
             async def wrapped():
                 if 'wait_until_ready' in schedule:
