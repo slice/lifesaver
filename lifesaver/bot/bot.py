@@ -34,8 +34,8 @@ from discord.ext import commands
 from lifesaver.config import Config, Field
 from .context import Context
 
-INCLUDED_EXTENSIONS = ('lifesaver.bot.exts.admin', 'lifesaver.bot.exts.health', 'lifesaver.bot.exts.exec',
-                       'lifesaver.bot.exts.errors')
+INCLUDED_EXTENSIONS = ['lifesaver.bot.exts.admin', 'lifesaver.bot.exts.health', 'lifesaver.bot.exts.exec',
+                       'lifesaver.bot.exts.errors']
 
 
 class BotConfig(Config):
@@ -122,13 +122,13 @@ class BotBase(commands.bot.BotBase):
 
         # Build a list of extensions to load.
         exts_path = Path(self.cfg.extensions_path)
-        paths = tuple(transform_path(x) for x in exts_path.glob('**/*.py') if x.name != '__init__.py')
+        paths = [transform_path(path) for path in exts_path.iterdir()]
 
         def _ext_filter(path: str):
             module = importlib.import_module(path)
             return hasattr(module, 'setup')
 
-        paths = tuple(filter(_ext_filter, paths))
+        paths = list(filter(_ext_filter, paths))
 
         self._extension_load_list = paths
 
