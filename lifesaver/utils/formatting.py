@@ -22,8 +22,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+import asyncio
 import datetime
 from typing import List, Any
+
+import functools
 
 
 def format_list(lst: List[Any]) -> str:
@@ -152,3 +155,66 @@ def truncate(text: str, desired_length: int, *, suffix: str = '...') -> str:
         return text[:desired_length - len(suffix)] + suffix
     else:
         return text
+
+
+class Table:
+    def __init__(self, *column_titles: str):
+        self._rows = [column_titles]
+        self._widths = []
+
+        for index, entry in enumerate(column_titles):
+            self._widths.append(len(entry))
+
+    def _update_widths(self, row: tuple):
+        for index, entry in enumerate(row):
+            width = len(entry)
+            if width > self._widths[index]:
+                self._widths[index] = width
+
+    def add_row(self, *row: str):
+        """
+        Add a row to the table.
+        .. note :: There's no check for the number of items entered, this may cause issues rendering if not correct.
+        """
+        self._rows.append(row)
+        self._update_widths(row)
+
+    def add_rows(self, *rows: List[str]):
+        for row in rows:
+            self.add_row(*row)
+
+    def _render(self):
+        def draw_row(row_):
+            columns = []
+
+            for index, field in enumerate(row_):
+                # digits get aligned to the right
+                if field.isdigit():
+                    columns.append(f" {field:>{self._widths[index]}} ")
+                    continue
+
+                # regular text gets aligned to the left
+                columns.append(f" {field:<{self._widths[index]}} ")
+
+            return "|".join(columns)
+
+        # column title is centered in the middle of each field
+        title_row = "|".join(f" {field:^{self._widths[index]}} " for index, field in enumerate(self._rows[0]))
+        separator_row = "+".join("-" * (width + 2) for width in self._widths)
+
+        drawn = [title_row, separator_row]
+        # remove the title row from the rows
+        self._rows = self._rows[1:]
+
+        for row in self._rows:
+            row = draw_row(row)
+            drawn.append(row)
+
+        return "\n".join(drawn)
+
+    async def render(self, loop: asyncio.AbstractEventLoop = None):
+        """Returns a rendered version of the table."""
+        loop = loop or asyncio.get_event_loop()
+
+        func = functools.partial(self._render)
+        return await loop.run_in_executor(None, func)
