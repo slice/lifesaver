@@ -29,6 +29,11 @@ from discord.ext import commands
 
 from lifesaver import utils
 
+SCRUBBING = {
+    '@everyone': '@\u200beveryone',
+    '@here': '@\u200bhere',
+}
+
 
 class Context(commands.Context):
     def __init__(self, *args, **kwargs):
@@ -39,6 +44,12 @@ class Context(commands.Context):
     def __iadd__(self, line: str) -> 'Context':
         self._paginator.add_line(line)
         return self
+
+    async def send(self, content, *args, scrub_dangerous_pings: bool = True, **kwargs) -> discord.Message:
+        if scrub_dangerous_pings:
+            for from_, to in SCRUBBING.items():
+                content = content.replace(from_, to)
+        return await super().send(content, *args, **kwargs)
 
     async def confirm(self, title: str, message: str = None, *, color: discord.Color = discord.Color.red()) -> bool:
         """
