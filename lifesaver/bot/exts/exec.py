@@ -188,9 +188,6 @@ class Exec(Cog):
 
         env = create_environment(self, ctx)
 
-        # simulated stdout
-        stdout = io.StringIO()
-
         # define the wrapped function
         try:
             exec(compile(code, '<exec>', 'exec'), env)
@@ -204,8 +201,7 @@ class Exec(Cog):
 
         try:
             # execute the code
-            with redirect_stdout(stdout):
-                ret = await func()
+            ret = await func()
         except Exception:
             # something went wrong :(
             with suppress(discord.HTTPException):
@@ -215,9 +211,6 @@ class Exec(Cog):
             await ctx.send(codeblock(traceback.format_exc(limit=7), lang='py'))
             return
 
-        # code was good, grab stdout
-        stream = stdout.getvalue()
-
         with suppress(discord.HTTPException):
             await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
@@ -225,9 +218,7 @@ class Exec(Cog):
         if ret is not None:
             self.last_result = ret
 
-        # form simulated stdout and repr of return value
-        meat = stream + repr(ret)
-        message = codeblock(meat, lang='py')
+        message = codeblock(repr(ret), lang='py')
 
         if len(message) > 2000:
             # too long
