@@ -22,7 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-from typing import Any, List
+from typing import Any, List, Optional
 
 import discord
 from discord.ext import commands
@@ -45,13 +45,14 @@ class Context(commands.Context):
         self._paginator.add_line(line)
         return self
 
-    async def send(self, content, *args, scrub_dangerous_pings: bool = True, **kwargs) -> discord.Message:
-        if scrub_dangerous_pings:
+    async def send(self, content = None, *args, scrub_dangerous_pings: bool = True, **kwargs) -> discord.Message:
+        if content is not None and scrub_dangerous_pings:
             for from_, to in SCRUBBING.items():
                 content = content.replace(from_, to)
         return await super().send(content, *args, **kwargs)
 
-    async def confirm(self, title: str, message: str = None, *, color: discord.Color = discord.Color.red()) -> bool:
+    async def confirm(self, title: str, message: str = None, *, color: discord.Color = discord.Color.red(),
+                      delete_after: bool = False, cancellation_message: Optional[str] = None) -> bool:
         """
         Waits for confirmation by the user.
 
@@ -63,6 +64,10 @@ class Context(commands.Context):
             The message (description) of the confirmation prompt.
         color : :class:`discord.Color`
             The color of the embed.
+        delete_after : bool
+            Specifies whether to delete the confirmation after a choice has been picked.
+        cancellation_message : Optional[str]
+            A message to send after cancelling.
 
         Returns
         -------
@@ -81,7 +86,12 @@ class Context(commands.Context):
             return user == self.author and reaction.message.id == message.id and reaction.emoji in reactions
 
         reaction, _ = await self.bot.wait_for('reaction_add', check=check)
-        return reaction.emoji == '\N{WHITE HEAVY CHECK MARK}'
+        if delete_after:
+            await message.delete()
+        confirmed = reaction.emoji == '\N{WHITE HEAVY CHECK MARK}'
+        if not confirmed and cancellation_message:
+            await self.send(cancellation_message)
+        return confirmed
 
     async def wait_for_response(self) -> discord.Message:
         """
