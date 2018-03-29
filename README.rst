@@ -37,11 +37,11 @@ Features
 
     * Bot shutdown command
 
+  * Jishaku integration
+
     * Reload/unload
 
     * Shell
-
-  * Smart code evaluation at runtime
 
   * Ping command
 
