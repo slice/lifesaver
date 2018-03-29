@@ -34,8 +34,7 @@ from discord.ext import commands
 from lifesaver.config import Config, Field
 from .context import Context
 
-INCLUDED_EXTENSIONS = ['lifesaver.bot.exts.admin', 'lifesaver.bot.exts.health', 'lifesaver.bot.exts.exec',
-                       'lifesaver.bot.exts.errors']
+INCLUDED_EXTENSIONS = ['lifesaver.bot.exts.admin', 'lifesaver.bot.exts.health', 'lifesaver.bot.exts.errors', 'jishaku']
 
 
 class BotConfig(Config):
@@ -95,7 +94,7 @@ class BotBase(commands.bot.BotBase):
         self._extension_load_list = ()  # type: tuple
 
         #: A list of included extensions built into lifesaver to load.
-        self._included_extensions = INCLUDED_EXTENSIONS  # type: tuple
+        self._included_extensions = INCLUDED_EXTENSIONS
 
     @classmethod
     def with_config(cls, config: str = 'config.yml'):
@@ -142,7 +141,7 @@ class BotBase(commands.bot.BotBase):
         unload_first : bool
             Specifies whether to unload extensions before loading them.
         exclude_default : bool
-            Specifies whether to leave out default extensions.
+            Specifies whether to leave out default extensions (includes Jishaku).
         """
         self._rebuild_load_list()
 

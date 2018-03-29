@@ -34,7 +34,7 @@ class Admin(Cog):
 
     @command()
     @commands.is_owner()
-    async def reload(self, ctx: Context):
+    async def reload_all(self, ctx: Context):
         """Reloads all extensions."""
         try:
             ctx.bot.load_all(unload_first=True)
@@ -43,29 +43,6 @@ class Admin(Cog):
             self.log.exception('Cog load error:')
         else:
             await ctx.ok()
-
-    @command(name='shell', aliases=['sh'])
-    @commands.is_owner()
-    async def _shell(self, ctx: Context, *, command):
-        """Runs a shell command on the system."""
-        output = await shell(command)
-        for line in output.split('\n'):
-            ctx += escape_backticks(line)
-        await ctx.send_pages()
-
-    @command()
-    @commands.is_owner()
-    async def unload(self, ctx: Context, ext):
-        """Unloads an extension."""
-        ctx.bot.unload_extension(ext)
-        await ctx.ok()
-
-    @command()
-    @commands.is_owner()
-    async def load(self, ctx: Context, ext):
-        """Loads an extension."""
-        ctx.bot.load_extension(ext)
-        await ctx.ok()
 
     @command(aliases=['shutdown'])
     @commands.is_owner()

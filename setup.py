@@ -25,4 +25,7 @@ setup(
     ],
     packages=['lifesaver', 'lifesaver.bot', 'lifesaver.utils', 'lifesaver.bot.exts'],
     install_requires=['ruamel.yaml'],
-    dependency_links=['git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py'])
+    dependency_links=[
+        'git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py',
+        'git+https://github.com/Gorialis/jishaku@master#egg=jishaku'
+    ])
