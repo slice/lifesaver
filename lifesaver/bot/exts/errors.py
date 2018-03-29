@@ -113,12 +113,19 @@ class Errors(Cog):
         ])
         # yapf: enable
 
+        if isinstance(error, commands.BadArgument):
+            if hasattr(error, '__cause__') and 'failed for parameter' in str(error):
+                self.log.error('Generic check error. ' + get_traceback(error.__cause__))
+            await ctx.send(f'Bad argument. {error}')
+            return
+
         for error_type, info in error_handlers.items():
             if not isinstance(error, error_type):
                 continue
 
             prefix, prepend_message = info
-            return await ctx.send(prefix + (f': {error}' if prepend_message else ''))
+            await ctx.send(prefix + (f': {error}' if prepend_message else ''))
+            return
 
         if isinstance(error, commands.CommandInvokeError):
             insect_id = await self._save_insect(error)
