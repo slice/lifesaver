@@ -2,7 +2,7 @@
 """
 MIT License
 
-Copyright (c) 2017 - 2018 slice
+Copyright (c) 2018 slice
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,34 +22,32 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+from time import monotonic
 
-from discord.ext import commands
-
-from lifesaver.bot import command, Cog, Context
-from lifesaver.utils import shell, escape_backticks
+from lifesaver.utils import human_delta
 
 
-class Admin(Cog):
-    """A cog that provides commands related to administration of the bot."""
-    @command(aliases=['r'])
-    @commands.is_owner()
-    async def reload(self, ctx: Context):
-        """Reloads all extensions."""
-        try:
-            ctx.bot.load_all(unload_first=True)
-        except Exception:
-            await ctx.send('An error has occurred while reloading.')
-            self.log.exception('Cog load error:')
-        else:
-            await ctx.ok()
+class Timer:
+    """A timing utility used to measure time."""
 
-    @command(aliases=['shutdown'])
-    @commands.is_owner()
-    async def die(self, ctx: Context):
-        """Kills the bot."""
-        await ctx.send('\N{WAVING HAND SIGN} Bye!')
-        await ctx.bot.logout()
+    def __init__(self):
+        self.begin: int = None
+        self.end: int = None
 
+    def __enter__(self):
+        self.begin = monotonic()
+        return self
 
-def setup(bot):
-    bot.add_cog(Admin(bot))
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.end = monotonic()
+
+    @property
+    def duration(self):
+        return self.end - self.begin
+
+    @property
+    def ms(self):
+        return round(self.duration * 1000, 2)
+
+    def __str__(self):
+        return f'{self.ms}ms'
