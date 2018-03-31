@@ -37,11 +37,17 @@ Features
 
     * Bot shutdown command
 
-  * Jishaku integration
-
     * Reload/unload
 
     * Shell
+
+  * Code evaluation
+
+    * Late indicator
+
+    * Cancellable evals
+
+    * Implicit return
 
   * Ping command
 
