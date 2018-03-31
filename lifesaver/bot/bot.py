@@ -22,16 +22,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
+import asyncio
+import datetime
 import importlib
 import logging
+import sys
 from pathlib import Path
-from typing import Any, Union, List
+from typing import Any, Dict, List, Set, Union
 
 import discord
 from discord.ext import commands
-
 from lifesaver.config import Config, Field
+from lifesaver.fs import Poller
+from lifesaver.utils import format_traceback
+
 from .context import Context
 
 INCLUDED_EXTENSIONS = ['lifesaver.bot.exts.admin', 'lifesaver.bot.exts.health', 'lifesaver.bot.exts.exec',
@@ -60,9 +64,24 @@ class BotConfig(Config):
     #: Specifies whether mentions should count as prefixes, too.
     command_prefix_include_mentions = Field(bool, default=True)
 
+    #: Specifies whether to automatically reload extensions upon changing them.
+    hot_reload = Field(bool, default=False)
+
 
 def _convert_to_list(thing: Any) -> Union[Any, List[Any]]:
     return [thing] if not isinstance(thing, list) else thing
+
+
+def exception_handler(_loop: asyncio.AbstractEventLoop, ctx):
+    now = datetime.datetime.now().strftime('[%m/%d/%Y %H:%M:%S]')
+    formatted_error = '\n' + format_traceback(ctx["exception"]) if 'exception' in ctx else ''
+    message = f'{now} asyncio exception handler triggered: {ctx["message"]}{formatted_error}'
+    print(message, file=sys.stderr)
+
+
+def transform_path(path: Union[Path, str]) -> str:
+    """Transforms a path like ``exts/hi.py`` to ``exts.hi``."""
+    return str(path).replace('/', '.').replace('.py', '')
 
 
 class BotBase(commands.bot.BotBase):
@@ -97,6 +116,62 @@ class BotBase(commands.bot.BotBase):
         #: A list of included extensions built into lifesaver to load.
         self._included_extensions = INCLUDED_EXTENSIONS  # type: tuple
 
+        # Hot reload stuff.
+        self._hot_task = None
+
+        self._loop_setup()
+
+    async def close(self):
+        self.log.info('Closing.')
+        if self.watcher:
+            self.watcher.close()
+
+        await super().close()
+
+    async def _hot_reload(self):
+        poller = Poller(path=self.cfg.extensions_path, polling_interval=0.1)
+        self.log.debug('created poller: %s', poller)
+        async for event in poller:
+            self.handle_hot_event(event)
+
+    def handle_hot_event(self, event: Dict[str, Set[str]]):
+        def resolve_module(filename):
+            return transform_path(Path(self.cfg.extensions_path) / filename)
+
+        def attempt_load(module):
+            try:
+                self.load_extension(module)
+            except Exception:
+                self.log.exception('Failed to hot-load %s, ignoring:', module)
+
+        for created_file in event['created']:
+            module = resolve_module(created_file)
+            self.log.debug('hot: attempting to hot-load new extension %s', module)
+            attempt_load(module)
+        for deleted_file in event['deleted']:
+            module = resolve_module(deleted_file)
+            if module in self.extensions:
+                self.log.debug('hot: unloading %s', module)
+                self.unload_extension(module)
+            else:
+                self.log.debug('hot: not unloading %s, not loaded', module)
+            try:
+                del sys.modules[module]
+            except KeyError:
+                pass
+        for updated_file in event['updated']:
+            module = resolve_module(updated_file)
+            self.log.debug('hot: reloading %s', module)
+            if module in self.extensions:
+                self.unload_extension(module)
+            try:
+                del sys.modules[module]
+            except KeyError:
+                pass
+            attempt_load(module)
+
+        self._rebuild_load_list()
+
     @classmethod
     def with_config(cls, config: str = 'config.yml'):
         """
@@ -116,17 +191,25 @@ class BotBase(commands.bot.BotBase):
     def _rebuild_load_list(self):
         """Rebuilds the load list."""
 
-        # Transforms a path like ``exts/hi.py`` to ``exts.hi``.
-        def transform_path(path: Path) -> str:
-            return str(path).replace('/', '.').replace('.py', '')
-
         # Build a list of extensions to load.
         exts_path = Path(self.cfg.extensions_path)
         paths = [transform_path(path) for path in exts_path.iterdir()]
 
         def _ext_filter(path: str):
-            module = importlib.import_module(path)
-            return hasattr(module, 'setup')
+            try:
+                module = importlib.import_module(path)
+                return hasattr(module, 'setup')
+            except Exception:
+                # uhh, failed to import. extension is bugged?
+                # let it through if it was in the previous load list (maybe some random syntax error during a hot
+                # reload, we want to be able to load this again later), otherwise just discard.
+                previously_included = path in self._extension_load_list
+                if not previously_included:
+                    self.log.exception('Excluding %s from the load list:', path)
+                else:
+                    self.log.warning('%s has failed to load, but it will be retained in the load list because it was '
+                                     'previously included.', path)
+                return previously_included
 
         paths = list(filter(_ext_filter, paths))
 
@@ -158,6 +241,9 @@ class BotBase(commands.bot.BotBase):
 
     async def on_ready(self):
         self.log.info('Ready! %s (%d)', self.user, self.user.id)
+        if self.cfg.hot_reload:
+            self.log.debug('Setting up hot reload.')
+            self._hot_task = self.loop.create_task(self._hot_reload())
 
     async def on_message(self, message: discord.Message):
         # Ignore bots if applicable.
@@ -171,6 +257,10 @@ class BotBase(commands.bot.BotBase):
     async def on_command_error(self, ctx: Context, exception: Exception):
         # handled by errors.py
         pass
+
+    def _loop_setup(self):
+        self.log.debug('Setting up loop.')
+        self.loop.set_exception_handler(exception_handler)
 
 
 class Bot(BotBase, discord.Client):
