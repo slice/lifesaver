@@ -24,33 +24,15 @@ SOFTWARE.
 """
 
 import datetime
-import os
-import pathlib
 import time
-import traceback
 import uuid
 from collections import OrderedDict
 
 import discord
 from discord.ext import commands
-
-from lifesaver.bot import group, Cog, Context
+from lifesaver.bot import Cog, Context, group
 from lifesaver.bot.storage import AsyncJSONStorage
-from lifesaver.utils import codeblock
-
-
-def get_traceback(exc: Exception, *, limit: int = 7, hide_paths: bool = False) -> str:
-    formatted = ''.join(traceback.format_exception(type(exc), exc, exc.__traceback__, limit=limit))
-
-    if hide_paths:
-        # censor cwd
-        formatted = formatted.replace(os.getcwd(), '/...')
-
-        # hide packages directory
-        packages_dir = str(pathlib.Path(discord.__file__).parent.parent.resolve())
-        formatted = formatted.replace(packages_dir, '/packages')
-
-    return formatted
+from lifesaver.utils import codeblock, format_traceback
 
 
 class Errors(Cog):
@@ -65,7 +47,7 @@ class Errors(Cog):
         insects.append({
             'id': insect_id,
             'creation_time': time.time(),
-            'traceback': get_traceback(error, hide_paths=True)
+            'traceback': format_traceback(error, hide_paths=True)
         })
 
         await self.insects.put('insects', insects)
@@ -115,7 +97,7 @@ class Errors(Cog):
 
         if isinstance(error, commands.BadArgument):
             if hasattr(error, '__cause__') and 'failed for parameter' in str(error):
-                self.log.error('Generic check error. ' + get_traceback(error.__cause__))
+                self.log.error('Generic check error. ' + format_traceback(error.__cause__))
             await ctx.send(f'Bad argument. {error}')
             return
 
@@ -131,7 +113,7 @@ class Errors(Cog):
             insect_id = await self._save_insect(error)
             await ctx.send('A fatal error has occurred while running that command. ' +
                            f'Please report this error ID to the bot owner: `{insect_id}` ' + 'Thanks!')
-            self.log.error('Fatal error. ' + get_traceback(error))
+            self.log.error('Fatal error. ' + format_traceback(error))
 
 
 def setup(bot):

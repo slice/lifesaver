@@ -24,9 +24,13 @@ SOFTWARE.
 """
 import asyncio
 import datetime
-from typing import List, Any
-
 import functools
+import os
+import pathlib
+import traceback
+from typing import Any, List
+
+import discord
 
 
 def format_list(lst: List[Any]) -> str:
@@ -218,3 +222,19 @@ class Table:
 
         func = functools.partial(self._render)
         return await loop.run_in_executor(None, func)
+
+
+def format_traceback(exc: Exception, *, limit: int = 7, hide_paths: bool = False) -> str:
+    """Formats a traceback."""
+
+    formatted = ''.join(traceback.format_exception(type(exc), exc, exc.__traceback__, limit=limit))
+
+    if hide_paths:
+        # censor cwd
+        formatted = formatted.replace(os.getcwd(), '/...')
+
+        # hide packages directory
+        packages_dir = str(pathlib.Path(discord.__file__).parent.parent.resolve())
+        formatted = formatted.replace(packages_dir, '/packages')
+
+    return formatted
