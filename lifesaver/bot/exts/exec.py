@@ -39,7 +39,6 @@ from typing import Any, Callable, Dict, List, TypeVar, Union
 import discord
 from discord.ext import commands
 from discord.ext.commands import is_owner
-
 from lifesaver.bot import Cog, Context, command
 from lifesaver.utils import codeblock
 from lifesaver.utils.timing import Timer
@@ -199,14 +198,24 @@ class Exec(Cog):
         # grab the defined function
         func = env['_wrapped']
 
+        task = self.bot.loop.create_task(func())
+        self.sessions.add(task)
+
         async def late_indicator():
             await asyncio.sleep(3)
             with suppress(discord.HTTPException):
                 await ctx.message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
+                await ctx.message.add_reaction('\N{HOCHO}')
+
+            def check(reaction, user):
+                return user == ctx.author and reaction.message.id == ctx.message.id and reaction.emoji == '\N{HOCHO}'
+
+            while True:
+                await self.bot.wait_for('reaction_add', check=check)
+                self.log.debug('cancelling task: %s', task)
+                task.cancel()
 
         late_task = self.bot.loop.create_task(late_indicator())
-        task = self.bot.loop.create_task(func())
-        self.sessions.add(task)
 
         try:
             with Timer() as timer:
@@ -216,11 +225,9 @@ class Exec(Cog):
                 await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
             return
         except Exception:
-            # something went wrong :(
             with suppress(discord.HTTPException):
                 await ctx.message.add_reaction('\N{DOUBLE EXCLAMATION MARK}')
 
-            # send stream and what we have
             await ctx.send(codeblock(traceback.format_exc(limit=7)))
             return
         finally:
