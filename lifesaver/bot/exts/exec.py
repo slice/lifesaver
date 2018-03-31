@@ -247,10 +247,14 @@ class Exec(Cog):
 
         if len(message) > 2000:
             # we already put the result inside of a codeblock
-            paginator = commands.Paginator(prefix='', suffix='')
+            paginator = commands.Paginator()
 
-            for line in message.splitlines():
+            for line in representation.splitlines():
                 paginator.add_line(line)
+
+            if len(paginator.pages) > 7:
+                await ctx.send(f'Too many pages ({len(paginator.pages)}).')
+                return
 
             try:
                 for page in paginator.pages:
