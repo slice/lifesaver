@@ -38,7 +38,7 @@ class Admin(Cog):
         try:
             ctx.bot.load_all(unload_first=True)
         except Exception:
-            await ctx.send('An error has occurred while reloading.')
+            await ctx.ok('\N{DOUBLE EXCLAMATION MARK}')
             self.log.exception('Cog load error:')
         else:
             await ctx.ok()
