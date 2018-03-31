@@ -4,7 +4,7 @@ discord.py-lifesaver
 .. |py3| image:: https://img.shields.io/badge/python-3.6-blue.svg
 
 .. |license| image:: https://img.shields.io/badge/License-MIT-blue.svg
-  :target: https://github.com/slice/lifesaver/blob/master/LICENSE
+    :target: https://github.com/slice/lifesaver/blob/master/LICENSE
 
 |py3| |license|
 
@@ -30,6 +30,15 @@ Features
   * ``command(typing=True)``: Automatically send typing events while this command runs
 
   * Command group support
+
+* Hot loading/reloading/unloading of extensions
+
+  * ``hot_reload: true`` in ``config.yml``
+
+  * Handles errors graciously. Extensions that fail to hot-reload are
+    hot-reloaded again after a change.
+
+  * Cross platform through dirty filesystem polling
 
 * Included extensions (can be disabled!)
 
