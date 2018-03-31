@@ -8,6 +8,7 @@ Some code taken from: https://github.com/b1naryth1ef/b1nb0t/
 MIT License
 
 Copyright (c) 2017 - 2018 slice
+Copyright (c) 2018 FrostLuma
 Copyright (c) 2015 Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,76 +29,50 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
-import io
+import asyncio
 import logging
 import textwrap
 import traceback
-from contextlib import redirect_stdout, suppress
-from typing import Dict, Any, List, TypeVar, Callable, Union
+from contextlib import suppress
+from typing import Any, Callable, Dict, List, TypeVar, Union
 
 import discord
 from discord.ext import commands
+from discord.ext.commands import is_owner
 
 from lifesaver.bot import Cog, Context, command
 from lifesaver.utils import codeblock
+from lifesaver.utils.timing import Timer
 
 log = logging.getLogger(__name__)
+IMPLICIT_RETURN_BLACKLIST = {
+    # statements
+    'assert', 'del', 'with',
 
-IMPLICIT_RETURN_STOP_WORDS = {
-    'continue', 'break', 'raise', 'yield', 'with', 'assert', 'del', 'import', 'pass', 'return', 'from'
+    # imports
+    'from', 'import',
+
+    # control flow
+    'break', 'continue', 'pass', 'raise', 'return', 'yield'
 }
 
 
-class Code(commands.Converter):
-    def __init__(self, *, wrap_code: bool = False, strip_ticks: bool = True, indent_width: int = 4,
-                 implicit_return: bool = False):
-        """
-        Transforms code in certain ways.
+def code_in_codeblock(arg: str) -> str:
+    result = arg
 
-        Parameters
-        ----------
-        wrap_code : bool
-            Specifies whether to wrap the resulting code in a function.
-        strip_ticks : bool
-            Specifies whether to strip the code of Markdown-related backticks.
-        indent_width : int
-            Specifies the indent width, if wrapping.
-        implicit_return : bool
-            Automatically adds a return statement, if wrapping.
-        """
-        self.wrap_code = wrap_code
-        self.strip_ticks = strip_ticks
-        self.indent_width = indent_width
-        self.implicit_return = implicit_return
+    lines = result.splitlines()
 
-    async def convert(self, ctx: Context, arg: str) -> str:
-        result = arg
+    # remove codeblock ticks
+    if result.startswith('```') and result.endswith('```'):
+        if len(lines) == 1:
+            result = lines[0][3:-3]
+        else:
+            result = '\n'.join(result.split('\n')[1:-1])
 
-        if self.strip_ticks:
-            # remove codeblock ticks
-            if result.startswith('```') and result.endswith('```'):
-                result = '\n'.join(result.split('\n')[1:-1])
+    # remove inline code ticks
+    result = result.strip('` \n')
 
-            # remove inline code ticks
-            result = result.strip('` \n')
-
-        if self.wrap_code:
-            # wrap in a coroutine and indent
-            result = 'async def func():\n' + textwrap.indent(result, ' ' * self.indent_width)
-
-        if self.wrap_code and self.implicit_return:
-            last_line = result.splitlines()[-1]
-
-            # if the last line isn't indented and not returning, add it
-            first_word = last_line.strip().split(' ')[0]
-            no_stop = all(first_word != word for word in IMPLICIT_RETURN_STOP_WORDS)
-            if not last_line[4:].startswith(' ') and no_stop:
-                last_line = (' ' * self.indent_width) + 'return ' + last_line[4:]
-
-            result = '\n'.join(result.splitlines()[:-1] + [last_line])
-
-        return result
+    return result
 
 
 def create_environment(cog: 'Exec', ctx: Context) -> Dict[Any, Any]:
@@ -132,6 +107,7 @@ def create_environment(cog: 'Exec', ctx: Context) -> Dict[Any, Any]:
         return _grabber_function
 
     env = {
+        # shortcuts
         'bot': ctx.bot,
         'ctx': ctx,
         'msg': ctx.message,
@@ -142,6 +118,7 @@ def create_environment(cog: 'Exec', ctx: Context) -> Dict[Any, Any]:
 
         # modules
         'discord': discord,
+        'asyncio': asyncio,
         'commands': commands,
         'command': commands.command,
         'group': commands.group,
@@ -180,58 +157,118 @@ def format_syntax_error(e: SyntaxError) -> str:
 class Exec(Cog):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        self.sessions = set()
         self.last_result = None
+
+    def __unload(self):
+        self.cancel_sessions()
 
     async def execute(self, ctx: Context, code: str):
         log.info('Eval: %s', code)
 
         env = create_environment(self, ctx)
 
-        # define the wrapped function
+        def compile_code(to_compile):
+            wrapped_code = 'async def _wrapped():\n' + textwrap.indent(to_compile, ' ' * 4)
+            exec(compile(wrapped_code, '<exec>', mode='exec'), env)
+
+        # we'll try to add an implicit return. if we succeed, we set this flag
+        # to avoid running the code twice
+        compiled = False
+
         try:
-            exec(compile(code, '<exec>', 'exec'), env)
-        except SyntaxError as e:
-            # send pretty syntax errors
-            await ctx.send(format_syntax_error(e))
-            return
+            lines = code.splitlines()
+            if not any(lines[-1].startswith(word) for word in IMPLICIT_RETURN_BLACKLIST):
+                lines[-1] = 'return ' + lines[-1]
+                compile_code('\n'.join(lines))
+                compiled = True
+        except SyntaxError:
+            # failed to implicitly return, just bail. we'll recompile the code
+            # without our implicit return
+            pass
+
+        if not compiled:
+            try:
+                compile_code(code)
+            except SyntaxError as error:
+                with suppress(discord.HTTPException):
+                    await ctx.message.add_reaction('\N{DOUBLE EXCLAMATION MARK}')
+                await ctx.send(format_syntax_error(error))
+                return
 
         # grab the defined function
-        func = env['func']
+        func = env['_wrapped']
+
+        async def late_indicator():
+            await asyncio.sleep(3)
+            with suppress(discord.HTTPException):
+                await ctx.message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
+
+        late_task = self.bot.loop.create_task(late_indicator())
+        task = self.bot.loop.create_task(func())
+        self.sessions.add(task)
 
         try:
-            # execute the code
-            ret = await func()
+            with Timer() as timer:
+                await asyncio.gather(task)
+        except asyncio.CancelledError:
+            with suppress(discord.HTTPException):
+                await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
+            return
         except Exception:
             # something went wrong :(
             with suppress(discord.HTTPException):
-                await ctx.message.add_reaction('\N{EXCLAMATION QUESTION MARK}')
+                await ctx.message.add_reaction('\N{DOUBLE EXCLAMATION MARK}')
 
             # send stream and what we have
-            await ctx.send(codeblock(traceback.format_exc(limit=7), lang='py'))
+            await ctx.send(codeblock(traceback.format_exc(limit=7)))
             return
+        finally:
+            self.sessions.remove(task)
+            if not late_task.done():
+                late_task.cancel()
 
         with suppress(discord.HTTPException):
             await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
-        # set the last result, but only if it's not none
-        if ret is not None:
-            self.last_result = ret
+        result = task.result()
 
-        message = codeblock(repr(ret), lang='py')
+        if result is not None:
+            self.last_result = result
+
+        message = f'Took {timer} to execute.\n' + codeblock(repr(result))
 
         if len(message) > 2000:
-            # too long
-            await ctx.send('Result was too long.')
+            # we already put the result inside of a codeblock
+            paginator = commands.Paginator(prefix='', suffix='')
+
+            for line in message.splitlines():
+                paginator.add_line(line)
+
+            try:
+                for page in paginator.pages:
+                    await ctx.author.send(page)
+            except discord.HTTPException:
+                await ctx.send('Failed to send result.')
         else:
-            # message was under 2k chars, just send!
             await ctx.send(message)
 
     @command(name='eval', aliases=['exec', 'debug'])
-    @commands.is_owner()
-    async def _eval(self, ctx, *, code: Code(wrap_code=True, implicit_return=True)):
-        """Executes Python code."""
+    @is_owner()
+    async def _eval(self, ctx, *, code: code_in_codeblock):
+        """Evaluates Python code in realtime."""
         await self.execute(ctx, code)
+
+    @command()
+    @is_owner()
+    async def cancel(self, ctx):
+        """Cancels running code."""
+        self.cancel_sessions()
+        await ctx.ok()
+
+    def cancel_sessions(self):
+        for task in self.sessions:
+            task.cancel()
 
 
 def setup(bot):
