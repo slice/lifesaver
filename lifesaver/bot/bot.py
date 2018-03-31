@@ -123,9 +123,6 @@ class BotBase(commands.bot.BotBase):
 
     async def close(self):
         self.log.info('Closing.')
-        if self.watcher:
-            self.watcher.close()
-
         await super().close()
 
     async def _hot_reload(self):
