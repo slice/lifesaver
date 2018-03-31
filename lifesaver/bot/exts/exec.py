@@ -236,7 +236,14 @@ class Exec(Cog):
         if result is not None:
             self.last_result = result
 
-        message = f'Took {timer} to execute.\n' + codeblock(repr(result))
+        representation = repr(result)
+        marker = ''
+
+        if isinstance(result, str):
+            representation = result
+            marker = ' (string)'
+
+        message = f'Took {timer} to execute.{marker}\n' + codeblock(representation)
 
         if len(message) > 2000:
             # we already put the result inside of a codeblock
