@@ -27,10 +27,13 @@ import datetime
 import functools
 import os
 import pathlib
+import re
 import traceback
 from typing import Any, List
 
 import discord
+
+MENTION_RE = re.compile(r"<@!?&?(\d{15,21})>|(@everyone|@here)")
 
 
 def format_list(lst: List[Any]) -> str:
@@ -222,6 +225,32 @@ class Table:
 
         func = functools.partial(self._render)
         return await loop.run_in_executor(None, func)
+
+
+def clean_mentions(channel: discord.TextChannel, text: str) -> str:
+    """Escapes all user and role mentions which would mention someone in the specified channel."""
+    def replace(match):
+        mention = match.group()
+
+        if "<@&" in mention:
+            role_id = int(match.groups()[0])
+            role = discord.utils.get(guild.roles, id=role_id)
+            if role is not None and role.mentionable:
+                mention = f"@{role.name}"
+
+        elif "<@" in mention:
+            user_id = int(match.groups()[0])
+            member = guild.get_member(user_id)
+            if member is not None and not member.bot and channel.permissions_for(member).read_messages:
+                mention = f"@{member.name}"
+
+        if mention in ("@everyone", "@here"):
+            mention = mention.replace("@", "@\N{ZERO WIDTH SPACE}")
+
+        return mention
+
+    guild = channel.guild
+    return MENTION_RE.sub(replace, text)
 
 
 def format_traceback(exc: Exception, *, limit: int = 7, hide_paths: bool = False) -> str:
