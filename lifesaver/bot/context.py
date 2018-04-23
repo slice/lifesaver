@@ -172,9 +172,10 @@ class Context(commands.Context):
 
         return picked
 
-    async def send_pages(self, *, prefix: str = '```', suffix: str = '```'):
-        self._paginator.prefix = prefix
-        self._paginator.suffix = suffix
+    def new_paginator(self, *args, **kwargs):
+        self._paginator = commands.Paginator(*args, **kwargs)
+
+    async def send_pages(self):
         for page in self._paginator.pages:
             await self.send(page)
 
