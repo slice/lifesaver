@@ -142,10 +142,14 @@ class BotBase(commands.bot.BotBase):
                 self.log.exception('Failed to hot-load %s, ignoring:', module)
 
         for created_file in event['created']:
+            if '__pycache__' in created_file:
+                continue
             module = resolve_module(created_file)
             self.log.debug('hot: attempting to hot-load new extension %s', module)
             attempt_load(module)
         for deleted_file in event['deleted']:
+            if '__pycache__' in deleted_file:
+                continue
             module = resolve_module(deleted_file)
             if module in self.extensions:
                 self.log.debug('hot: unloading %s', module)
@@ -157,6 +161,8 @@ class BotBase(commands.bot.BotBase):
             except KeyError:
                 pass
         for updated_file in event['updated']:
+            if '__pycache__' in updated_file:
+                continue
             module = resolve_module(updated_file)
             self.log.debug('hot: reloading %s', module)
             if module in self.extensions:
