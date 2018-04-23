@@ -2,7 +2,7 @@
 """
 MIT License
 
-Copyright (c) 2018 slice
+Copyright (c) 2018 slice, Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@ SOFTWARE.
 """
 from time import monotonic
 
-from lifesaver.utils import human_delta
+from discord.ext import commands
 
 
 class Timer:
@@ -51,3 +51,16 @@ class Timer:
 
     def __str__(self):
         return f'{self.ms}ms'
+
+
+# https://github.com/Rapptz/RoboDanny/blob/87772388eff2feeeabe1585efcffaffec9fe37a9/cogs/buttons.py#L89
+class Ratelimiter(commands.CooldownMapping):
+    def __init__(self, rate, per):
+        super().__init__(commands.Cooldown(rate, per, commands.BucketType.user))
+
+    def _bucket_key(self, v):
+        return v
+
+    def is_rate_limited(self, *args):
+        bucket = self.get_bucket(args)
+        return bucket.update_rate_limit() is not None
