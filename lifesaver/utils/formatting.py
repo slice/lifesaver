@@ -253,6 +253,26 @@ def clean_mentions(channel: discord.TextChannel, text: str) -> str:
     return MENTION_RE.sub(replace, text)
 
 
+def pluralize(**word) -> str:
+    """
+    Pluralizes a single kwarg's name depending on the value.
+
+    Example
+    -------
+
+    >>> pluralize(object=2)
+    "objects"
+    >>> pluralize(object=1)
+    "object"
+    """
+    try:
+        key = list(word.keys())[0]
+    except KeyError:
+        raise ValueError('Cannot find kwarg key to pluralize')
+    value = word[key]
+    return key + ('' if value == 1 else 's')
+
+
 def format_traceback(exc: Exception, *, limit: int = 7, hide_paths: bool = False) -> str:
     """Formats a traceback."""
 
