@@ -63,8 +63,14 @@ async def history_reducer(ctx, reducer: Callable[[discord.Message], Any], *, ign
                 continue
 
             if isinstance(results, list):
-                results.append(result)
+                if isinstance(result, list):
+                    results.extend(result)
+                else:
+                    results.append(result)
             elif isinstance(results, set):
-                results.add(results)
+                if isinstance(result, set):
+                    results = results | result
+                else:
+                    results.add(results)
 
     return results
