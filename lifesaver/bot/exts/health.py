@@ -24,14 +24,18 @@ SOFTWARE.
 """
 
 from lifesaver.bot import command, Cog, Context
+from lifesaver.utils.timing import Timer
 
 
 class Health(Cog):
     @command()
     async def ping(self, ctx: Context):
         """Pings the bot."""
-        ping_time = round(ctx.bot.latency * 1000, 2)
-        await ctx.send(f'Pong! Heartbeat latency: `{ping_time}ms`')
+        with Timer() as timer:
+            message = await ctx.send('...')
+
+        content = f'Pong! GW: `{ctx.bot.latency * 1000:.2f}ms`, REST: `{timer}`'
+        await message.edit(content=content)
 
 
 def setup(bot):
