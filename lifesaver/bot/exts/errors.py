@@ -84,7 +84,6 @@ class Errors(Cog):
     async def on_command_error(self, ctx: Context, error: Exception):
         """Default error handler."""
 
-        # yapf: disable
         error_handlers = OrderedDict([
             (commands.BotMissingPermissions, ('Whoops!', True)),
             (commands.MissingPermissions, ('Whoops!', True)),
@@ -97,7 +96,6 @@ class Errors(Cog):
              ('You need to specify a valid subcommand to run. For help, run `{prefix}help {command}`.', False)
              )
         ])
-        # yapf: enable
 
         if isinstance(error, commands.BadArgument):
             if hasattr(error, '__cause__') and 'failed for parameter' in str(error):
@@ -115,8 +113,7 @@ class Errors(Cog):
 
         if isinstance(error, commands.CommandInvokeError):
             insect_id = await self._save_insect(error)
-            await ctx.send('A fatal error has occurred while running that command. ' +
-                           f'Please report this error ID to the bot owner: `{insect_id}` ' + 'Thanks!')
+            await ctx.send(f'A fatal error has occurred. \N{BUG} `{insect_id}`')
             self.log.error('Fatal error. ' + format_traceback(error))
 
 
