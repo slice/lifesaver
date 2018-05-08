@@ -26,6 +26,11 @@ SOFTWARE.
 from discord.ext import commands
 
 
+class SubcommandInvocationRequired(commands.CommandError):
+    """A :class:`CommandError` subclass raised when a subcommand needs to be invoked."""
+    pass
+
+
 class Command(commands.Command):
     """A :class:`commands.Command` subclass that implements additional useful features."""
 
@@ -62,7 +67,16 @@ class GroupMixin(commands.GroupMixin):
 
 
 class Group(GroupMixin, commands.Group, Command):
-    pass
+    def __init__(self, *args, hollow: bool = False, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        #: Specifies whether a subcommand must be invoked.
+        self.hollow = hollow
+
+    async def invoke(self, ctx):
+        if ctx.invoked_subcommand is None and self.hollow:
+            raise SubcommandInvocationRequired()
+        await super().invoke(ctx)
 
 
 def group(*args, **kwargs):

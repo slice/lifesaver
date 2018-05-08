@@ -31,6 +31,7 @@ from collections import OrderedDict
 import discord
 from discord.ext import commands
 from lifesaver.bot import Cog, Context, group
+from lifesaver.bot.command import SubcommandInvocationRequired
 from lifesaver.bot.storage import AsyncJSONStorage
 from lifesaver.utils import codeblock, format_traceback
 
@@ -91,7 +92,10 @@ class Errors(Cog):
             (commands.NotOwner, ("Only the owner of this bot can do that.", False)),
             (commands.DisabledCommand, ('That command has been disabled.', False)),
             (commands.UserInputError, ('User input error', True)),
-            (commands.CheckFailure, ('Permissions error', True))
+            (commands.CheckFailure, ('Permissions error', True)),
+            (SubcommandInvocationRequired,
+             ('You need to specify a valid subcommand to run. For help, run `{prefix}help {command}`.', False)
+             )
         ])
         # yapf: enable
 
@@ -101,12 +105,12 @@ class Errors(Cog):
             await ctx.send(f'Bad argument. {error}')
             return
 
-        for error_type, info in error_handlers.items():
+        for error_type, (prefix, prepend_message) in error_handlers.items():
             if not isinstance(error, error_type):
                 continue
 
-            prefix, prepend_message = info
-            await ctx.send(prefix + (f': {error}' if prepend_message else ''))
+            prefix_post = prefix.format(prefix=ctx.prefix, command=ctx.command.qualified_name)
+            await ctx.send(prefix_post + (f': {error}' if prepend_message else ''))
             return
 
         if isinstance(error, commands.CommandInvokeError):
