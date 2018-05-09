@@ -22,52 +22,28 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
 from typing import Any, Dict
 
 from ruamel.yaml import YAML
 
-NO_DEFAULT = object()
-
-
-class Field:
-    def __init__(self, field_type, *, default=NO_DEFAULT, optional: bool = False):
-        self.type = field_type
-        self.default = default
-        self.optional = optional
-
 
 class ConfigError(Exception):
     """An error thrown by the Config loader."""
-    pass
 
 
 class Config:
     def __init__(self, data, *, loaded_from=None):
         self.loaded_from = loaded_from
+        self.data = data
 
-        for key in dir(self):
-            field = getattr(self, key)
+        for (key, value) in data.items():
+            setattr(self, key, value)
 
-            if not isinstance(field, Field):
-                continue
+    def get(self, *args, **kwargs):
+        return self.data.get(*args, **kwargs)
 
-            if key not in data and (not field.optional and field.default is NO_DEFAULT):
-                raise ConfigError('Missing required config field: {}'.format(key))
-
-            # If we get here and field.default is NO_DEFAULT, then optional=True was provided but no default value
-            # was provided, so just fall back to None.
-            value = data.get(key, None if field.default is NO_DEFAULT else field.default)
-
-            if field.type is not Any and not isinstance(value, field.type):
-                raise ConfigError('Expected field value of type "{}" for {}, instead got value of type "{}".'.format(
-                    type(field.type).__name__, key,
-                    type(value).__name__))
-
-            self.__dict__[key] = value
-
-        if not getattr(self, 'strict', False):
-            self.__dict__.update(data)
+    def __getitem__(self, item):
+        return self.data[item]
 
     @classmethod
     def load(cls, file: str):
@@ -88,11 +64,12 @@ class Config:
             yaml = fp.read()
             return cls(YAML(typ='safe').load(yaml), loaded_from=file)
 
-    def to_dict(self) -> Dict[str, Any]:
+    @property
+    def as_dict(self) -> Dict[Any, Any]:
         """
         Returns
         -------
-        dict of str: any
+        dict of any: any
             This configuration as a dict.
         """
-        return self.__dict__
+        return self.data

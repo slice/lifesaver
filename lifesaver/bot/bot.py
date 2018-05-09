@@ -28,11 +28,11 @@ import importlib
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Set, Union
+from typing import Any, Dict, List, Set, Union, Type
 
 import discord
 from discord.ext import commands
-from lifesaver.config import Config, Field
+from lifesaver.config import Config
 from lifesaver.fs import Poller
 from lifesaver.utils import format_traceback
 
@@ -44,28 +44,28 @@ INCLUDED_EXTENSIONS = ['lifesaver.bot.exts.admin', 'lifesaver.bot.exts.health', 
 
 class BotConfig(Config):
     #: The token of the bot.
-    token = Field(str)
+    token: str
 
     #: The path from which to load extension files from.
-    extensions_path = Field(str, default='./exts')
+    extensions_path: str = './exts'
 
     #: Specifies whether to ignore bots when processing commands.
-    ignore_bots = Field(bool, default=True)
+    ignore_bots: bool = True
 
     #: The command prefix to use.
-    command_prefix = Field(Any)
+    command_prefix: str = '!'
 
     #: The bot's description.
-    description = Field(str, default='A Discord bot.')
+    description: str = 'A Discord bot.'
 
     #: Specifies whether to PM help or not.
-    pm_help = Field(Any, default=None)
+    pm_help: Union[bool, None] = None
 
     #: Specifies whether mentions should count as prefixes, too.
-    command_prefix_include_mentions = Field(bool, default=True)
+    command_prefix_include_mentions: bool = True
 
     #: Specifies whether to automatically reload extensions upon changing them.
-    hot_reload = Field(bool, default=False)
+    hot_reload: bool = False
 
 
 def _convert_to_list(thing: Any) -> Union[Any, List[Any]]:
