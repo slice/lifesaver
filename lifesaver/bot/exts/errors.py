@@ -54,11 +54,10 @@ class Errors(Cog):
         await self.insects.put('insects', insects)
         return insect_id
 
-    @group(hidden=True)
+    @group(hidden=True, hollow=True)
     @commands.is_owner()
     async def errors(self, ctx: Context):
         """Manages errors."""
-        pass
 
     @errors.command(aliases=['show', 'info'])
     async def view(self, ctx: Context, insect_id):
