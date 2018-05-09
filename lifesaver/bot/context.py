@@ -35,8 +35,8 @@ SCRUBBING = {
 
 
 class Context(commands.Context):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
         self._paginator = commands.Paginator()
 
