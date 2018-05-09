@@ -93,16 +93,18 @@ class BotBase(commands.bot.BotBase):
 
     def __init__(self, cfg: BotConfig, **kwargs):
         #: The bot's :class:`BotConfig`.
-        self.cfg = cfg
+        self.config = cfg
+
+        prefix = cfg.command_prefix
 
         super().__init__(
-            # command prefix
-            commands.when_mentioned_or(*_convert_to_list(cfg.command_prefix)) if cfg.command_prefix_include_mentions \
-                else cfg.command_prefix,
+            command_prefix=commands.when_mentioned_or(
+                *([prefix] if isinstance(prefix, str) else prefix)
+            )
+            if cfg.command_prefix_include_mentions else prefix,
 
-            # other bot stuff
-            description=self.cfg.description,
-            pm_help=self.cfg.pm_help,
+            description=self.config.description,
+            pm_help=self.config.pm_help,
 
             **kwargs
         )
@@ -126,14 +128,14 @@ class BotBase(commands.bot.BotBase):
         await super().close()
 
     async def _hot_reload(self):
-        poller = Poller(path=self.cfg.extensions_path, polling_interval=0.1)
+        poller = Poller(path=self.config.extensions_path, polling_interval=0.1)
         self.log.debug('created poller: %s', poller)
         async for event in poller:
             self.handle_hot_event(event)
 
     def handle_hot_event(self, event: Dict[str, Set[str]]):
         def resolve_module(filename):
-            return transform_path(Path(self.cfg.extensions_path) / filename)
+            return transform_path(Path(self.config.extensions_path) / filename)
 
         def attempt_load(module):
             try:
@@ -195,7 +197,7 @@ class BotBase(commands.bot.BotBase):
         """Rebuilds the load list."""
 
         # Build a list of extensions to load.
-        exts_path = Path(self.cfg.extensions_path)
+        exts_path = Path(self.config.extensions_path)
         paths = [transform_path(path) for path in exts_path.iterdir()]
 
         def _ext_filter(path: str):
@@ -244,13 +246,13 @@ class BotBase(commands.bot.BotBase):
 
     async def on_ready(self):
         self.log.info('Ready! %s (%d)', self.user, self.user.id)
-        if self.cfg.hot_reload:
+        if self.config.hot_reload:
             self.log.debug('Setting up hot reload.')
             self._hot_task = self.loop.create_task(self._hot_reload())
 
     async def on_message(self, message: discord.Message):
         # Ignore bots if applicable.
-        if self.cfg.ignore_bots and message.author.bot:
+        if self.config.ignore_bots and message.author.bot:
             return
 
         # Grab a context, then invoke it.
@@ -270,7 +272,7 @@ class Bot(BotBase, discord.Client):
     """A bot class that provides useful utilities."""
 
     def run(self):
-        super().run(self.cfg.token)
+        super().run(self.config.token)
 
 
 class Selfbot(BotBase, discord.Client):
@@ -280,11 +282,11 @@ class Selfbot(BotBase, discord.Client):
         super().__init__(*args, self_bot=True, **kwargs)
 
     def run(self):
-        super().run(self.cfg.token, bot=False)
+        super().run(self.config.token, bot=False)
 
 
 class AutoShardedBot(BotBase, discord.AutoShardedClient):
     """An automatically sharded bot class that provides useful utilities."""
 
     def run(self):
-        super().run(self.cfg.token)
+        super().run(self.config.token)
