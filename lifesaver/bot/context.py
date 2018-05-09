@@ -44,11 +44,10 @@ class Context(commands.Context):
         self._paginator.add_line(line)
         return self
 
-    async def send(self, content: str = None, *args, scrub_dangerous_pings: bool = True, **kwargs) -> discord.Message:
-        if content:
-            if scrub_dangerous_pings:
-                for from_, to in SCRUBBING.items():
-                    content = content.replace(from_, to)
+    async def send(self, content: str = None, *args, scrub: bool = True, **kwargs) -> discord.Message:
+        if content and scrub:
+            for from_, to in SCRUBBING.items():
+                content = content.replace(from_, to)
         return await super().send(content, *args, **kwargs)
 
     async def confirm(self, title: str, message: str = None, *, color: discord.Color = discord.Color.red(),
