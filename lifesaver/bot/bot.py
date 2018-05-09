@@ -178,7 +178,7 @@ class BotBase(commands.bot.BotBase):
         self._rebuild_load_list()
 
     @classmethod
-    def with_config(cls, config: str = 'config.yml'):
+    def with_config(cls, config: str = 'config.yml', *, config_cls: Type[BotConfig] = BotConfig):
         """
         Creates a bot instance with a configuration file.
 
@@ -186,12 +186,14 @@ class BotBase(commands.bot.BotBase):
         ----------
         config : str
             The path to the configuration file.
+        config_cls : BotConfig class
+            The config class to use.
 
         Returns
         -------
         The created bot instance.
         """
-        return cls(BotConfig.load(config))
+        return cls(config_cls.load(config))
 
     def _rebuild_load_list(self):
         """Rebuilds the load list."""
