@@ -68,10 +68,6 @@ class BotConfig(Config):
     hot_reload: bool = False
 
 
-def _convert_to_list(thing: Any) -> Union[Any, List[Any]]:
-    return [thing] if not isinstance(thing, list) else thing
-
-
 def exception_handler(_loop: asyncio.AbstractEventLoop, ctx):
     now = datetime.datetime.now().strftime('[%m/%d/%Y %H:%M:%S]')
     formatted_error = '\n' + format_traceback(ctx["exception"]) if 'exception' in ctx else ''
