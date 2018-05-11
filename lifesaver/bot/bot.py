@@ -118,7 +118,7 @@ class BotBase(commands.bot.BotBase):
         self._extension_load_list = ()  # type: tuple
 
         #: A list of included extensions built into lifesaver to load.
-        self._included_extensions = INCLUDED_EXTENSIONS  # type: tuple
+        self._included_extensions = INCLUDED_EXTENSIONS  # type: list
 
         # Hot reload stuff.
         self._hot_task = None
