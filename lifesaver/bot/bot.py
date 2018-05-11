@@ -28,7 +28,7 @@ import importlib
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Set, Union, Type
+from typing import Dict, Set, Type, Union
 
 import discord
 from discord.ext import commands
@@ -104,6 +104,12 @@ class BotBase(commands.bot.BotBase):
 
             **kwargs
         )
+
+        #: The bot's :class:`Context` subclass to use when invoking commands.
+        self.context_cls = kwargs.get('context_cls', Context)
+
+        if not issubclass(self.context_cls, Context):
+            raise TypeError(f'{self.context_cls} is not a lifesaver Context subclass')
 
         #: The bot's logger.
         self.log = logging.getLogger(__name__)
@@ -254,7 +260,7 @@ class BotBase(commands.bot.BotBase):
             return
 
         # Grab a context, then invoke it.
-        ctx = await self.get_context(message, cls=Context)
+        ctx = await self.get_context(message, cls=self.context_cls)
         await self.invoke(ctx)
 
     async def on_command_error(self, ctx: Context, exception: Exception):
