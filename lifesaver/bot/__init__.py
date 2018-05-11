@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .bot import Bot, BotConfig
+from .bot import Bot, BotConfig, BotBase
 from .cog import Cog
 from .command import Command, Group, group, command
 from .context import Context
