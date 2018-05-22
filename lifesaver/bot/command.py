@@ -74,7 +74,8 @@ class Group(GroupMixin, commands.Group, Command):
         self.hollow = hollow
 
     async def invoke(self, ctx):
-        if ctx.subcommand_passed is None and self.hollow:
+        if ctx.view.eof and self.hollow:
+            # complain if we're at the end and we still need a subcommand
             raise SubcommandInvocationRequired()
         await super().invoke(ctx)
 
