@@ -28,6 +28,6 @@ setup(
     ],
     python_requires='>=3.6',
     packages=find_packages(),
-    install_requires=['ruamel.yaml'],
+    install_requires=['ruamel.yaml', 'click'],
     dependency_links=['git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py']
 )
