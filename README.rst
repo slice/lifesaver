@@ -11,6 +11,9 @@ discord.py-lifesaver
 Lifesaver is an extremely opinionated bot foundation built on top of
 `discord.py@rewrite <https://github.com/Rapptz/discord.py/tree/rewrite/>`__.
 
+It brings a lot of neat concepts from Disco, the other Python library for
+Discord, into Discord.py.
+
 Please be aware that this library contains lots of opinionated features
 and hand-holding, and this isn't really meant to be used by anyone — this
 repository is open-source just for the sake of being open-source, and for

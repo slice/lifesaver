@@ -46,6 +46,9 @@ class BotConfig(Config):
     #: The path from which to load extension files from.
     extensions_path: str = './exts'
 
+    #: The path for cog-specific configuration files
+    cog_config_path: str = './config'
+
     #: Specifies whether to ignore bots when processing commands.
     ignore_bots: bool = True
 

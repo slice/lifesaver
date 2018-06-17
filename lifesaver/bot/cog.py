@@ -26,6 +26,10 @@ SOFTWARE.
 import asyncio
 import inspect
 import logging
+import os
+from typing import Type
+
+from lifesaver.config import Config
 
 
 class Cog:
@@ -36,10 +40,24 @@ class Cog:
         self.bot = bot
 
         #: The logger for this cog.
-        self.log = logging.getLogger('cog.' + type(self).__name__.lower())  # type: logging.Logger
+        self.name = type(self).__name__.lower()
+        self.log = logging.getLogger('cog.' + self.name)  # type: logging.Logger
+
+        self.config = None
+
+        if hasattr(self, '__config_cls'):
+            path = os.path.join(self.bot.config.cog_config_path, self.name + '.yml')
+            self.config = getattr(self, '__config_cls').load(path)
 
         self._scheduled_tasks = []
         self._setup_schedules()
+
+    @staticmethod
+    def with_config(config_cls: Type[Config]):
+        def decorator(cls):
+            setattr(cls, '__config_cls', config_cls)
+            return cls
+        return decorator
 
     def _setup_schedules(self):
         # Bypass Python's name mangling.

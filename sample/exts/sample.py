@@ -1,11 +1,17 @@
 import asyncio
-from discord.ext import commands
 
-from lifesaver.bot import Cog, group, command, Context
+from discord.ext import commands
+from lifesaver.bot import Cog, Context, command, group
 from lifesaver.bot.storage import AsyncJSONStorage
+from lifesaver.config import Config
 from lifesaver.utils.formatting import codeblock
 
 
+class SampleConfig(Config):
+    configurable_message: str = 'Hello there'
+
+
+@Cog.with_config(SampleConfig)
 class Sample(Cog):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -18,6 +24,10 @@ class Sample(Cog):
     @group()
     async def samplegroup(self, ctx: Context):
         pass
+
+    @command()
+    async def message(self, ctx: Context):
+        await ctx.send(self.config.configurable_message)
 
     @samplegroup.command(typing=True)
     async def subcommand(self, ctx: Context):
