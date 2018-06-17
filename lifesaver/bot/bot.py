@@ -68,13 +68,6 @@ class BotConfig(Config):
     hot_reload: bool = False
 
 
-def exception_handler(_loop: asyncio.AbstractEventLoop, ctx):
-    now = datetime.datetime.now().strftime('[%m/%d/%Y %H:%M:%S]')
-    formatted_error = '\n' + format_traceback(ctx["exception"]) if 'exception' in ctx else ''
-    message = f'{now} asyncio exception handler triggered: {ctx["message"]}{formatted_error}'
-    print(message, file=sys.stderr)
-
-
 def transform_path(path: Union[Path, str]) -> str:
     """Transforms a path like ``exts/hi.py`` to ``exts.hi``."""
     return str(path).replace('/', '.').replace('.py', '')
@@ -122,8 +115,6 @@ class BotBase(commands.bot.BotBase):
 
         # Hot reload stuff.
         self._hot_task = None
-
-        self._loop_setup()
 
     async def close(self):
         self.log.info('Closing.')
@@ -266,10 +257,6 @@ class BotBase(commands.bot.BotBase):
     async def on_command_error(self, ctx: Context, exception: Exception):
         # handled by errors.py
         pass
-
-    def _loop_setup(self):
-        self.log.debug('Setting up loop.')
-        self.loop.set_exception_handler(exception_handler)
 
 
 class Bot(BotBase, discord.Client):
