@@ -29,6 +29,7 @@ import logging
 import os
 from typing import Type
 
+import aiohttp
 from lifesaver.config import Config
 
 
@@ -43,6 +44,9 @@ class Cog:
         self.name = type(self).__name__.lower()
         self.log = logging.getLogger('cog.' + self.name)  # type: logging.Logger
 
+        #: A ClientSession for this cog.
+        self.session = aiohttp.ClientSession(loop=self.loop)
+
         self.config = None
 
         if hasattr(self, '__config_cls'):
@@ -51,6 +55,10 @@ class Cog:
 
         self._scheduled_tasks = []
         self._setup_schedules()
+
+    @property
+    def loop(self):
+        return self.bot.loop
 
     @staticmethod
     def with_config(config_cls: Type[Config]):
@@ -92,6 +100,8 @@ class Cog:
         for scheduled_task in self._scheduled_tasks:
             self.log.debug('Cancelling scheduled task: %s', scheduled_task)
             scheduled_task.cancel()
+
+        self.loop.create_task(self.session.close())
 
         if self._original_unload:
             self._original_unload()
