@@ -34,6 +34,7 @@ import logging
 import textwrap
 import traceback
 from contextlib import suppress
+from io import StringIO
 from typing import Any, Callable, Dict, List, TypeVar, Union
 
 import discord
@@ -253,21 +254,11 @@ class Exec(Cog):
         message = f'Took {timer} to execute.{marker}\n' + codeblock(representation)
 
         if len(message) > 2000:
-            # we already put the result inside of a codeblock
-            paginator = commands.Paginator()
-
-            for line in representation.splitlines():
-                paginator.add_line(line)
-
-            if len(paginator.pages) > 7:
-                await ctx.send(f'Too many pages ({len(paginator.pages)}).')
-                return
-
+            file = discord.File(fp=StringIO(message), filename='result.txt')
             try:
-                for page in paginator.pages:
-                    await ctx.author.send(page)
-            except discord.HTTPException:
-                await ctx.send('Failed to send result.')
+                await ctx.send(file=file)
+            except discord.HTTPException as error:
+                await ctx.send(f'Cannot send result: `{error}`')
         else:
             await ctx.send(message)
 
