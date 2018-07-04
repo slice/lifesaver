@@ -1,6 +1,8 @@
 # Built docs
 /docs/build
 
+/.mypy_cache
+
 # Idea
 /.idea
 
