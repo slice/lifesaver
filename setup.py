@@ -1,12 +1,9 @@
-from codecs import open
 from os import path
 
 from setuptools import find_packages, setup
 
 here = path.abspath(path.dirname(__file__))
-
-# Get the long description from the README file
-with open(path.join(here, 'README.rst')) as f:
+with open(path.join(here, 'README.md')) as f:
     long_description = f.read()
 
 setup(
@@ -16,7 +13,7 @@ setup(
     description=('Lifesaver is an extremely opinionated bot foundation that provides a bunch of '
                  'handy utilities to the average Discord.py developer.'),
     long_description=long_description,
-    long_description_content_type='text/x-rst',
+    long_description_content_type='text/markdown',
     url='https://github.com/slice/discord.py-lifesaver',
     author='Ryan Tongol',
     author_email='ryaneft@gmail.com',
