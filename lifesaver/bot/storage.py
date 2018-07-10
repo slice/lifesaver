@@ -27,7 +27,7 @@ import asyncio
 import json
 import os
 import uuid
-from typing import Any
+from typing import Any, Type
 
 from abc import ABC, abstractmethod
 
@@ -68,7 +68,7 @@ class AsyncJSONStorage(AsyncStorage):
         https://github.com/Rapptz/RoboDanny/blob/rewrite/cogs/utils/config.py
     """
 
-    def __init__(self, file, *, loop=None):
+    def __init__(self, file, *, encoder: Type[json.JSONEncoder] = json.JSONEncoder, loop=None):
         """
         Parameters
         ----------
@@ -81,6 +81,7 @@ class AsyncJSONStorage(AsyncStorage):
         self._data = {}
         self.loop = loop or asyncio.get_event_loop()
         self.lock = asyncio.Lock()
+        self.encoder = encoder
 
         # Attempt to load.
         self._load()
@@ -91,7 +92,7 @@ class AsyncJSONStorage(AsyncStorage):
 
         # Save to a file with a randomly-generated filename.
         with open(atomic_name, 'w', encoding='utf-8') as fp:
-            json.dump(self._data.copy(), fp, ensure_ascii=True, separators=(',', ':'))
+            json.dump(self._data.copy(), fp, ensure_ascii=True, separators=(',', ':'), cls=self.encoder)
 
         # Rename the "atomic" file to the actual file to prevent corruptions.
         os.replace(atomic_name, self.file)
