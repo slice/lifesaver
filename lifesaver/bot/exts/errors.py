@@ -30,7 +30,7 @@ from collections import OrderedDict
 
 import discord
 from discord.ext import commands
-from lifesaver.bot import Cog, Context, group
+from lifesaver.bot import Cog, Context, group, errors
 from lifesaver.bot.command import SubcommandInvocationRequired
 from lifesaver.bot.storage import AsyncJSONStorage
 from lifesaver.utils import codeblock, format_traceback
@@ -93,7 +93,7 @@ class Errors(Cog):
             (commands.CheckFailure, ('Permissions error', True)),
             (SubcommandInvocationRequired,
              ('You need to specify a valid subcommand to run. For help, run `{prefix}help {command}`.', False)
-             )
+             ),
         ])
 
         ignored_errors = getattr(ctx.bot, 'ignored_errors')
@@ -103,6 +103,10 @@ class Errors(Cog):
                     del error_handlers[ignored_error]
             except KeyError:
                 pass
+
+        if isinstance(error, errors.MessageError):
+            await ctx.send(error.message)
+            return
 
         if isinstance(error, commands.BadArgument):
             if hasattr(error, '__cause__') and 'failed for parameter' in str(error):
