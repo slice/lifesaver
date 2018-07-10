@@ -253,7 +253,7 @@ def clean_mentions(channel: discord.TextChannel, text: str) -> str:
     return MENTION_RE.sub(replace, text)
 
 
-def pluralize(**word) -> str:
+def pluralize(*, with_quantity: bool = False, with_indicative: bool = False, **word) -> str:
     """
     Pluralizes a single kwarg's name depending on the value.
 
@@ -265,12 +265,26 @@ def pluralize(**word) -> str:
     >>> pluralize(object=1)
     "object"
     """
+
     try:
-        key = list(word.keys())[0]
+        items = word.items()
+        kwargs = {'with_quantity', 'with_indicative'}
+        key = next(item[0] for item in items if item not in kwargs)
     except KeyError:
         raise ValueError('Cannot find kwarg key to pluralize')
+
     value = word[key]
-    return key + ('' if value == 1 else 's')
+
+    word = key + ('' if value == 1 else 's')
+    indicative = ''
+
+    if with_indicative:
+        indicative = ' is' if value == 1 else ' are'
+
+    if with_quantity:
+        return f'{value} {word}{indicative}'
+    else:
+        return word + indicative
 
 
 def format_traceback(exc: Exception, *, limit: int = 7, hide_paths: bool = False) -> str:
