@@ -96,6 +96,14 @@ class Errors(Cog):
              )
         ])
 
+        ignored_errors = getattr(ctx.bot, 'ignored_errors')
+        if ignored_errors is not None:
+            try:
+                for ignored_error in ignored_errors:
+                    del error_handlers[ignored_error]
+            except KeyError:
+                pass
+
         if isinstance(error, commands.BadArgument):
             if hasattr(error, '__cause__') and 'failed for parameter' in str(error):
                 self.log.error('Generic check error. ' + format_traceback(error.__cause__))
