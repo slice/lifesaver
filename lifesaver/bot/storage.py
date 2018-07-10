@@ -68,7 +68,7 @@ class AsyncJSONStorage(AsyncStorage):
         https://github.com/Rapptz/RoboDanny/blob/rewrite/cogs/utils/config.py
     """
 
-    def __init__(self, file, *, encoder: Type[json.JSONEncoder] = json.JSONEncoder, loop=None):
+    def __init__(self, file, *, encoder: Type[json.JSONEncoder] = json.JSONEncoder, object_hook = None, loop=None):
         """
         Parameters
         ----------
@@ -81,6 +81,7 @@ class AsyncJSONStorage(AsyncStorage):
         self._data = {}
         self.loop = loop or asyncio.get_event_loop()
         self.lock = asyncio.Lock()
+        self.object_hook = object_hook
         self.encoder = encoder
 
         # Attempt to load.
@@ -100,7 +101,7 @@ class AsyncJSONStorage(AsyncStorage):
     def _load(self):
         try:
             with open(self.file, 'r', encoding='utf-8') as fp:
-                self._data = json.load(fp)
+                self._data = json.load(fp, object_hook=self.object_hook)
         except FileNotFoundError:
             self._data = {}
 
