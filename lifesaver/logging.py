@@ -26,6 +26,8 @@ SOFTWARE.
 import logging
 from typing import List
 
+__all__ = ['setup_logging']
+
 
 def setup_logging(time_formatting: str = '%Y-%m-%d %H:%M', hush: List[str] = None):
     """
@@ -54,7 +56,11 @@ def setup_logging(time_formatting: str = '%Y-%m-%d %H:%M', hush: List[str] = Non
     for log in (hush + default_hush if hush else default_hush):
         logging.getLogger(log).setLevel(logging.INFO)
 
+    file_stream = logging.FileHandler('bot.log', encoding='utf-8')
     stream = logging.StreamHandler()
+
     stream.setFormatter(fmt)
+    file_stream.setFormatter(fmt)
 
     root_logger.addHandler(stream)
+    root_logger.addHandler(file_stream)
