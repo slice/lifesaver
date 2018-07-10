@@ -84,14 +84,29 @@ class BotBase(commands.bot.BotBase):
         #: The bot's :class:`BotConfig`.
         self.config = cfg
 
-        prefix = cfg.command_prefix
+        specified_prefix = cfg.command_prefix
+        prefix = None
+
+        if cfg.command_prefix_include_mentions:
+            if specified_prefix is None:
+                # mentions only
+                prefix = commands.when_mentioned
+            else:
+                if isinstance(specified_prefix, str):
+                    # just one prefix, but we need a list
+                    prefixes = [specified_prefix]
+                elif isinstance(specified_prefix, list):
+                    # list of prefixes already, so just use that
+                    prefixes = specified_prefix
+                else:
+                    raise TypeError(f'Cannot resolve prefix: {specified_prefix!r}')
+                prefix = commands.when_mentioned_or(*prefixes)
+        else:
+            # no mentions? no need to use when_mentioned[_or]
+            prefix = specified_prefix
 
         super().__init__(
-            command_prefix=commands.when_mentioned_or(
-                *([prefix] if isinstance(prefix, str) else prefix)
-            )
-            if cfg.command_prefix_include_mentions else prefix,
-
+            command_prefix=prefix,
             description=self.config.description,
             pm_help=self.config.pm_help,
 
