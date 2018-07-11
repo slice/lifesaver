@@ -3,7 +3,8 @@
 
 /.mypy_cache
 
-# Idea
+# Editors
+/.vscode
 /.idea
 
 # Testing
