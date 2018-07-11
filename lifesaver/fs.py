@@ -25,7 +25,10 @@ SOFTWARE.
 import asyncio
 import logging
 import os
+import re
 from collections import defaultdict
+
+HASHED_FILENAME = re.compile(r'[a-f0-9]{8,}')
 
 
 class Poller:
@@ -40,10 +43,17 @@ class Poller:
     def __repr__(self):
         return f'<Poller path={self.path} polling_interval={self.polling_interval}>'
 
+    def _filter(self, filename) -> str:
+        match = HASHED_FILENAME.search(filename)
+        if match is not None:
+            self.log.debug('%s: skipping %s, hashed', self.name, filename)
+        return match is None
+
     def build_state(self):
         return {
             filename: os.path.getmtime(os.path.join(self.path, filename))
             for filename in os.listdir(self.path)
+            if self._filter(filename)
         }
 
     def detect(self):
