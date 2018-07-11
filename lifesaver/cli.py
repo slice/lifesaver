@@ -21,7 +21,7 @@ def cli(config):
         log.warn('uvloop not found, not using')
 
     config = BotConfig.load(config)
-    custom_bot_module = getattr(config, 'bot_class')
+    custom_bot_module = getattr(config, 'bot_class', None)
     bot_class = Bot
 
     if custom_bot_module is not None:
