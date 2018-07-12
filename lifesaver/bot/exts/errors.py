@@ -96,7 +96,7 @@ class Errors(Cog):
              ),
         ])
 
-        ignored_errors = getattr(ctx.bot, 'ignored_errors')
+        ignored_errors = getattr(ctx.bot, 'ignored_errors', None)
         if ignored_errors is not None:
             try:
                 for ignored_error in ignored_errors:
