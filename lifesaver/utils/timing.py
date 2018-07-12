@@ -46,11 +46,26 @@ class Timer:
         return self.end - self.begin
 
     @property
-    def ms(self):
+    def milliseconds(self):
         return round(self.duration * 1000, 2)
 
+    ms = milliseconds
+
+    @property
+    def microseconds(self):
+        return round(self.duration * 1000000, 2)
+
+    @property
+    def seconds(self):
+        return round(self.duration, 2)
+
     def __str__(self):
-        return f'{self.ms}ms'
+        if self.ms > 1000:
+            return f'{self.seconds}s'
+        elif self.ms < 4:
+            return f'{self.microseconds}μs'
+        else:
+            return f'{self.ms}ms'
 
 
 # https://github.com/Rapptz/RoboDanny/blob/87772388eff2feeeabe1585efcffaffec9fe37a9/cogs/buttons.py#L89
