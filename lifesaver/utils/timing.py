@@ -26,6 +26,21 @@ from time import monotonic
 
 from discord.ext import commands
 
+__all__ = ['Timer', 'format_seconds', 'Ratelimiter']
+
+
+def format_seconds(seconds):
+    s = seconds
+    ms = seconds * 1000
+    mcs = seconds * 1000000
+
+    if ms > 1000:
+        return f'{s:.2f}s'
+    elif ms < 1:
+        return f'{mcs:.2f}μs'
+    else:
+        return f'{ms:.2f}ms'
+
 
 class Timer:
     """A timing utility used to measure time."""
@@ -47,25 +62,16 @@ class Timer:
 
     @property
     def milliseconds(self):
-        return round(self.duration * 1000, 2)
+        return self.duration * 1000
 
     ms = milliseconds
 
     @property
     def microseconds(self):
-        return round(self.duration * 1000000, 2)
-
-    @property
-    def seconds(self):
-        return round(self.duration, 2)
+        return self.duration * 1000000
 
     def __str__(self):
-        if self.ms > 1000:
-            return f'{self.seconds}s'
-        elif self.ms < 4:
-            return f'{self.microseconds}μs'
-        else:
-            return f'{self.ms}ms'
+        return format_seconds(self.duration)
 
 
 # https://github.com/Rapptz/RoboDanny/blob/87772388eff2feeeabe1585efcffaffec9fe37a9/cogs/buttons.py#L89
