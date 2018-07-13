@@ -79,22 +79,9 @@ class Health(Cog):
 
         "TX" refers to the time it takes for the HTTP request to be sent, and
         for a response to be received and processed.
-        "RX" refers to the time it takes for the gateway to mirror the action,
-        for example "Edit RX" refers to the time between editing a message and
-        the gateway dispatching a MESSAGE_UPDATE packet for that edit.
-
-        The time displayed next to "Send" and "Edit" refers to the TX and RX
-        durations combined.
-        Average TX and RX represents the average time for HTTP requests and
-        gateway dispatching.
-
-        "All" refers to the time spent for both TX and RX for both sending
-        and editing -- in other words, the time spent:
-
-        - Sending a message
-        - Waiting for the MESSAGE_CREATE packet to be dispatched
-        - Editing the message
-        - Waiting for the MESSAGE_UPDATE packet to be dispatched
+        "RX" refers to the time it takes for the gateway to dispatch an action,
+        for example "Edit RX" refers to the time between editing a message with
+        the APIand the gateway dispatching a MESSAGE_UPDATE packet.
         """
         nonce = randint(1000, 10000)
 
