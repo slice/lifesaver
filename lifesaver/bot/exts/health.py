@@ -33,6 +33,13 @@ from lifesaver.utils.timing import Timer, format_seconds
 log = logging.getLogger(__name__)
 
 
+def bold_timer(timer):
+    if timer.duration > 1:
+        return f'**{timer}**'
+    else:
+        return str(timer)
+
+
 class Health(Cog):
     def __init__(self, bot, *args, **kwargs):
         super().__init__(bot, *args, **kwargs)
@@ -89,49 +96,54 @@ class Health(Cog):
         """
         nonce = randint(1000, 10000)
 
-        with Timer() as entire:
+        # send a message, then wait for the gateway to dispatch it to us
+        with Timer() as send:
+            event = asyncio.Event()
+            self.rtt_sends[nonce] = event
 
-            # send a message, then wait for the gateway to dispatch it to us
-            with Timer() as send:
-                event = asyncio.Event()
-                self.rtt_sends[nonce] = event
+            # send
+            with Timer() as send_tx:
+                message = await ctx.send('RTT: `\N{LOWER HALF BLOCK}`', nonce=nonce)
 
-                # send
-                with Timer() as send_tx:
-                    message = await ctx.send('`\N{LOWER HALF BLOCK}`', nonce=nonce)
+            # wait
+            with Timer() as send_rx:
+                await event.wait()
 
-                # wait
-                with Timer() as send_rx:
-                    await event.wait()
+        # now edit the message, and wait for the gateway to dispatch that
+        with Timer() as edit:
+            event = asyncio.Event()
+            self.rtt_edits[message.id] = event
 
-            # now edit the message, and wait for the gateway to dispatch that
-            with Timer() as edit:
-                event = asyncio.Event()
-                self.rtt_edits[message.id] = event
+            # edit
+            with Timer() as edit_tx:
+                await message.edit(content='RTT: `\N{FULL BLOCK}`')
 
-                # edit
-                with Timer() as edit_tx:
-                    await message.edit(content='`\N{FULL BLOCK}`')
-
-                # wait
-                with Timer() as edit_rx:
-                    await event.wait()
+            # wait
+            with Timer() as edit_rx:
+                await event.wait()
 
         avg_rx = (send_rx.duration + edit_rx.duration) / 2
         avg_tx = (send_tx.duration + edit_tx.duration) / 2
 
+        slow = send.duration > 1 or edit.duration > 1
+
+        def format_transfer(timer, tx, rx):
+            timer = bold_timer(timer)
+            tx = bold_timer(tx)
+            rx = bold_timer(rx)
+
+            return f'RTT: {timer}\n\nTX: {tx}\nRX: {rx}'
+
         embed = discord.Embed()
-        embed.color = discord.Color.green() if entire.duration < 1 else \
-            discord.Color.red()
+        embed.color = discord.Color.red() if slow else discord.Color.green()
         embed.title = 'RTT Results'
-        embed.description = f'**{entire}**'
         embed.add_field(
             name='MESSAGE_CREATE',
-            value=f'RTT: {send}\n\nTX: {send_tx}\nRX: {send_rx}',
+            value=format_transfer(send, send_tx, send_rx),
         )
         embed.add_field(
             name='MESSAGE_UPDATE',
-            value=f'RTT: {edit}\n\nTX: {edit_rx}\nRX: {edit_rx}',
+            value=format_transfer(edit, edit_tx, edit_rx),
         )
         embed.set_footer(
             text=f'Avg. TX: {format_seconds(avg_tx)}, RX: {format_seconds(avg_rx)}',
