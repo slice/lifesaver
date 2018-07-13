@@ -27,6 +27,7 @@ import logging
 from random import randint
 
 import discord
+from discord.ext import commands
 from lifesaver.bot import command, Cog, Context
 from lifesaver.utils.timing import Timer, format_seconds
 
@@ -71,6 +72,7 @@ class Health(Cog):
         await message.edit(content=content)
 
     @command()
+    @commands.cooldown(3, 4, type=commands.BucketType.guild)
     async def rtt(self, ctx: Context):
         """
         Performs a full RTT to measure REST and gateway latency.
