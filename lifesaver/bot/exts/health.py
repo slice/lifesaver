@@ -29,6 +29,7 @@ from random import randint
 import discord
 from discord.ext import commands
 from lifesaver.bot import command, Cog, Context
+from lifesaver.utils.formatting import truncate
 from lifesaver.utils.timing import Timer, format_seconds
 
 log = logging.getLogger(__name__)
@@ -85,6 +86,9 @@ class Health(Cog):
         """
         nonce = randint(1000, 10000)
 
+        send_failed = False
+        edit_failed = False
+
         # send a message, then wait for the gateway to dispatch it to us
         with Timer() as send:
             event = asyncio.Event()
@@ -92,7 +96,10 @@ class Health(Cog):
 
             # send
             with Timer() as send_tx:
-                message = await ctx.send('RTT: `\N{LOWER HALF BLOCK}`', nonce=nonce)
+                try:
+                    message = await ctx.send('RTT: `\N{LOWER HALF BLOCK}`', nonce=nonce)
+                except discord.HTTPException as error:
+                    send_failed = (True, error)
 
             # wait
             with Timer() as send_rx:
@@ -105,7 +112,10 @@ class Health(Cog):
 
             # edit
             with Timer() as edit_tx:
-                await message.edit(content='RTT: `\N{FULL BLOCK}`')
+                try:
+                    await message.edit(content='RTT: `\N{FULL BLOCK}`')
+                except discord.HTTPException as error:
+                    edit_failed = (True, error)
 
             # wait
             with Timer() as edit_rx:
@@ -126,6 +136,7 @@ class Health(Cog):
         embed = discord.Embed()
         embed.color = discord.Color.red() if slow else discord.Color.green()
         embed.title = 'RTT Results'
+
         embed.add_field(
             name='MESSAGE_CREATE',
             value=format_transfer(send, send_tx, send_rx),
@@ -137,6 +148,16 @@ class Health(Cog):
         embed.set_footer(
             text=f'Avg. TX: {format_seconds(avg_tx)}, RX: {format_seconds(avg_rx)}',
         )
+
+        failures = {'Send': send_failed, 'Edit': edit_failed}
+
+        if any(result is not False for (name, result) in failures.items()):
+            content = '\n'.join([
+                f'{name}: Failed with HTTP {result[1].code}: {truncate(result[1].message, 100)}'
+                for (name, result) in failures.items()
+                if result is not False
+            ])
+            embed.add_field(name='Failures', value=content, inline=False)
 
         await message.edit(content='', embed=embed)
 
