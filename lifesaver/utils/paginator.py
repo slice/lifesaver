@@ -162,5 +162,3 @@ class ListPaginator(Paginator):
         starting_index = page * self.per_page
         things = self.things[starting_index:starting_index + self.per_page]
         return self.format_things(things)
-
-
