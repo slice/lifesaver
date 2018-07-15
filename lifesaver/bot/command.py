@@ -84,5 +84,9 @@ def group(*args, **kwargs):
     return command(*args, cls=Group, **kwargs)
 
 
+def custom_group(*args, cls, **kwargs):
+    return command(*args, cls=cls, **kwargs)
+
+
 def command(name: str = None, cls=Command, **kwargs):
     return commands.command(name, cls, **kwargs)
