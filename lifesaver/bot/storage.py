@@ -93,7 +93,13 @@ class AsyncJSONStorage(AsyncStorage):
 
         # Save to a file with a randomly-generated filename.
         with open(atomic_name, 'w', encoding='utf-8') as fp:
-            json.dump(self._data.copy(), fp, ensure_ascii=True, separators=(',', ':'), cls=self.encoder)
+            json.dump(
+                self._data.copy(),
+                fp,
+                ensure_ascii=True,
+                cls=self.encoder,
+                indent=2
+            )
 
         # Rename the "atomic" file to the actual file to prevent corruptions.
         os.replace(atomic_name, self.file)
