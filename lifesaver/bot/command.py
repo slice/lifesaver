@@ -33,7 +33,7 @@ class SubcommandInvocationRequired(commands.CommandError):
 class Command(commands.Command):
     """A :class:`commands.Command` subclass that implements additional useful features."""
 
-    def __init__(self, *args, typing: bool = False, **kwargs):
+    def __init__(self, *args, typing: bool = False, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         #: Specifies whether to send typing indicators while the command is running.
@@ -66,7 +66,7 @@ class GroupMixin(commands.GroupMixin):
 
 
 class Group(GroupMixin, commands.Group, Command):
-    def __init__(self, *args, hollow: bool = False, **kwargs):
+    def __init__(self, *args, hollow: bool = False, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         #: Specifies whether a subcommand must be invoked.

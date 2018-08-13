@@ -26,12 +26,19 @@ import logging
 import os
 import re
 from collections import defaultdict
+from typing import Optional, Dict, Set, DefaultDict
 
 HASHED_FILENAME = re.compile(r'[a-f0-9]{8,}')
 
 
 class Poller:
-    def __init__(self, path: str, *, polling_interval: float = 0.5, name: str = None):
+    def __init__(
+        self,
+        path: str,
+        *,
+        polling_interval: float = 0.5,
+        name: str = None
+    ) -> None:
         self.name = name or path
         self.log = logging.getLogger(__name__)
         self.path = path
@@ -39,27 +46,27 @@ class Poller:
         self.state = self.build_state()
         self.log.debug('%s: built initial state: %s', self.name, self.state)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<Poller path={self.path} polling_interval={self.polling_interval}>'
 
-    def _filter(self, filename) -> str:
+    def _filter(self, filename: str) -> bool:
         match = HASHED_FILENAME.search(filename)
         if match is not None:
             self.log.debug('%s: skipping %s, hashed', self.name, filename)
         return match is None
 
-    def build_state(self):
+    def build_state(self) -> Dict[str, float]:
         return {
             filename: os.path.getmtime(os.path.join(self.path, filename))
             for filename in os.listdir(self.path)
             if self._filter(filename)
         }
 
-    def detect(self):
+    def detect(self) -> Optional[Dict[str, Set[str]]]:
         new_state = self.build_state()
         new_state_filenames = set(new_state.keys())
         old_state_filenames = set(self.state.keys())
-        changes = defaultdict(set)
+        changes: DefaultDict[str, set] = defaultdict(set)
 
         if new_state == self.state:
             return None

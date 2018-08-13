@@ -89,9 +89,13 @@ def create_environment(cog: 'Exec', ctx: Context) -> Dict[Any, Any]:
             raise RuntimeError('Cannot use member grabber in a DM context.')
 
         def _finder(member: discord.Member) -> bool:
-            # id, name#discrim, display name, name
-            return member.id == specifier or str(member) == specifier or member.display_name == specifier \
-                   or member.name == specifier
+            return any([
+                member.id == specifier,
+                # name#discrim
+                str(member) == specifier,
+                member.display_name == specifier,
+                member.name == specifier,
+            ])
 
         return discord.utils.find(_finder, ctx.guild.members)
 
@@ -263,7 +267,7 @@ class Exec(Cog):
 
     @command(name='eval', aliases=['exec', 'debug'])
     @is_owner()
-    async def _eval(self, ctx, *, code: code_in_codeblock):
+    async def _eval(self, ctx, *, code: code_in_codeblock):  # type: ignore
         """Evaluates Python code in realtime."""
         await self.execute(ctx, code)
 

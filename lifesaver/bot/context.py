@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-from typing import Any, List, Optional
+from typing import Any, List
 
 import discord
 from discord.ext import commands
@@ -43,14 +43,33 @@ class Context(commands.Context):
         self._paginator.add_line(line)
         return self
 
+    @property
+    def can_send_embeds(self) -> bool:
+        """Return whether the bot can send embeds in this context."""
+        if self.guild is None:
+            return True
+
+        channel = self.channel
+        guild = self.guild
+
+        perms = channel.permissions_for(guild.me)
+        return perms.embed_links
+
     async def send(self, content: str = None, *args, scrub: bool = True, **kwargs) -> discord.Message:
         if content and scrub:
             for from_, to in SCRUBBING.items():
                 content = content.replace(from_, to)
         return await super().send(content, *args, **kwargs)
 
-    async def confirm(self, title: str, message: str = None, *, color: discord.Color = discord.Color.red(),
-                      delete_after: bool = False, cancellation_message: Optional[str] = None) -> bool:
+    async def confirm(
+        self,
+        title: str,
+        message: str = None,
+        *,
+        color: discord.Color = discord.Color.red(),
+        delete_after: bool = False,
+        cancellation_message: str = None
+    ) -> bool:
         """
         Waits for confirmation by the user.
 
@@ -74,21 +93,28 @@ class Context(commands.Context):
         """
 
         embed = discord.Embed(title=title, description=message, color=color)
-        message: discord.Message = await self.send(embed=embed)
+        msg: discord.Message = await self.send(embed=embed)
 
         reactions = {'\N{WHITE HEAVY CHECK MARK}', '\N{CROSS MARK}'}
         for emoji in reactions:
-            await message.add_reaction(emoji)
+            await msg.add_reaction(emoji)
 
         def check(reaction: discord.Reaction, user: discord.User) -> bool:
-            return user == self.author and reaction.message.id == message.id and reaction.emoji in reactions
+            return all([
+                user == self.author,
+                reaction.message.id == msg.id,
+                reaction.emoji in reactions,
+            ])
 
         reaction, _ = await self.bot.wait_for('reaction_add', check=check)
+
         if delete_after:
-            await message.delete()
+            await msg.delete()
+
         confirmed = reaction.emoji == '\N{WHITE HEAVY CHECK MARK}'
         if not confirmed and cancellation_message:
             await self.send(cancellation_message)
+
         return confirmed
 
     async def wait_for_response(self) -> discord.Message:

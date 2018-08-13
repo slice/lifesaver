@@ -26,7 +26,7 @@ import asyncio
 import json
 import os
 import uuid
-from typing import Any, Type
+from typing import Any, Dict, Type
 
 from abc import ABC, abstractmethod
 
@@ -67,17 +67,16 @@ class AsyncJSONStorage(AsyncStorage):
         https://github.com/Rapptz/RoboDanny/blob/rewrite/cogs/utils/config.py
     """
 
-    def __init__(self, file, *, encoder: Type[json.JSONEncoder] = json.JSONEncoder, object_hook = None, loop=None):
-        """
-        Parameters
-        ----------
-        file : str
-            The file to save to.
-        loop : asyncio.AbstractEventLoop
-            The event loop to use.
-        """
+    def __init__(
+        self,
+        file: str,
+        *,
+        encoder: Type[json.JSONEncoder] = json.JSONEncoder,
+        object_hook=None,
+        loop: asyncio.AbstractEventLoop = None,
+    ) -> None:
         self.file = file
-        self._data = {}
+        self._data: Dict[str, Any] = {}
         self.loop = loop or asyncio.get_event_loop()
         self.lock = asyncio.Lock()
         self.object_hook = object_hook

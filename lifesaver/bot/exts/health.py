@@ -24,6 +24,7 @@ SOFTWARE.
 import asyncio
 import logging
 from random import randint
+from typing import Optional, Tuple
 
 import discord
 from discord.ext import commands
@@ -34,7 +35,7 @@ from lifesaver.utils.timing import Timer, format_seconds
 log = logging.getLogger(__name__)
 
 
-def bold_timer(timer):
+def bold_timer(timer: Timer) -> str:
     if timer.duration > 1:
         return f'**{timer}**'
     else:
@@ -85,8 +86,10 @@ class Health(Cog):
         """
         nonce = randint(1000, 10000)
 
-        send_failed = False
-        edit_failed = False
+        SendVerdict = Tuple[bool, Optional[Exception]]
+
+        send_failed: SendVerdict = (False, None)
+        edit_failed: SendVerdict = (False, None)
 
         # send a message, then wait for the gateway to dispatch it to us
         with Timer() as send:
@@ -152,9 +155,9 @@ class Health(Cog):
 
         if any(result is not False for (name, result) in failures.items()):
             content = '\n'.join([
-                f'{name}: Failed with HTTP {result[1].code}: {truncate(result[1].message, 100)}'
+                f'{name}: Failed with HTTP {result[1].code}: {truncate(result[1].message, 100)}'  # type: ignore
                 for (name, result) in failures.items()
-                if result is not False
+                if result[0] is not False
             ])
             embed.add_field(name='Failures', value=content, inline=False)
 

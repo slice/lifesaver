@@ -28,7 +28,7 @@ import os
 import pathlib
 import re
 import traceback
-from typing import Any, List
+from typing import Any, List, Union
 
 import discord
 
@@ -79,7 +79,11 @@ MONTH = DAY * 30
 YEAR = DAY * 365
 
 
-def human_delta(delta, *, short: bool = True) -> str:
+def human_delta(
+    delta: Union[int, float, datetime.datetime, datetime.timedelta],
+    *,
+    short: bool = True
+) -> str:
     """
     Converts to a human readable time delta.
     Parameters
@@ -111,8 +115,8 @@ def human_delta(delta, *, short: bool = True) -> str:
     hours, rest = divmod(rest, HOUR)
     minutes, seconds = divmod(rest, MINUTE)
 
-    periods = [("y", years), ("mo", months), ("d", days), ("h", hours), ("m", minutes), ("s", seconds)]
-    periods = [f"{value}{name}" for name, value in periods if value > 0]
+    units = [("y", years), ("mo", months), ("d", days), ("h", hours), ("m", minutes), ("s", seconds)]
+    periods = [f"{value}{name}" for name, value in units if value > 0]
 
     if len(periods) > 2:
         if short:
@@ -141,7 +145,10 @@ def codeblock(code: str, *, lang: str = '', escape: bool = True) -> str:
     str
         The formatted codeblock.
     """
-    return "```{}\n{}\n```".format(lang, escape_backticks(code) if escape else code)
+    return "```{}\n{}\n```".format(
+        lang,
+        escape_backticks(code) if escape else code,
+    )
 
 
 def truncate(text: str, desired_length: int, *, suffix: str = '...') -> str:
@@ -155,7 +162,8 @@ def truncate(text: str, desired_length: int, *, suffix: str = '...') -> str:
     desired_length : int
         The desired length.
     suffix : str, optional
-        The text to insert before the desired length is reached. By default, this is "..." to indicate truncation.
+        The text to insert before the desired length is reached.
+        By default, this is "..." to indicate truncation.
     """
     if len(text) > desired_length:
         return text[:desired_length - len(suffix)] + suffix
@@ -164,9 +172,9 @@ def truncate(text: str, desired_length: int, *, suffix: str = '...') -> str:
 
 
 class Table:
-    def __init__(self, *column_titles: str):
+    def __init__(self, *column_titles: str) -> None:
         self._rows = [column_titles]
-        self._widths = []
+        self._widths: List[int] = []
 
         for index, entry in enumerate(column_titles):
             self._widths.append(len(entry))
@@ -274,16 +282,16 @@ def pluralize(*, with_quantity: bool = False, with_indicative: bool = False, **w
 
     value = word[key]
 
-    word = key + ('' if value == 1 else 's')
+    with_s = key + ('' if value == 1 else 's')
     indicative = ''
 
     if with_indicative:
         indicative = ' is' if value == 1 else ' are'
 
     if with_quantity:
-        return f'{value} {word}{indicative}'
+        return f'{value} {with_s}{indicative}'
     else:
-        return word + indicative
+        return with_s + indicative
 
 
 def format_traceback(exc: Exception, *, limit: int = 7, hide_paths: bool = False) -> str:

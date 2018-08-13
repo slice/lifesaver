@@ -25,7 +25,7 @@ import importlib
 import logging
 import sys
 from pathlib import Path
-from typing import Dict, Set, Type, Union
+from typing import List, Dict, Set, Type, Union
 
 import discord
 from discord.ext import commands
@@ -79,7 +79,7 @@ class BotBase(commands.bot.BotBase):
     You should not be inheriting/using this class directly.
     """
 
-    def __init__(self, cfg: BotConfig, **kwargs):
+    def __init__(self, cfg: BotConfig, **kwargs) -> None:
         #: The bot's :class:`BotConfig`.
         self.config = cfg
 
@@ -122,7 +122,7 @@ class BotBase(commands.bot.BotBase):
         self.log = logging.getLogger(__name__)
 
         #: A list of extensions names to reload when calling Bot.load_all().
-        self._extension_load_list = ()  # type: tuple
+        self._extension_load_list: List[str] = []
 
         #: A list of included extensions built into lifesaver to load.
         self._included_extensions = INCLUDED_EXTENSIONS  # type: list
@@ -259,8 +259,10 @@ class BotBase(commands.bot.BotBase):
         """
         self._rebuild_load_list()
 
-        load_list = self._extension_load_list if exclude_default \
-            else (self._extension_load_list + self._included_extensions)
+        if exclude_default:
+            load_list = self._extension_load_list
+        else:
+            load_list = self._extension_load_list + self._included_extensions
 
         for extension_name in load_list:
             if unload_first:

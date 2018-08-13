@@ -32,7 +32,12 @@ log = logging.getLogger(__name__)
 
 
 class Paginator:
-    def __init__(self, invoker: discord.User, destination: discord.abc.Messageable, *, bot):
+    def __init__(
+        self,
+        invoker: discord.User,
+        destination: discord.abc.Messageable,
+        *, bot
+    ) -> None:
         self.invoker = invoker
         self.bot = bot
         self.destination = destination
@@ -138,7 +143,14 @@ class Paginator:
 
 
 class ListPaginator(Paginator):
-    def __init__(self, things, *args, title: str = None, per_page: int = 10, **kwargs):
+    def __init__(
+        self,
+        things: List[Any],
+        *args,
+        title: str = None,
+        per_page: int = 10,
+        **kwargs
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.title = title
         self.things = things
