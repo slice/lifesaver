@@ -74,7 +74,9 @@ class Group(GroupMixin, commands.Group, Command):
 
     async def invoke(self, ctx):
         if ctx.view.eof and self.hollow:
-            # complain if we're at the end and we still need a subcommand
+            # If we're at the end of the view (meaning there's no more words,
+            # so it's impossible to have a subcommand specified), and we need
+            # a subcommand, raise.
             raise SubcommandInvocationRequired()
         await super().invoke(ctx)
 

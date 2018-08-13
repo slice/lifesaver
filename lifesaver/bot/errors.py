@@ -1,7 +1,7 @@
 class LifesaverError(Exception):
     @property
     def message(self):
-        """Returns the message of this exception."""
+        """Return the message of this exception."""
         return str(self)
 
 

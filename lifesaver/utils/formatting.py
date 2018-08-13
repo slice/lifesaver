@@ -37,8 +37,8 @@ MENTION_RE = re.compile(r"<@!?&?(\d{15,21})>|(@everyone|@here)")
 
 def format_list(lst: List[Any]) -> str:
     """
-    Returns a string representing a list as an ordered list. List numerals are padded to ensure that there are at
-    least 3 digits.
+    Format a list as an ordered list, with numerals preceding every item.
+    List numerals are padded to ensure that there are at least 3 digits.
 
     Parameters
     ----------
@@ -50,12 +50,15 @@ def format_list(lst: List[Any]) -> str:
     str
         The formatted string.
     """
-    return '\n'.join('`{:03d}`: {}'.format(index + 1, value) for index, value in enumerate(lst))
+    return '\n'.join(
+        '`{:03d}`: {}'.format(index + 1, value)
+        for index, value in enumerate(lst)
+    )
 
 
 def escape_backticks(text: str) -> str:
     """
-    Replaces backticks with a homoglyph to prevent codeblock and inline code breakout.
+    Replace backticks with a homoglyph to prevent codeblock and inline code breakout.
 
     Parameters
     ----------
@@ -85,7 +88,8 @@ def human_delta(
     short: bool = True
 ) -> str:
     """
-    Converts to a human readable time delta.
+    Convert a time unit to a human readable time delta string.
+
     Parameters
     ----------
     delta : Union[int, float, datetime.datetime, datetime.timedelta]
@@ -120,7 +124,7 @@ def human_delta(
 
     if len(periods) > 2:
         if short:
-            # only the biggest three
+            # Only the biggest three.
             return f'{periods[0]}, {periods[1]} and {periods[2]}'
 
         return f'{", ".join(periods[:-1])} and {periods[-1]}'
@@ -129,15 +133,15 @@ def human_delta(
 
 def codeblock(code: str, *, lang: str = '', escape: bool = True) -> str:
     """
-    Constructs a Markdown codeblock.
+    Construct a Markdown codeblock.
 
     Parameters
     ----------
-    code : str
+    code
         The code to insert into the codeblock.
-    lang : str, optional
+    lang
         The string to mark as the language when formatting.
-    escape : bool, optional
+    escape
         Prevents the code from escaping from the codeblock.
 
     Returns
@@ -153,15 +157,15 @@ def codeblock(code: str, *, lang: str = '', escape: bool = True) -> str:
 
 def truncate(text: str, desired_length: int, *, suffix: str = '...') -> str:
     """
-    Truncates text. Three periods will be inserted as a suffix by default, but this can be changed.
+    Truncates text and returns it. Three periods will be inserted as a suffix.
 
     Parameters
     ----------
-    text : str
+    text
         The text to truncate.
-    desired_length : int
+    desired_length
         The desired length.
-    suffix : str, optional
+    suffix
         The text to insert before the desired length is reached.
         By default, this is "..." to indicate truncation.
     """
@@ -202,22 +206,22 @@ class Table:
             columns = []
 
             for index, field in enumerate(row_):
-                # digits get aligned to the right
+                # Digits get aligned to the right.
                 if field.isdigit():
                     columns.append(f" {field:>{self._widths[index]}} ")
                     continue
 
-                # regular text gets aligned to the left
+                # Regular text gets aligned to the left.
                 columns.append(f" {field:<{self._widths[index]}} ")
 
             return "|".join(columns)
 
-        # column title is centered in the middle of each field
+        # Column title is centered in the middle of each field.
         title_row = "|".join(f" {field:^{self._widths[index]}} " for index, field in enumerate(self._rows[0]))
         separator_row = "+".join("-" * (width + 2) for width in self._widths)
 
         drawn = [title_row, separator_row]
-        # remove the title row from the rows
+        # Remove the title row from the rows.
         self._rows = self._rows[1:]
 
         for row in self._rows:
@@ -235,7 +239,7 @@ class Table:
 
 
 def clean_mentions(channel: discord.TextChannel, text: str) -> str:
-    """Escapes all user and role mentions which would mention someone in the specified channel."""
+    """Escape all user and role mentions which would mention someone in the specified channel."""
     def replace(match):
         mention = match.group()
 
@@ -262,7 +266,7 @@ def clean_mentions(channel: discord.TextChannel, text: str) -> str:
 
 def pluralize(*, with_quantity: bool = False, with_indicative: bool = False, **word) -> str:
     """
-    Pluralizes a single kwarg's name depending on the value.
+    Pluralize a single kwarg's name depending on the value.
 
     Example
     -------
@@ -295,15 +299,15 @@ def pluralize(*, with_quantity: bool = False, with_indicative: bool = False, **w
 
 
 def format_traceback(exc: Exception, *, limit: int = 7, hide_paths: bool = False) -> str:
-    """Formats a traceback."""
+    """Format a traceback."""
 
     formatted = ''.join(traceback.format_exception(type(exc), exc, exc.__traceback__, limit=limit))
 
     if hide_paths:
-        # censor cwd
+        # Hide the current working directory to shorten text.
         formatted = formatted.replace(os.getcwd(), '/...')
 
-        # hide packages directory
+        # Hide the path to the Python packages directory to shorten text.
         packages_dir = str(pathlib.Path(discord.__file__).parent.parent.resolve())
         formatted = formatted.replace(packages_dir, '/packages')
 

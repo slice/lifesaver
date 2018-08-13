@@ -33,6 +33,7 @@ from lifesaver.utils.formatting import truncate
 from lifesaver.utils.timing import Timer, format_seconds
 
 log = logging.getLogger(__name__)
+SendVerdict = Tuple[bool, Optional[Exception]]
 
 
 def bold_timer(timer: Timer) -> str:
@@ -86,40 +87,34 @@ class Health(Cog):
         """
         nonce = randint(1000, 10000)
 
-        SendVerdict = Tuple[bool, Optional[Exception]]
-
         send_failed: SendVerdict = (False, None)
         edit_failed: SendVerdict = (False, None)
 
-        # send a message, then wait for the gateway to dispatch it to us
+        # Send a message, and wait for it to come back.
         with Timer() as send:
             event = asyncio.Event()
             self.rtt_sends[nonce] = event
 
-            # send
             with Timer() as send_tx:
                 try:
                     message = await ctx.send('RTT: `\N{LOWER HALF BLOCK}`', nonce=nonce)
                 except discord.HTTPException as error:
                     send_failed = (True, error)
 
-            # wait
             with Timer() as send_rx:
                 await event.wait()
 
-        # now edit the message, and wait for the gateway to dispatch that
+        # Edit a message, and wait for it to come back.
         with Timer() as edit:
             event = asyncio.Event()
             self.rtt_edits[message.id] = event
 
-            # edit
             with Timer() as edit_tx:
                 try:
                     await message.edit(content='RTT: `\N{FULL BLOCK}`')
                 except discord.HTTPException as error:
                     edit_failed = (True, error)
 
-            # wait
             with Timer() as edit_rx:
                 await event.wait()
 

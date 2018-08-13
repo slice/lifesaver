@@ -34,8 +34,12 @@ from lifesaver.fs import Poller
 
 from .context import Context
 
-INCLUDED_EXTENSIONS = ['lifesaver.bot.exts.admin', 'lifesaver.bot.exts.health', 'lifesaver.bot.exts.exec',
-                       'lifesaver.bot.exts.errors']
+INCLUDED_EXTENSIONS = [
+    'lifesaver.bot.exts.admin',
+    'lifesaver.bot.exts.health',
+    'lifesaver.bot.exts.exec',
+    'lifesaver.bot.exts.errors',
+]
 
 
 class BotConfig(Config):
@@ -68,7 +72,7 @@ class BotConfig(Config):
 
 
 def transform_path(path: Union[Path, str]) -> str:
-    """Transforms a path like ``exts/hi.py`` to ``exts.hi``."""
+    """Transform a path like ``exts/hi.py`` to ``exts.hi``."""
     return str(path).replace('/', '.').replace('.py', '')
 
 
@@ -88,20 +92,20 @@ class BotBase(commands.bot.BotBase):
 
         if cfg.command_prefix_include_mentions:
             if specified_prefix is None:
-                # mentions only
+                # Default to mentions only.
                 prefix = commands.when_mentioned
             else:
                 if isinstance(specified_prefix, str):
-                    # just one prefix, but we need a list
+                    # Just one prefix, wrap it in a list.
                     prefixes = [specified_prefix]
                 elif isinstance(specified_prefix, list):
-                    # list of prefixes already, so just use that
+                    # Prefixes are already in a list.
                     prefixes = specified_prefix
                 else:
                     raise TypeError(f'Cannot resolve prefix: {specified_prefix!r}')
                 prefix = commands.when_mentioned_or(*prefixes)
         else:
-            # no mentions? no need to use when_mentioned[_or]
+            # Not accepting mentions, so no need to convert.
             prefix = specified_prefix
 
         super().__init__(
@@ -109,7 +113,7 @@ class BotBase(commands.bot.BotBase):
             description=self.config.description,
             pm_help=self.config.pm_help,
 
-            **kwargs
+            **kwargs,
         )
 
         #: The bot's :class:`Context` subclass to use when invoking commands.
@@ -187,11 +191,11 @@ class BotBase(commands.bot.BotBase):
     @classmethod
     def with_config_instance(cls, config_instance: BotConfig, **kwargs):
         """
-        Creates a bot instance with an existing BotConfig instance.
+        Create a bot instance with an existing BotConfig instance.
 
         Parameters
         ----------
-        config_instance : BotConfig
+        config_instance
             The config to use.
 
         Returns
@@ -203,14 +207,14 @@ class BotBase(commands.bot.BotBase):
     @classmethod
     def with_config(cls, config: str = 'config.yml', *, config_cls: Type[BotConfig] = BotConfig, **kwargs):
         """
-        Creates a bot instance with a configuration file.
+        Create a bot instance with a configuration file.
 
         Parameters
         ----------
-        config : str
+        config
             The path to the configuration file.
-        config_cls : BotConfig class
-            The config class to use.
+        config_cls
+            The config subclass to use.
 
         Returns
         -------
@@ -219,7 +223,7 @@ class BotBase(commands.bot.BotBase):
         return cls(config_cls.load(config), **kwargs)
 
     def _rebuild_load_list(self):
-        """Rebuilds the load list."""
+        """Rebuild the load list."""
 
         # Build a list of extensions to load.
         exts_path = Path(self.config.extensions_path)
@@ -230,15 +234,20 @@ class BotBase(commands.bot.BotBase):
                 module = importlib.import_module(path)
                 return hasattr(module, 'setup')
             except Exception:
-                # uhh, failed to import. extension is bugged?
-                # let it through if it was in the previous load list (maybe some random syntax error during a hot
-                # reload, we want to be able to load this again later), otherwise just discard.
+                # Failed to import, extension might be bugged.
+                # If this extension was previously included, retain it in the
+                # load list because it might be fixed and reloaded later.
+                #
+                # Otherwise, discard.
                 previously_included = path in self._extension_load_list
                 if not previously_included:
                     self.log.exception('Excluding %s from the load list:', path)
                 else:
-                    self.log.warning('%s has failed to load, but it will be retained in the load list because it was '
-                                     'previously included.', path)
+                    self.log.warning(
+                        ('%s has failed to load, but it will be retained in '
+                         'the load list because it was previously included.'),
+                        path,
+                    )
                 return previously_included
 
         paths = list(filter(_ext_filter, paths))
@@ -247,15 +256,16 @@ class BotBase(commands.bot.BotBase):
 
     def load_all(self, *, unload_first: bool = False, exclude_default: bool = False):
         """
-        Loads all extensions in the extensions load list. The load list is always rebuilt first when called.
-        When done, ``load_all`` is dispatched with the value of ``unload_first``.
+        Load all extensions in the extensions load list.  The load list is
+        always rebuilt first when called. When done, ``load_all`` is dispatched
+        with the value of ``unload_first``.
 
         Parameters
         ----------
-        unload_first : bool
-            Specifies whether to unload extensions before loading them.
-        exclude_default : bool
-            Specifies whether to leave out default extensions.
+        unload_first
+            Unload extensions before loading them (functions a reload).
+        exclude_default
+            Leave out default extensions.
         """
         self._rebuild_load_list()
 
@@ -287,7 +297,7 @@ class BotBase(commands.bot.BotBase):
         await self.invoke(ctx)
 
     async def on_command_error(self, ctx: Context, exception: Exception):
-        # handled by errors.py
+        # Handled by errors.py.
         pass
 
 

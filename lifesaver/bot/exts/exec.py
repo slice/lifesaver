@@ -45,30 +45,31 @@ from lifesaver.utils.timing import Timer
 
 log = logging.getLogger(__name__)
 IMPLICIT_RETURN_BLACKLIST = {
-    # statements
+    # Statements:
     'assert', 'del', 'with',
 
-    # imports
+    # Imports:
     'from', 'import',
 
-    # control flow
+    # Control flow:
     'break', 'continue', 'pass', 'raise', 'return', 'yield'
 }
 
 
 def code_in_codeblock(arg: str) -> str:
+    """Extract code from a codeblock or inline code."""
     result = arg
 
     lines = result.splitlines()
 
-    # remove codeblock ticks
+    # Code block.
     if result.startswith('```') and result.endswith('```'):
         if len(lines) == 1:
             result = lines[0][3:-3]
         else:
             result = '\n'.join(result.split('\n')[1:-1])
 
-    # remove inline code ticks
+    # Inline code.
     result = result.strip('` \n')
 
     return result
@@ -76,7 +77,7 @@ def code_in_codeblock(arg: str) -> str:
 
 def create_environment(cog: 'Exec', ctx: Context) -> Dict[Any, Any]:
     async def upload(file_name: str) -> discord.Message:
-        """Shortcut to upload a file."""
+        """Upload a file by filename."""
         with open(file_name, 'rb') as fp:
             return await ctx.send(file=discord.File(fp))
 
@@ -102,7 +103,7 @@ def create_environment(cog: 'Exec', ctx: Context) -> Dict[Any, Any]:
     T = TypeVar('T')
 
     def grabber(lst: List[T]) -> Callable[[int], T]:
-        """Returns a function that, when called, grabs an item by ID from a list of objects with an ID."""
+        """Construct a grabber by ID function from a list."""
 
         def _grabber_function(thing_id: int) -> T:
             return discord.utils.get(lst, id=thing_id)
@@ -110,7 +111,7 @@ def create_environment(cog: 'Exec', ctx: Context) -> Dict[Any, Any]:
         return _grabber_function
 
     env = {
-        # shortcuts
+        # Shortcuts:
         'bot': ctx.bot,
         'ctx': ctx,
         'msg': ctx.message,
@@ -119,28 +120,28 @@ def create_environment(cog: 'Exec', ctx: Context) -> Dict[Any, Any]:
         'me': ctx.message.author,
         'cog': cog,
 
-        # modules
+        # Modules:
         'discord': discord,
         'asyncio': asyncio,
         'commands': commands,
         'command': commands.command,
         'group': commands.group,
 
-        # utilities
+        # Utilities:
         '_get': discord.utils.get,
         '_find': discord.utils.find,
         '_upload': upload,
         '_send': ctx.send,
+        'dir': better_dir,
 
-        # grabbers
+        # Grabbers:
         '_g': grabber(ctx.bot.guilds),
         '_u': grabber(ctx.bot.users),
         '_c': ctx.bot.get_channel,
         '_m': get_member,
 
-        # last result
+        # Last result:
         '_': cog.last_result,
-        'dir': better_dir,
     }
 
     # add globals to environment
@@ -150,10 +151,10 @@ def create_environment(cog: 'Exec', ctx: Context) -> Dict[Any, Any]:
 
 
 def format_syntax_error(e: SyntaxError) -> str:
-    """Formats a SyntaxError."""
+    """Format a SyntaxError nicely."""
     if e.text is None:
         return '```py\n{0.__class__.__name__}: {0}\n```'.format(e)
-    # display a nice arrow
+    # Display a nice arrow:
     return '```py\n{0.text}{1:>{0.offset}}\n{2}: {0}```'.format(e, '^', type(e).__name__)
 
 
@@ -175,8 +176,8 @@ class Exec(Cog):
             wrapped_code = 'async def _wrapped():\n' + textwrap.indent(to_compile, ' ' * 4)
             exec(compile(wrapped_code, '<exec>', mode='exec'), env)
 
-        # we'll try to add an implicit return. if we succeed, we set this flag
-        # to avoid running the code twice
+        # We'll try to add an implicit return.  If we succeed, we set this flag
+        # to avoid running the code twice.
         compiled = False
 
         try:
@@ -186,8 +187,8 @@ class Exec(Cog):
                 compile_code('\n'.join(lines))
                 compiled = True
         except SyntaxError:
-            # failed to implicitly return, just bail. we'll recompile the code
-            # without our implicit return
+            # Failed to implicitly return, just bail.  We'll recompile the code
+            # without our implicit return.
             pass
 
         if not compiled:

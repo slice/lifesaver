@@ -34,28 +34,12 @@ from abc import ABC, abstractmethod
 class AsyncStorage(ABC):
     @abstractmethod
     async def put(self, key: str, value: Any):
-        """
-        Puts a value into storage.
-
-        Parameters
-        ----------
-        key : str
-            The key.
-        value : str
-            The value to insert.
-        """
+        """Put a value into storage."""
         raise NotImplementedError
 
     @abstractmethod
     def get(self, key: str):
-        """
-        Returns a value from storage.
-
-        Parameters
-        ----------
-        key : str
-            The key.
-        """
+        """Return a value from storage."""
 
 
 class AsyncJSONStorage(AsyncStorage):
@@ -110,16 +94,12 @@ class AsyncJSONStorage(AsyncStorage):
             self._data = {}
 
     async def save(self):
-        """
-        Saves the data in memory to disk.
-        """
+        """Save the data in memory to disk."""
         async with self.lock:
             await self.loop.run_in_executor(None, self._save)
 
     async def load(self):
-        """
-        Loads the data from disk.
-        """
+        """Load data from the JSON file on disk."""
         async with self.lock:
             await self.loop.run_in_executor(None, self._load)
 

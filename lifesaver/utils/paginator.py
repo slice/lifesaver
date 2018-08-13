@@ -129,7 +129,7 @@ class Paginator:
         try:
             await self.message.edit(embed=embed)
         except discord.NotFound:
-            # hmm, message does't exist. let's stop.
+            # Message does not exist anymore...?
             self.stopped = True
 
     async def create(self):

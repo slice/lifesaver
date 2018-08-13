@@ -71,19 +71,19 @@ class Context(commands.Context):
         cancellation_message: str = None
     ) -> bool:
         """
-        Waits for confirmation by the user.
+        Wait for confirmation by the user.
 
         Parameters
         ----------
-        title : str
+        title
             The title of the confirmation prompt.
-        message : str
+        message
             The message (description) of the confirmation prompt.
-        color : :class:`discord.Color`
+        color
             The color of the embed.
-        delete_after : bool
-            Specifies whether to delete the confirmation after a choice has been picked.
-        cancellation_message : Optional[str]
+        delete_after
+            Deletes the confirmation after a choice has been picked.
+        cancellation_message
             A message to send after cancelling.
 
         Returns
@@ -119,11 +119,10 @@ class Context(commands.Context):
 
     async def wait_for_response(self) -> discord.Message:
         """
-        Waits for a message response from the message author, then returns the
-        new message.
+        Wait for a message response from the message author, then returns it.
 
         The message we are waiting for will only be accepted if it was sent by
-        the original command invoker, and it was sent in the same channel as
+        the original command invoker, and if it was sent in the same channel as
         the command message.
 
         Returns
@@ -134,7 +133,7 @@ class Context(commands.Context):
 
         def check(m: discord.Message):
             if isinstance(m.channel, discord.DMChannel):
-                # accept any message, because we are in a dm
+                # Accept any message, because we are in a DM.
                 return True
             return m.channel.id == self.channel.id and m.author == self.author
 
@@ -142,21 +141,19 @@ class Context(commands.Context):
 
     async def pick_from_list(self, choices: List[Any], *, delete_after_choice: bool = False, tries: int = 3) -> Any:
         """
-        Shows the user a list of items to pick from, and returns the picked item.
+        Show the user a list of items to pick from, and returns the picked item.
 
         Parameters
         ----------
-        choices : list of any
+        choices
             The list of choices.
-        delete_after_choice : bool
-            Specifies whether to delete the message prompt after the user has picked.
-        tries : int
-            The amount of tries to give to the user.
+        delete_after_choice
+            Deletes the message prompt after the user has picked.
+        tries
+            The amount of tries to grant the user.
         """
-        # format list of stuff
         choices_list = utils.format_list(choices)
 
-        # send list of stuff
         choices_message = await self.send('Pick one, or send `cancel`.\n\n' + choices_list)
         remaining_tries = tries
         picked = None
@@ -166,10 +163,8 @@ class Context(commands.Context):
                 await self.send('You ran out of tries, I give up!')
                 return None
 
-            # wait for a message
             msg = await self.wait_for_response()
 
-            # user wants to cancel?
             if msg.content == 'cancel':
                 await self.send('Canceled selection.')
                 break
@@ -177,17 +172,14 @@ class Context(commands.Context):
             try:
                 chosen_index = int(msg.content) - 1
             except ValueError:
-                # they didn't enter a valid number
                 await self.send('Invalid number. Send the number of the item you want.')
                 remaining_tries -= 1
                 continue
 
             if chosen_index < 0 or chosen_index > len(choices) - 1:
-                # out of range
                 await self.send('Invalid choice. Send the number of the item you want.')
                 remaining_tries -= 1
             else:
-                # they chose correctly
                 picked = choices[chosen_index]
                 if delete_after_choice:
                     await choices_message.delete()
@@ -205,11 +197,11 @@ class Context(commands.Context):
 
     async def ok(self, emoji: str = '\N{OK HAND SIGN}'):
         """
-        Makes the bot respond with an emoji in acknowledgement to an action performed by the user.
+        Respond with an emoji in acknowledgement to an action performed by the user.
 
         Parameters
         ----------
-        emoji : str
+        emoji
             The emoji to react with.
         """
         actions = [self.message.add_reaction, self.send, self.author.send]

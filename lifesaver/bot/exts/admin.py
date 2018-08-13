@@ -30,6 +30,7 @@ from lifesaver.utils import shell, escape_backticks
 
 class Admin(Cog):
     """A cog that provides commands related to administration of the bot."""
+
     @command(aliases=['r'])
     @commands.is_owner()
     async def reload(self, ctx: Context):

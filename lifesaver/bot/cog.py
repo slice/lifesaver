@@ -33,7 +33,7 @@ from lifesaver.config import Config
 
 
 class Cog:
-    """A base class for cogs."""
+    """The base class for cogs."""
 
     def __init__(self, bot):
         #: The bot instance.
@@ -110,9 +110,14 @@ class Cog:
         """
         A decorator that designates this function to be executed every ``n`` second(s).
 
-        :param interval: The time interval in seconds.
-        :param wait_until_ready: Waits until the bot is ready before scheduling.
-        :param initial_sleep: Specifies whether to sleep first.
+        Parameters
+        ----------
+        interval
+            The time interval in seconds.
+        wait_until_ready
+            Waits until the bot is ready before running.
+        initial_sleep
+            The number of seconds to sleep before running.
         """
 
         def outer(func):
