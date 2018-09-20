@@ -18,7 +18,7 @@ def cli(config):
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
         log.info('Using uvloop')
     except ImportError:
-        log.warn('uvloop not found, not using')
+        log.warning("uvloop wasn't found")
 
     config = BotConfig.load(config)
     custom_bot_module = getattr(config, 'bot_class', None)
