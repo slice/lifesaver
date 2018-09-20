@@ -148,12 +148,13 @@ class Health(Cog):
 
         failures = {'Send': send_failed, 'Edit': edit_failed}
 
-        if any(result is not False for (name, result) in failures.items()):
-            content = '\n'.join([
+        if any(result[0] for (name, result) in failures.items()):
+            content = '\n'.join(
                 f'{name}: Failed with HTTP {result[1].code}: {truncate(result[1].message, 100)}'  # type: ignore
                 for (name, result) in failures.items()
                 if result[0] is not False
-            ])
+            )
+            print('content:', content)
             embed.add_field(name='Failures', value=content, inline=False)
 
         await message.edit(content='', embed=embed)
