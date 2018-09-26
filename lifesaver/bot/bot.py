@@ -76,6 +76,21 @@ def transform_path(path: Union[Path, str]) -> str:
     return str(path).replace('/', '.').replace('.py', '')
 
 
+def compute_command_prefix(cfg: BotConfig):
+    prefix = cfg.command_prefix
+
+    if cfg.command_prefix_include_mentions:
+        if prefix is None:
+            return commands.when_mentioned
+        else:
+            if isinstance(prefix, str):
+                return commands.when_mentioned_or(prefix)
+            elif isinstance(prefix, list):
+                return commands.when_mentioned_or(*prefix)
+    else:
+        return prefix
+
+
 class BotBase(commands.bot.BotBase):
     """
     A :class:`commands.bot.BotBase` subclass that provides useful utilities.
@@ -87,29 +102,8 @@ class BotBase(commands.bot.BotBase):
         #: The bot's :class:`BotConfig`.
         self.config = cfg
 
-        specified_prefix = cfg.command_prefix
-        prefix = None
-
-        if cfg.command_prefix_include_mentions:
-            if specified_prefix is None:
-                # Default to mentions only.
-                prefix = commands.when_mentioned
-            else:
-                if isinstance(specified_prefix, str):
-                    # Just one prefix, wrap it in a list.
-                    prefixes = [specified_prefix]
-                elif isinstance(specified_prefix, list):
-                    # Prefixes are already in a list.
-                    prefixes = specified_prefix
-                else:
-                    raise TypeError(f'Cannot resolve prefix: {specified_prefix!r}')
-                prefix = commands.when_mentioned_or(*prefixes)
-        else:
-            # Not accepting mentions, so no need to convert.
-            prefix = specified_prefix
-
         super().__init__(
-            command_prefix=prefix,
+            command_prefix=compute_command_prefix(cfg),
             description=self.config.description,
             pm_help=self.config.pm_help,
 
