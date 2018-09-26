@@ -21,7 +21,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
+__all__ = ['shell', 'transform_path']
+
 import asyncio
+import typing
+from pathlib import Path
 
 
 async def shell(command: str) -> str:
@@ -31,3 +36,7 @@ async def shell(command: str) -> str:
     )
     results = await shell.communicate()
     return ''.join(x.decode() for x in results)
+
+
+def transform_path(path: typing.Union[Path, str]) -> str:
+    return str(path).replace('/', '.').replace('.py', '')

@@ -23,14 +23,14 @@ SOFTWARE.
 """
 import importlib
 import logging
-import sys
 from pathlib import Path
-from typing import List, Dict, Set, Union
+from typing import List, Union
 
 import discord
 from discord.ext import commands
 from lifesaver.config import Config
-from lifesaver.poller import Poller
+from lifesaver.poller import Poller, PollerPlug
+from lifesaver.utils import transform_path
 
 from .context import Context
 
@@ -69,10 +69,6 @@ class BotConfig(Config):
 
     #: Activates the hot reloader.
     hot_reload: bool = False
-
-
-def transform_path(path: Union[Path, str]) -> str:
-    return str(path).replace('/', '.').replace('.py', '')
 
 
 def compute_command_prefix(cfg: BotConfig):
@@ -128,56 +124,12 @@ class BotBase(commands.bot.BotBase):
     async def _hot_reload(self):
         poller = Poller(path=self.config.extensions_path, polling_interval=0.1)
         self.log.debug('created poller: %s', poller)
+
         async for event in poller:
-            self.handle_hot_event(event)
-
-    def handle_hot_event(self, event: Dict[str, Set[str]]):
-        def resolve_module(filename):
-            return transform_path(Path(self.config.extensions_path) / filename)
-
-        def attempt_load(module):
-            try:
-                self.load_extension(module)
-            except Exception:
-                self.log.exception('Failed to hot-load %s, ignoring:', module)
-
-        for created_file in event['created']:
-            if '__pycache__' in created_file:
-                continue
-            module = resolve_module(created_file)
-            self.log.debug('hot: attempting to hot-load new extension %s', module)
-            attempt_load(module)
-        for deleted_file in event['deleted']:
-            if '__pycache__' in deleted_file:
-                continue
-            module = resolve_module(deleted_file)
-            if module in self.extensions:
-                self.log.debug('hot: unloading %s', module)
-                self.unload_extension(module)
-            else:
-                self.log.debug('hot: not unloading %s, not loaded', module)
-            try:
-                del sys.modules[module]
-            except KeyError:
-                pass
-        for updated_file in event['updated']:
-            if '__pycache__' in updated_file:
-                continue
-            module = resolve_module(updated_file)
-            self.log.debug('hot: reloading %s', module)
-            if module in self.extensions:
-                self.unload_extension(module)
-            try:
-                del sys.modules[module]
-            except KeyError:
-                pass
-            attempt_load(module)
-
-        self._rebuild_load_list()
+            self._hot_plug.handle(event)
+            self._rebuild_load_list()
 
     def _rebuild_load_list(self):
-        """Rebuild the load list."""
-
         # Build a list of extensions to load.
         exts_path = Path(self.config.extensions_path)
         paths = [transform_path(path) for path in exts_path.iterdir()]
@@ -235,8 +187,10 @@ class BotBase(commands.bot.BotBase):
 
     async def on_ready(self):
         self.log.info('Ready! %s (%d)', self.user, self.user.id)
+
         if self.config.hot_reload:
             self.log.debug('Setting up hot reload.')
+            self._hot_plug = PollerPlug(self)
             self._hot_task = self.loop.create_task(self._hot_reload())
 
     async def on_message(self, message: discord.Message):
