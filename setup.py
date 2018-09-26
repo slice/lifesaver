@@ -15,7 +15,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/slice/discord.py-lifesaver',
-    author='Ryan Tongol',
+    author='slice',
     author_email='ryaneft@gmail.com',
     license='MIT',
     classifiers=[
