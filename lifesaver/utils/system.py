@@ -25,19 +25,7 @@ import asyncio
 
 
 async def shell(command: str) -> str:
-    """
-    Runs a shell command asynchronously.
-
-    Parameters
-    ----------
-    command : str
-        The command to run.
-
-    Returns
-    -------
-    str
-        The command output (both stdout and stdin).
-    """
+    """Run a shell command asynchronously, returning output."""
     shell = await asyncio.create_subprocess_shell(
         command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
     )

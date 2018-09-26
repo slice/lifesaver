@@ -107,8 +107,7 @@ class Cog:
 
     @classmethod
     def every(cls, interval: int, **kwargs):
-        """
-        A decorator that designates this function to be executed every ``n`` second(s).
+        """A decorator that designates this function to be executed every ``n`` second(s).
 
         Parameters
         ----------
