@@ -104,7 +104,7 @@ class Errors(Cog):
                 pass
 
         if isinstance(error, errors.MessageError):
-            await ctx.send(error.message)
+            await ctx.send(str(error))
             return
 
         if isinstance(error, commands.BadArgument):
