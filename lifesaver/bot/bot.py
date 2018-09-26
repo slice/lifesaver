@@ -25,7 +25,7 @@ import importlib
 import logging
 import sys
 from pathlib import Path
-from typing import List, Dict, Set, Type, Union
+from typing import List, Dict, Set, Union
 
 import discord
 from discord.ext import commands
@@ -52,27 +52,26 @@ class BotConfig(Config):
     #: The path for cog-specific configuration files
     cog_config_path: str = './config'
 
-    #: Specifies whether to ignore bots when processing commands.
+    #: Ignores bots when processing commands.
     ignore_bots: bool = True
 
     #: The command prefix to use.
-    command_prefix: str = '!'
+    command_prefix: Union[List[str], str] = '!'
 
     #: The bot's description.
     description: str = 'A Discord bot.'
 
-    #: Specifies whether to PM help or not.
+    #: PMs help messages.
     pm_help: Union[bool, None] = None
 
-    #: Specifies whether mentions should count as prefixes, too.
+    #: Includes mentions as valid prefixes.
     command_prefix_include_mentions: bool = True
 
-    #: Specifies whether to automatically reload extensions upon changing them.
+    #: Activates the hot reloader.
     hot_reload: bool = False
 
 
 def transform_path(path: Union[Path, str]) -> str:
-    """Transform a path like ``exts/hi.py`` to ``exts.hi``."""
     return str(path).replace('/', '.').replace('.py', '')
 
 
@@ -92,12 +91,6 @@ def compute_command_prefix(cfg: BotConfig):
 
 
 class BotBase(commands.bot.BotBase):
-    """
-    A :class:`commands.bot.BotBase` subclass that provides useful utilities.
-
-    You should not be inheriting/using this class directly.
-    """
-
     def __init__(self, cfg: BotConfig, **kwargs) -> None:
         #: The bot's :class:`BotConfig`.
         self.config = cfg
@@ -215,17 +208,16 @@ class BotBase(commands.bot.BotBase):
         self._extension_load_list = paths
 
     def load_all(self, *, unload_first: bool = False, exclude_default: bool = False):
-        """
-        Load all extensions in the extensions load list.  The load list is
-        always rebuilt first when called. When done, ``load_all`` is dispatched
-        with the value of ``unload_first``.
+        """Load all extensions in the load list.
+        The load list is always rebuilt first when called.
+        When done, the ``load_all`` event is dispatched with the value of ``unload_first``.
 
         Parameters
         ----------
         unload_first
-            Unload extensions before loading them (functions a reload).
+            Unload extensions before loading them (makes the call function as a reload).
         exclude_default
-            Leave out default extensions.
+            Exclude default extensions from being loaded.
         """
         self._rebuild_load_list()
 
@@ -262,15 +254,11 @@ class BotBase(commands.bot.BotBase):
 
 
 class Bot(BotBase, discord.Client):
-    """A bot class that provides useful utilities."""
-
     def run(self):
         super().run(self.config.token)
 
 
 class Selfbot(BotBase, discord.Client):
-    """A selfbot class that provides useful utilities."""
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, self_bot=True, **kwargs)
 
@@ -279,7 +267,5 @@ class Selfbot(BotBase, discord.Client):
 
 
 class AutoShardedBot(BotBase, discord.AutoShardedClient):
-    """An automatically sharded bot class that provides useful utilities."""
-
     def run(self):
         super().run(self.config.token)
