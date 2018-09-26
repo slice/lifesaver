@@ -194,6 +194,8 @@ class BotBase(commands.bot.BotBase):
             self._hot_task = self.loop.create_task(self._hot_reload())
 
     async def on_message(self, message: discord.Message):
+        await self.wait_until_ready()
+
         # Ignore bots if applicable.
         if self.config.ignore_bots and message.author.bot:
             return
