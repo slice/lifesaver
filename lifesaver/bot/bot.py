@@ -30,7 +30,7 @@ from typing import List, Dict, Set, Union
 import discord
 from discord.ext import commands
 from lifesaver.config import Config
-from lifesaver.fs import Poller
+from lifesaver.poller import Poller
 
 from .context import Context
 
