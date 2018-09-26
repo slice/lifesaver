@@ -54,6 +54,11 @@ class Context(commands.Context):
         return self.bot.tick
 
     @property
+    def pg_pool(self):
+        """A shortcut to BotBase.pg_pool."""
+        return self.bot.pg_pool
+
+    @property
     def can_send_embeds(self) -> bool:
         """Return whether the bot can send embeds in this context."""
         if self.guild is None:

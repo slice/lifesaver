@@ -24,7 +24,7 @@ SOFTWARE.
 import importlib
 import logging
 from pathlib import Path
-from typing import List, Union, Dict
+from typing import List, Union, Dict, Any
 
 import discord
 from discord.ext import commands
@@ -73,6 +73,9 @@ class BotConfig(Config):
     #: Bot emojis.
     emojis: Dict[str, Union[str, int]]
 
+    #: Postgres access credentials.
+    postgres: Dict[str, Any] = None
+
 
 def compute_command_prefix(cfg: BotConfig):
     prefix = cfg.command_prefix
@@ -107,6 +110,9 @@ class BotBase(commands.bot.BotBase):
 
         if not issubclass(self.context_cls, Context):
             raise TypeError(f'{self.context_cls} is not a lifesaver Context subclass')
+
+        #: The Postgres pool connection.
+        self.pg_pool = None
 
         #: The bot's logger.
         self.log = logging.getLogger(__name__)
@@ -152,6 +158,20 @@ class BotBase(commands.bot.BotBase):
         async for event in poller:
             self._hot_plug.handle(event)
             self._rebuild_load_list()
+
+    async def _postgres_connect(self):
+        try:
+            import asyncpg
+        except ImportError:
+            raise RuntimeError('Cannot connect to Postgres, asyncpg is not installed')
+
+        self.log.debug('creating a postgres pool')
+
+        self.pg_pool = await asyncpg.create_pool(
+            dsn=self.config.postgres['dsn'],
+        )
+
+        self.log.debug('created postgres pool')
 
     def _rebuild_load_list(self):
         # Build a list of extensions to load.
@@ -211,6 +231,9 @@ class BotBase(commands.bot.BotBase):
 
     async def on_ready(self):
         self.log.info('Ready! %s (%d)', self.user, self.user.id)
+
+        if self.config.postgres:
+            await self._postgres_connect()
 
         if self.config.hot_reload:
             self.log.debug('Setting up hot reload.')
