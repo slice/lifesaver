@@ -24,13 +24,13 @@ SOFTWARE.
 import importlib
 import logging
 from pathlib import Path
-from typing import List, Union
+from typing import List, Union, Dict
 
 import discord
 from discord.ext import commands
 from lifesaver.config import Config
 from lifesaver.poller import Poller, PollerPlug
-from lifesaver.utils import transform_path
+from lifesaver.utils import transform_path, dot_access
 
 from .context import Context
 
@@ -69,6 +69,9 @@ class BotConfig(Config):
 
     #: Activates the hot reloader.
     hot_reload: bool = False
+
+    #: Bot emojis.
+    emojis: Dict[str, Union[str, int]]
 
 
 def compute_command_prefix(cfg: BotConfig):
@@ -114,12 +117,33 @@ class BotBase(commands.bot.BotBase):
         #: A list of included extensions built into lifesaver to load.
         self._included_extensions = INCLUDED_EXTENSIONS  # type: list
 
-        # Hot reload stuff.
         self._hot_task = None
+        self._hot_plug = None
 
     async def close(self):
         self.log.info('Closing.')
         await super().close()
+
+    def emoji(self, accessor: str, *, stringify: bool = False) -> Union[str, discord.Emoji]:
+        """Return a bot emoji by name."""
+        emoji_id = dot_access(self.config.emojis, accessor)
+
+        if isinstance(emoji_id, int):
+            emoji = self.get_emoji(emoji_id)
+        else:
+            emoji = emoji_id
+
+        if stringify:
+            return str(emoji)
+        else:
+            return emoji
+
+    def tick(self, variant: bool = True) -> Union[str, discord.Emoji]:
+        """Return a tick bot emoji."""
+        if variant:
+            return self.emoji('generic.yes')
+        else:
+            return self.emoji('generic.no')
 
     async def _hot_reload(self):
         poller = Poller(path=self.config.extensions_path, polling_interval=0.1)

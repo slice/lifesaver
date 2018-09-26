@@ -196,7 +196,7 @@ class Exec(Cog):
                 compile_code(code)
             except SyntaxError as error:
                 with suppress(discord.HTTPException):
-                    await ctx.message.add_reaction('\N{DOUBLE EXCLAMATION MARK}')
+                    await ctx.message.add_reaction(ctx.emoji('exec.error'))
                 await ctx.send(format_syntax_error(error))
                 return
 
@@ -209,8 +209,7 @@ class Exec(Cog):
         async def late_indicator():
             await asyncio.sleep(3)
             with suppress(discord.HTTPException):
-                await ctx.message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
-                await ctx.message.add_reaction('\N{HOCHO}')
+                await ctx.message.add_reaction(ctx.emoji('exec.kill'))
 
             def check(reaction, user):
                 return user == ctx.author and reaction.message.id == ctx.message.id and reaction.emoji == '\N{HOCHO}'
@@ -227,11 +226,11 @@ class Exec(Cog):
                 await asyncio.gather(task)
         except asyncio.CancelledError:
             with suppress(discord.HTTPException):
-                await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
+                await ctx.message.add_reaction(ctx.emoji('exec.cancelled'))
             return
         except Exception:
             with suppress(discord.HTTPException):
-                await ctx.message.add_reaction('\N{DOUBLE EXCLAMATION MARK}')
+                await ctx.message.add_reaction(ctx.emoji('exec.error'))
 
             await ctx.send(codeblock(traceback.format_exc(limit=7)))
             return
@@ -241,7 +240,7 @@ class Exec(Cog):
                 late_task.cancel()
 
         with suppress(discord.HTTPException):
-            await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+            await ctx.message.add_reaction(ctx.emoji('exec.ok'))
 
         result = task.result()
 

@@ -44,6 +44,16 @@ class Context(commands.Context):
         return self
 
     @property
+    def emoji(self):
+        """A shortcut to BotBase.emoji."""
+        return self.bot.emoji
+
+    @property
+    def tick(self):
+        """A shortcut to BotBase.tick."""
+        return self.bot.tick
+
+    @property
     def can_send_embeds(self) -> bool:
         """Return whether the bot can send embeds in this context."""
         if self.guild is None:
@@ -95,7 +105,7 @@ class Context(commands.Context):
         embed = discord.Embed(title=title, description=message, color=color)
         msg: discord.Message = await self.send(embed=embed)
 
-        reactions = {'\N{WHITE HEAVY CHECK MARK}', '\N{CROSS MARK}'}
+        reactions = [self.emoji('generic.yes'), self.emoji('generic.no')]
         for emoji in reactions:
             await msg.add_reaction(emoji)
 
@@ -111,15 +121,14 @@ class Context(commands.Context):
         if delete_after:
             await msg.delete()
 
-        confirmed = reaction.emoji == '\N{WHITE HEAVY CHECK MARK}'
+        confirmed = reaction.emoji == reactions[0]
         if not confirmed and cancellation_message:
             await self.send(cancellation_message)
 
         return confirmed
 
     async def wait_for_response(self) -> discord.Message:
-        """
-        Wait for a message response from the message author, then returns it.
+        """Wait for a message response from the message author, then returns it.
 
         The message we are waiting for will only be accepted if it was sent by
         the original command invoker, and if it was sent in the same channel as
@@ -140,8 +149,7 @@ class Context(commands.Context):
         return await self.bot.wait_for('message', check=check)
 
     async def pick_from_list(self, choices: List[Any], *, delete_after_choice: bool = False, tries: int = 3) -> Any:
-        """
-        Show the user a list of items to pick from, and returns the picked item.
+        """Show the user a list of items to pick from, and returns the picked item.
 
         Parameters
         ----------
@@ -195,15 +203,15 @@ class Context(commands.Context):
         for page in self._paginator.pages:
             await self.send(page)
 
-    async def ok(self, emoji: str = '\N{OK HAND SIGN}'):
-        """
-        Respond with an emoji in acknowledgement to an action performed by the user.
+    async def ok(self, emoji: str = None):
+        """Respond with an emoji in acknowledgement to an action performed by the user.
 
         Parameters
         ----------
         emoji
             The emoji to react with.
         """
+        emoji = emoji or self.emoji('generic.ok')
         actions = [self.message.add_reaction, self.send, self.author.send]
 
         for action in actions:

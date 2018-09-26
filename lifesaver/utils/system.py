@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-__all__ = ['shell', 'transform_path']
+__all__ = ['shell', 'transform_path', 'dot_access']
 
 import asyncio
 import typing
@@ -40,3 +40,11 @@ async def shell(command: str) -> str:
 
 def transform_path(path: typing.Union[Path, str]) -> str:
     return str(path).replace('/', '.').replace('.py', '')
+
+
+def dot_access(dict, access: str):
+    """Accesses a dict by string dot access."""
+    item = dict
+    for part in access.split('.'):
+        item = item[part]
+    return item
