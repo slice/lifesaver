@@ -25,8 +25,10 @@ import typing
 
 from ruamel.yaml import YAML
 
+from lifesaver.errors import LifesaverError
 
-class ConfigError(RuntimeError):
+
+class ConfigError(LifesaverError):
     """An error thrown by the Config loader."""
 
 

@@ -1,8 +1,4 @@
-class LifesaverError(Exception):
-    @property
-    def message(self):
-        """Return the message of this exception."""
-        return str(self)
+from lifesaver.errors import LifesaverError
 
 
 class MessageError(LifesaverError):
