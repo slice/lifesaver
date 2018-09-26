@@ -28,20 +28,21 @@ from typing import List
 __all__ = ['setup_logging']
 
 
-def setup_logging(time_formatting: str = '%Y-%m-%d %H:%M', hush: List[str] = None):
-    """
-    Sets up logging.
+def setup_logging(time_formatting: str = None, hush: List[str] = None):
+    """Set up logging.
 
     The root logger's level is set to logging.DEBUG.
     The ``websockets`` and ``discord`` root loggers are set to ``logging.INFO``.
 
     Parameters
     ----------
-    time_formatting : str
+    time_formatting
         The time formatting specifier.
-    hush : list of str
+    hush
         A list of additional logger names to set to ``logging.INFO``.
     """
+
+    time_formatting = time_formatting or '%Y-%m-%d %H:%M:%S'
 
     # Set the root logger's info to INFO.
     root_logger = logging.getLogger()
