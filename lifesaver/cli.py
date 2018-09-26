@@ -35,7 +35,7 @@ def cli(config):
         log.debug('Using custom bot class: %s', bot_class)
 
     log.info('Booting bot.')
-    bot = bot_class.with_config_instance(config)
+    bot = bot_class(config)
     bot.load_all()
     bot.run()
 
