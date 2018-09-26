@@ -21,21 +21,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-from typing import Any, Dict
+import typing
 
 from ruamel.yaml import YAML
 
 
-class ConfigError(Exception):
+class ConfigError(RuntimeError):
     """An error thrown by the Config loader."""
 
 
 class Config:
-    def __init__(self, data, *, loaded_from=None):
+    """A bot or cog configuration."""
+
+    def __init__(self, data, *, loaded_from: str = None):
         self.loaded_from = loaded_from
         self.data = data
 
-        for (key, value) in data.items():
+        for key, value in data.items():
             setattr(self, key, value)
 
     def get(self, *args, **kwargs):
@@ -45,30 +47,19 @@ class Config:
         return self.data[item]
 
     @classmethod
-    def load(cls, file: str):
-        """
-        Creates a new :class:`Config` and loads a YAML file into it.
+    def load(cls, path: str) -> 'Config':
+        """Creates a Config instance from a file path.
 
         Parameters
         ----------
-        file : str
-            The filename to load YAML from.
-
-        Returns
-        -------
-        Config
-            The loaded configuration instance.
+        path
+            The path to a YAML file.
         """
-        with open(file, 'r') as fp:
+        with open(path, 'r') as fp:
             yaml = fp.read()
-            return cls(YAML(typ='safe').load(yaml), loaded_from=file)
+            return cls(YAML().load(yaml), loaded_from=path)
 
     @property
-    def as_dict(self) -> Dict[Any, Any]:
-        """
-        Returns
-        -------
-        dict of any: any
-            This configuration as a dict.
-        """
+    def as_dict(self) -> typing.Dict[typing.Any, typing.Any]:
+        """Returns this Config as a dict."""
         return self.data
