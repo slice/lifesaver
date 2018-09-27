@@ -59,6 +59,10 @@ class Cog:
     def loop(self):
         return self.bot.loop
 
+    @property
+    def pg_pool(self):
+        return self.bot.pg_pool
+
     @staticmethod
     def with_config(config_cls: Type[Config]):
         def decorator(cls):
