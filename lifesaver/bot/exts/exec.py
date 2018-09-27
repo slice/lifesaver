@@ -39,7 +39,7 @@ from typing import Any, Callable, Dict, List, TypeVar, Union
 import discord
 from discord.ext import commands
 from discord.ext.commands import is_owner
-from lifesaver.bot import Cog, Context, command
+from lifesaver.bot import Cog, Context, group
 from lifesaver.utils import codeblock
 from lifesaver.utils.timing import Timer
 
@@ -265,15 +265,15 @@ class Exec(Cog):
         else:
             await ctx.send(message)
 
-    @command(name='eval', aliases=['exec', 'debug'])
+    @group(name='eval', aliases=['exec', 'debug'], invoke_without_command=True)
     @is_owner()
     async def _eval(self, ctx, *, code: code_in_codeblock):  # type: ignore
         """Evaluates Python code in realtime."""
         await self.execute(ctx, code)
 
-    @command()
+    @_eval.command(name='cancel')
     @is_owner()
-    async def cancel(self, ctx):
+    async def eval_cancel(self, ctx):
         """Cancels running code."""
         self.cancel_sessions()
         await ctx.ok()
