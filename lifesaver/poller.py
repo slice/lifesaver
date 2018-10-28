@@ -33,7 +33,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Optional, Dict, Set, DefaultDict
 
-from lifesaver.utils import transform_path
+from lifesaver.load_list import transform_path, filter_path
 
 HotEvent = Dict[str, Set[str]]
 
@@ -113,12 +113,12 @@ class Poller:
         return f'<Poller path={self.path} polling_interval={self.polling_interval}>'
 
     def _filter(self, filename: str) -> bool:
-        if '__pycache__' in filename or filename.endswith('.pyc'):
+        if not filter_path(filename):
             return False
 
         match = HASHED_FILENAME.search(filename)
         if match is not None:
-            log.debug('%s: skipping %s, hashed', self.name, filename)
+            log.debug('%s: skipping %s, filename is a hash', self.name, filename)
 
         return match is None
 

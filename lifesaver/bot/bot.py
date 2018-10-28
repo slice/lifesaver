@@ -21,7 +21,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import importlib
 import logging
 from pathlib import Path
 from typing import List, Union, Dict, Any
@@ -30,7 +29,8 @@ import discord
 from discord.ext import commands
 from lifesaver.config import Config
 from lifesaver.poller import Poller, PollerPlug
-from lifesaver.utils import transform_path, dot_access
+from lifesaver.utils import dot_access
+from lifesaver.load_list import LoadList
 
 from .context import Context
 
@@ -118,7 +118,7 @@ class BotBase(commands.bot.BotBase):
         self.log = logging.getLogger(__name__)
 
         #: A list of extensions names to reload when calling Bot.load_all().
-        self._extension_load_list: List[str] = []
+        self.load_list = LoadList()
 
         #: A list of included extensions built into lifesaver to load.
         self._included_extensions = INCLUDED_EXTENSIONS  # type: list
@@ -174,34 +174,7 @@ class BotBase(commands.bot.BotBase):
         self.log.debug('created postgres pool')
 
     def _rebuild_load_list(self):
-        # Build a list of extensions to load.
-        exts_path = Path(self.config.extensions_path)
-        paths = [transform_path(path) for path in exts_path.iterdir()]
-
-        def _ext_filter(path: str):
-            try:
-                module = importlib.import_module(path)
-                return hasattr(module, 'setup')
-            except Exception:
-                # Failed to import, extension might be bugged.
-                # If this extension was previously included, retain it in the
-                # load list because it might be fixed and reloaded later.
-                #
-                # Otherwise, discard.
-                previously_included = path in self._extension_load_list
-                if not previously_included:
-                    self.log.exception('Excluding %s from the load list:', path)
-                else:
-                    self.log.warning(
-                        ('%s has failed to load, but it will be retained in '
-                         'the load list because it was previously included.'),
-                        path,
-                    )
-                return previously_included
-
-        paths = list(filter(_ext_filter, paths))
-
-        self._extension_load_list = paths
+        self.load_list.build(Path(self.config.extensions_path))
 
     def load_all(self, *, unload_first: bool = False, exclude_default: bool = False):
         """Load all extensions in the load list.
@@ -218,9 +191,9 @@ class BotBase(commands.bot.BotBase):
         self._rebuild_load_list()
 
         if exclude_default:
-            load_list = self._extension_load_list
+            load_list = self.load_list
         else:
-            load_list = self._extension_load_list + self._included_extensions
+            load_list = self.load_list + self._included_extensions
 
         for extension_name in load_list:
             if unload_first:
