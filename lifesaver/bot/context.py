@@ -49,8 +49,8 @@ class Context(commands.Context):
         perms = channel.permissions_for(guild.me)
         return perms.embed_links
 
-    async def send(self, content: str = None, *args, scrub: bool = True, **kwargs) -> discord.Message:
-        if content and scrub:
+    async def send(self, content: Any = None, *args, scrub: bool = True, **kwargs) -> discord.Message:
+        if isinstance(content, str) and scrub:
             for from_, to in SCRUBBING.items():
                 content = content.replace(from_, to)
         return await super().send(content, *args, **kwargs)
