@@ -57,6 +57,17 @@ IMPLICIT_RETURN_BLACKLIST = {
     'break', 'continue', 'pass', 'raise', 'return', 'yield'
 }
 
+T = TypeVar('T')
+
+
+def grabber(lst: List[T]) -> Callable[[int], T]:
+    """Construct a grabber by ID function from a list."""
+
+    def _grabber_function(thing_id: int) -> T:
+        return discord.utils.get(lst, id=thing_id)
+
+    return _grabber_function
+
 
 def code_in_codeblock(arg: str) -> str:
     """Extract code from a codeblock or inline code."""
@@ -97,16 +108,6 @@ def create_environment(cog: 'Exec', ctx: Context) -> Dict[Any, Any]:
             ])
 
         return discord.utils.find(_finder, ctx.guild.members)
-
-    T = TypeVar('T')
-
-    def grabber(lst: List[T]) -> Callable[[int], T]:
-        """Construct a grabber by ID function from a list."""
-
-        def _grabber_function(thing_id: int) -> T:
-            return discord.utils.get(lst, id=thing_id)
-
-        return _grabber_function
 
     env = {
         # Shortcuts:
