@@ -249,13 +249,27 @@ class Exec(Cog):
             self.last_result = result
 
         representation = repr(result)
-        marker = ''
+        preamble = f'Executed in {timer}.'
+
+        if isinstance(result, discord.File):
+            try:
+                await ctx.send(preamble, file=result)
+            except discord.HTTPException as error:
+                await ctx.send(f'Failed to automatically send `discord.File`: `{error}`')
+            return
+
+        if isinstance(result, discord.Embed):
+            try:
+                await ctx.send(preamble, embed=result)
+            except discord.HTTPException as error:
+                await ctx.send(f'Failed to automatically send `discord.Embed`: `{error}`')
+            return
 
         if isinstance(result, str):
             representation = result
-            marker = ' (string)'
+            preamble += ' (string)'
 
-        message = f'Took {timer} to execute.{marker}\n' + codeblock(representation)
+        message = f'{preamble}\n{codeblock(representation)}'
 
         if len(message) > 2000:
             file = discord.File(fp=StringIO(message), filename='result.txt')
