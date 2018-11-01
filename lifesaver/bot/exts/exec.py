@@ -133,7 +133,6 @@ def create_environment(cog: 'Exec', ctx: Context) -> Dict[Any, Any]:
         '_get': discord.utils.get,
         '_find': discord.utils.find,
         '_upload': upload,
-        '_send': ctx.send,
         'dir': better_dir,
 
         # Grabbers:
