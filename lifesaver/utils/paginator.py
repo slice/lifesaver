@@ -1,43 +1,18 @@
-"""
-MIT License
+# encoding: utf-8
 
-Copyright (c) 2017 - 2018 slice
+__all__ = ['Paginator', 'ListPaginator']
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
 import logging
 from typing import Optional, Any, List
 from math import ceil
 
 import discord
 
-__all__ = ['Paginator', 'ListPaginator']
 log = logging.getLogger(__name__)
 
 
 class Paginator:
-    def __init__(
-        self,
-        invoker: discord.User,
-        destination: discord.abc.Messageable,
-        *, bot
-    ) -> None:
+    def __init__(self, invoker: discord.User, destination: discord.abc.Messageable, *, bot) -> None:
         self.invoker = invoker
         self.bot = bot
         self.destination = destination
@@ -143,14 +118,7 @@ class Paginator:
 
 
 class ListPaginator(Paginator):
-    def __init__(
-        self,
-        things: List[Any],
-        *args,
-        title: str = None,
-        per_page: int = 10,
-        **kwargs
-    ) -> None:
+    def __init__(self, things: List[Any], *args, title: str = None, per_page: int = 10, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.title = title
         self.things = things

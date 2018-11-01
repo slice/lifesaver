@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 """
 
 Some code taken from: https://github.com/b1naryth1ef/b1nb0t/

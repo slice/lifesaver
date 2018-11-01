@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 """
 MIT License
 
@@ -21,14 +23,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
+__all__ = ['Timer', 'format_seconds', 'Ratelimiter']
+
 from time import monotonic
 
 from discord.ext import commands
 
-__all__ = ['Timer', 'format_seconds', 'Ratelimiter']
 
-
-def format_seconds(seconds):
+def format_seconds(seconds: int) -> str:
     s = seconds
     ms = seconds * 1000
     mcs = seconds * 1000000

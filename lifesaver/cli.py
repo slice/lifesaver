@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 import asyncio
 import importlib
 import logging

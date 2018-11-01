@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 """
 MIT License
 
@@ -37,7 +39,7 @@ async def shell(command: str) -> str:
 
 
 def dot_access(dict, access: str):
-    """Accesses a dict by string dot access."""
+    """Access a dict by dotted string access."""
     item = dict
     for part in access.split('.'):
         item = item[part]

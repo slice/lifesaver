@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 from os import path
 
 from setuptools import find_packages, setup
@@ -26,5 +28,5 @@ setup(
     python_requires='>=3.6',
     packages=find_packages(),
     install_requires=['ruamel.yaml', 'click'],
-    dependency_links=['git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py']
+    dependency_links=['git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py'],
 )
