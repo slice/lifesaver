@@ -83,10 +83,6 @@ def create_environment(cog: 'Exec', ctx: Context) -> Dict[Any, Any]:
         with open(file_name, 'rb') as fp:
             return await ctx.send(file=discord.File(fp))
 
-    def better_dir(*args, **kwargs) -> List[str]:
-        """dir(), but without magic methods."""
-        return [n for n in dir(*args, **kwargs) if not n.endswith('__') and not n.startswith('__')]
-
     def get_member(specifier: Union[int, str]) -> discord.Member:
         if not ctx.guild:
             raise RuntimeError('Cannot use member grabber in a DM context.')
@@ -133,7 +129,6 @@ def create_environment(cog: 'Exec', ctx: Context) -> Dict[Any, Any]:
         '_get': discord.utils.get,
         '_find': discord.utils.find,
         '_upload': upload,
-        'dir': better_dir,
 
         # Grabbers:
         '_g': grabber(ctx.bot.guilds),
