@@ -12,15 +12,11 @@ from lifesaver.logging import setup_logging
 @click.command()
 @click.option('--config', default='config.yml', help='The configuration file to use.')
 def cli(config):
-    setup_logging()
-    log = logging.getLogger('lifesaver.cli')
-
     try:
         import uvloop
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-        log.info('Using uvloop')
     except ImportError:
-        log.warning("uvloop wasn't found")
+        pass
 
     config = BotConfig.load(config)
     custom_bot_module = getattr(config, 'bot_class', None)
@@ -34,12 +30,10 @@ def cli(config):
         if not issubclass(bot_class, Bot):
             raise TypeError('Custom bot class is not a subclass of lifesaver.bot.Bot')
 
-        log.debug('Using custom bot class: %s', bot_class)
-
-    log.info('Booting bot.')
-    bot = bot_class(config)
-    bot.load_all()
-    bot.run()
+    with setup_logging():
+        bot = bot_class(config)
+        bot.load_all()
+        bot.run()
 
 
 if __name__ == '__main__':
