@@ -6,6 +6,7 @@ from collections import UserDict
 from ruamel.yaml import YAML
 
 from lifesaver.errors import LifesaverError
+from lifesaver.utils import merge_dicts
 
 
 class ConfigError(LifesaverError):
@@ -20,6 +21,17 @@ class Config(UserDict):
         self.loaded_from = loaded_from
 
         for key, value in data.items():
+            try:
+                default_value = getattr(self, key)
+
+                if isinstance(default_value, dict) and isinstance(value, dict):
+                    # Merge dictionaries instead of overwriting the default value.
+                    setattr(self, key, merge_dicts(default_value, value))
+                    continue
+            except AttributeError:
+                # Let custom attributes be set.
+                pass
+
             setattr(self, key, value)
 
     @classmethod
