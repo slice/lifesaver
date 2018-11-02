@@ -1,7 +1,29 @@
 # encoding: utf-8
+
+__all__ = ['BotConfig']
+
 from typing import Union, List, Dict, Any
 
 from lifesaver.config import Config
+
+YES_EMOJI = '\N{WHITE HEAVY CHECK MARK}'
+NO_EMOJI = '\N{CROSS MARK}'
+OK_EMOJI = '\N{OK HAND SIGN}'
+
+DEFAULT_EMOJIS = {
+    'generic': {
+        'yes': YES_EMOJI,
+        'no': NO_EMOJI,
+        'ok': OK_EMOJI,
+    },
+    'exec': {
+        'cancelled': OK_EMOJI,
+        'kill': '\N{OCTAGONAL SIGN}',
+        'waiting': '\N{HOURGLASS WITH FLOWING SAND}',
+        'error': '\N{COLLISION SYMBOL}',
+        'ok': YES_EMOJI,
+    },
+}
 
 
 class BotConfig(Config):
@@ -33,7 +55,7 @@ class BotConfig(Config):
     hot_reload: bool = False
 
     #: Bot emojis.
-    emojis: Dict[str, Union[str, int]]
+    emojis: Dict[str, Union[str, int]] = DEFAULT_EMOJIS
 
     #: Postgres access credentials.
     postgres: Dict[str, Any] = None
