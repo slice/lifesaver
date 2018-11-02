@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-__all__ = ['shell', 'dot_access']
+__all__ = ['shell']
 
 import asyncio
 
@@ -36,11 +36,3 @@ async def shell(command: str) -> str:
     )
     results = await shell.communicate()
     return ''.join(x.decode() for x in results)
-
-
-def dot_access(dict, access: str):
-    """Access a dict by dotted string access."""
-    item = dict
-    for part in access.split('.'):
-        item = item[part]
-    return item
