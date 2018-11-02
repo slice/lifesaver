@@ -2,15 +2,16 @@
 
 import logging
 from pathlib import Path
-from typing import List, Union, Dict, Any
+from typing import Union
 
 import discord
 from discord.ext import commands
-from lifesaver.config import Config
+
 from lifesaver.poller import Poller, PollerPlug
 from lifesaver.utils import dot_access
 from lifesaver.load_list import LoadList
 
+from .config import BotConfig
 from .context import Context
 
 INCLUDED_EXTENSIONS = [
@@ -19,41 +20,6 @@ INCLUDED_EXTENSIONS = [
     'lifesaver.bot.exts.exec',
     'lifesaver.bot.exts.errors',
 ]
-
-
-class BotConfig(Config):
-    #: The token of the bot.
-    token: str
-
-    #: The path from which to load extension files from.
-    extensions_path: str = './exts'
-
-    #: The path for cog-specific configuration files
-    cog_config_path: str = './config'
-
-    #: Ignores bots when processing commands.
-    ignore_bots: bool = True
-
-    #: The command prefix to use.
-    command_prefix: Union[List[str], str] = '!'
-
-    #: The bot's description.
-    description: str = 'A Discord bot.'
-
-    #: PMs help messages.
-    pm_help: Union[bool, None] = None
-
-    #: Includes mentions as valid prefixes.
-    command_prefix_include_mentions: bool = True
-
-    #: Activates the hot reloader.
-    hot_reload: bool = False
-
-    #: Bot emojis.
-    emojis: Dict[str, Union[str, int]]
-
-    #: Postgres access credentials.
-    postgres: Dict[str, Any] = None
 
 
 def compute_command_prefix(cfg: BotConfig):

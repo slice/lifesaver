@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 import typing
+from collections import UserDict
 
 from ruamel.yaml import YAML
 
@@ -11,21 +12,15 @@ class ConfigError(LifesaverError):
     """An error thrown by the Config loader."""
 
 
-class Config:
+class Config(UserDict):
     """A bot or cog configuration."""
 
     def __init__(self, data, *, loaded_from: str = None):
+        super().__init__(data)
         self.loaded_from = loaded_from
-        self.data = data
 
         for key, value in data.items():
             setattr(self, key, value)
-
-    def get(self, *args, **kwargs):
-        return self.data.get(*args, **kwargs)
-
-    def __getitem__(self, item):
-        return self.data[item]
 
     @classmethod
     def load(cls, path: str) -> 'Config':
