@@ -14,9 +14,23 @@ class ConfigError(LifesaverError):
 
 
 class Config(UserDict):
-    """A bot or cog configuration."""
+    """A dict-like object that encompasses a configuration of some kind.
+
+    All config files use YAML_ for markup.
+
+    .. _YAML: https://en.wikipedia.org/wiki/YAML
+    """
 
     def __init__(self, data, *, loaded_from: str = None):
+        """Create a new Config instance from a dict.
+
+        Parameters
+        ----------
+        data
+            The dict that will act as the configuration.
+        loaded_from
+            The filename that this Config was loaded from.
+        """
         super().__init__(data)
         self.loaded_from = loaded_from
 
@@ -41,13 +55,13 @@ class Config(UserDict):
         Parameters
         ----------
         path
-            The path to a YAML file.
+            A path to a YAML_ file.
         """
         with open(path, 'r') as fp:
             yaml = fp.read()
             return cls(YAML().load(yaml), loaded_from=path)
 
     @property
-    def as_dict(self) -> typing.Dict[typing.Any, typing.Any]:
+    def as_dict(self) -> typing.Dict:
         """Return this Config as a dict."""
         return self.data

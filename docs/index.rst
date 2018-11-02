@@ -1,13 +1,27 @@
-lifesaver
-=========
+.. image:: logo.png
 
-Welcome to lifesaver! Lifesaver is a discord.py rewrite framework aiming to
-reduce boilerplate and help you make bots easier by providing common components.
+lifesaver is a framework/library for Discord.py 1.0.0 that provides useful cogs,
+components, and utilities that reduce overall boilerplate during bot creation.
+
+**Features:**
+
+* Bot and cog configuration loader
+* Extension hot reloader
+* Lenient code execution cog
+* Formatting utilities
+
+.. raw:: html
+
+    <h2>Table of Contents</h2>
 
 .. toctree::
    :maxdepth: 2
 
-   tutorial
+   getting_started
+   cogs
+   config
+   faq
+   api
 
 If you still can't find what you're looking for:
 
