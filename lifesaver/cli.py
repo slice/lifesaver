@@ -2,10 +2,10 @@
 
 import asyncio
 import importlib
-import logging
 
 import click
 from lifesaver.bot import Bot, BotConfig
+from lifesaver.config import ConfigError
 from lifesaver.logging import setup_logging
 
 
@@ -18,7 +18,11 @@ def cli(config):
     except ImportError:
         pass
 
-    config = BotConfig.load(config)
+    try:
+        config = BotConfig.load(config)
+    except FileNotFoundError as error:
+        raise ConfigError(f'No config file was found at {config}.') from error
+
     custom_bot_module = getattr(config, 'bot_class', None)
     bot_class = Bot
 
