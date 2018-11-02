@@ -105,8 +105,14 @@ class BotBase(commands.bot.BotBase):
         self._hot_task = None
         self._hot_plug = None
 
+    def remove_all_cogs(self):
+        """Remove all cogs."""
+        cog_names = list(self.cogs.keys())[:]
+        for name in cog_names:
+            self.remove_cog(name)
+
     async def close(self):
-        self.log.info('Closing.')
+        self.remove_all_cogs()
         await super().close()
 
     def emoji(self, accessor: str, *, stringify: bool = False) -> Union[str, discord.Emoji]:
