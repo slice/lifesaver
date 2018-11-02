@@ -33,6 +33,10 @@ class LoadList(UserList):
         self.log = logging.getLogger(__name__)
 
     def build(self, exts_path: Path):
+        if not exts_path.is_dir():
+            self.log.warning('Cannot build load list: %s is not a directory.', exts_path)
+            return
+
         # Build a list of extensions to load.
         paths = [
             transform_path(path)
