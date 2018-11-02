@@ -209,11 +209,14 @@ class Exec(Cog):
 
         async def late_indicator():
             await asyncio.sleep(3)
+
+            kill_emoji = ctx.emoji('exec.kill')
+
             with suppress(discord.HTTPException):
-                await ctx.message.add_reaction(ctx.emoji('exec.kill'))
+                await ctx.message.add_reaction(kill_emoji)
 
             def check(reaction, user):
-                return user == ctx.author and reaction.message.id == ctx.message.id and reaction.emoji == '\N{HOCHO}'
+                return user == ctx.author and reaction.message.id == ctx.message.id and reaction.emoji == kill_emoji
 
             while True:
                 await self.bot.wait_for('reaction_add', check=check)
