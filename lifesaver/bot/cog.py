@@ -76,8 +76,6 @@ class Cog:
             self._scheduled_tasks.append(task)
 
     def __unload(self):
-        self.log.debug('Unloading!')
-
         for scheduled_task in self._scheduled_tasks:
             self.log.debug('Cancelling scheduled task: %s', scheduled_task)
             scheduled_task.cancel()
