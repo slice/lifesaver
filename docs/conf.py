@@ -14,6 +14,7 @@ html_experimental_html5_builder = True
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
+    'sphinx.ext.intersphinx',
     'sphinxcontrib.napoleon',
     'sphinxcontrib.asyncio',
 ]
@@ -23,6 +24,11 @@ rst_prolog = """
 .. |corourl| replace:: *coroutine*
 .. _corourl: https://docs.python.org/3/library/asyncio-task.html#coroutine
 """
+
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'discord.py': ('https://discordpy.readthedocs.io/en/rewrite/', None),
+}
 
 templates_path = ['_templates']
 source_suffix = '.rst'
