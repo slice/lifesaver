@@ -47,7 +47,7 @@ def format_seconds(seconds: int) -> str:
 
 
 class Timer:
-    """A timing utility used to measure time."""
+    """A context manager timing utility used to measure time."""
 
     def __init__(self):
         self.begin: int = None
@@ -62,16 +62,19 @@ class Timer:
 
     @property
     def duration(self):
+        """Return the duration that this timer ran, in seconds."""
         return self.end - self.begin
 
     @property
     def milliseconds(self):
+        """Return the duration that this timer ran, in milliseconds."""
         return self.duration * 1000
 
     ms = milliseconds
 
     @property
     def microseconds(self):
+        """Return the duration that this timer ran, in microseconds."""
         return self.duration * 1000000
 
     def __str__(self):
