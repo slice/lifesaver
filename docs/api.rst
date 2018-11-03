@@ -1,11 +1,17 @@
 API Reference
 =============
 
+Context
+-------
+
+.. autoclass:: lifesaver.bot.Context
+    :members:
+
 Config
 ------
 
 .. autoclass:: lifesaver.config.Config
-   :members:
+    :members:
 
 Exceptions
 ----------

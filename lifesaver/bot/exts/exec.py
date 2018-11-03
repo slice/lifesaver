@@ -160,9 +160,15 @@ def format_syntax_error(e: SyntaxError) -> str:
 
 
 class Exec(Cog):
+    """A cog that allows for lenient runtime evaluation of Python code."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        #: A list of currently executing sessions.
         self.sessions = set()
+
+        #: The result of the last evaluation.
         self.last_result = None
 
     def __unload(self):
@@ -297,6 +303,7 @@ class Exec(Cog):
         await ctx.ok()
 
     def cancel_sessions(self):
+        """Cancel all running sessions."""
         for task in self.sessions:
             task.cancel()
 

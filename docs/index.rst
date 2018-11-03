@@ -1,7 +1,7 @@
 lifesaver
 =========
 
-lifesaver is a heavily opinionated framework/library for Discord.py 1.0.0 that
+Lifesaver is a heavily opinionated framework/library for Discord.py 1.0.0 that
 provides useful cogs, components, and utilities that reduce boilerplate during
 bot creation.
 
