@@ -13,6 +13,8 @@ __all__ = [
     'format_traceback',
 ]
 
+"""Text formatting and processing utilities."""
+
 """
 MIT License
 
@@ -52,13 +54,12 @@ MENTION_RE = re.compile(r"<@!?&?(\d{15,21})>|(@everyone|@here)")
 
 
 def format_list(lst: List[Any]) -> str:
-    """
-    Format a list as an ordered list, with numerals preceding every item.
+    """Format a list as an ordered list, with numerals preceding every item.
     List numerals are padded to ensure that there are at least 3 digits.
 
     Parameters
     ----------
-    lst : list of any
+    lst
         The list to format.
 
     Returns
@@ -103,15 +104,16 @@ def human_delta(
     *,
     short: bool = True
 ) -> str:
-    """
-    Convert a time unit to a human readable time delta string.
+    """Convert a time unit to a human readable time delta string.
 
     Parameters
     ----------
-    delta : Union[int, float, datetime.datetime, datetime.timedelta]
-        The amount of time to convert
-    short : bool
-        Controls whether only the three biggest units of time end up in the result or all. Defaults to True.
+    delta
+        The amount of time to convert.
+    short
+        Controls whether only the three biggest units of time end up in the result or all.
+        Defaults to True.
+
     Returns
     -------
     str
@@ -148,8 +150,7 @@ def human_delta(
 
 
 def codeblock(code: str, *, lang: str = '', escape: bool = True) -> str:
-    """
-    Construct a Markdown codeblock.
+    """Construct a Markdown codeblock.
 
     Parameters
     ----------
@@ -184,6 +185,11 @@ def truncate(text: str, desired_length: int, *, suffix: str = '...') -> str:
     suffix
         The text to insert before the desired length is reached.
         By default, this is "..." to indicate truncation.
+
+    Returns
+    -------
+    str
+        The truncated text.
     """
     if len(text) > desired_length:
         return text[:desired_length - len(suffix)] + suffix
@@ -192,6 +198,18 @@ def truncate(text: str, desired_length: int, *, suffix: str = '...') -> str:
 
 
 class Table:
+    """A class to format tabular data into rows and columns using ASCII art.
+
+    Example
+    -------
+    >>> table = Table('Row 1', 'Row 2')
+    >>> table.add_row('Data 1', 'Data 2')
+    >>> await table.render()
+    Row 1  | Row 2
+    -------+--------
+    Data 1 | Data 2
+    """
+
     def __init__(self, *column_titles: str) -> None:
         self._rows = [column_titles]
         self._widths: List[int] = []
@@ -206,9 +224,10 @@ class Table:
                 self._widths[index] = width
 
     def add_row(self, *row: str):
-        """
-        Add a row to the table.
-        .. note :: There's no check for the number of items entered, this may cause issues rendering if not correct.
+        """Add a row to the table.
+
+        If the number of data columns specified does not match the number of
+        column titles, there may be issues rendering.
         """
         self._rows.append(row)
         self._update_widths(row)
@@ -247,7 +266,7 @@ class Table:
         return "\n".join(drawn)
 
     async def render(self, loop: asyncio.AbstractEventLoop = None):
-        """Returns a rendered version of the table."""
+        """Return a rendered version of the table."""
         loop = loop or asyncio.get_event_loop()
 
         func = functools.partial(self._render)
@@ -281,8 +300,9 @@ def clean_mentions(channel: discord.TextChannel, text: str) -> str:
 
 
 def pluralize(*, with_quantity: bool = False, with_indicative: bool = False, **word) -> str:
-    """
-    Pluralize a single kwarg's name depending on the value.
+    """Pluralize a single kwarg's name depending on the value.
+
+    ``with_indicative`` must be used with ``with_quantity``.
 
     Example
     -------
@@ -291,6 +311,14 @@ def pluralize(*, with_quantity: bool = False, with_indicative: bool = False, **w
     "objects"
     >>> pluralize(object=1)
     "object"
+    >>> pluralize(object=1, with_quantity=True)
+    "1 object"
+    >>> pluralize(object=2, with_quantity=True)
+    "1 objects"
+    >>> pluralize(object=2, with_quantity=True, with_indicative=True)
+    "2 objects are"
+    >>> pluralize(object=1, with_quantity=True, with_indicative=True)
+    "1 object is"
     """
 
     try:
@@ -315,7 +343,15 @@ def pluralize(*, with_quantity: bool = False, with_indicative: bool = False, **w
 
 
 def format_traceback(exc: Exception, *, limit: int = 7, hide_paths: bool = False) -> str:
-    """Format a traceback."""
+    """Format a traceback.
+
+    Parameters
+    ----------
+    limit
+        The maximum number of lines to include.
+    hide_paths
+        Conceals the current working directory and packages path.
+    """
 
     formatted = ''.join(traceback.format_exception(type(exc), exc, exc.__traceback__, limit=limit))
 

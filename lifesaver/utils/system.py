@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+"""Utilities concerning the system."""
+
 """
 MIT License
 

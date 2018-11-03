@@ -50,6 +50,12 @@ class Context(commands.Context):
         return perms.embed_links
 
     async def send(self, content: Any = None, *args, scrub: bool = True, **kwargs) -> discord.Message:
+        """Sends a message to wherever this context points to. Identical to
+        :meth:`discord.abc.Messageable.send`.
+
+        If a string is passed as ``content``, then @everyone and @here mentions
+        will scrubbed if ``scrub`` is ``True``.
+        """
         if isinstance(content, str) and scrub:
             for from_, to in SCRUBBING.items():
                 content = content.replace(from_, to)
@@ -64,8 +70,7 @@ class Context(commands.Context):
         delete_after: bool = False,
         cancellation_message: str = None
     ) -> bool:
-        """
-        Wait for confirmation by the user.
+        """Wait for confirmation by the user.
 
         Parameters
         ----------
@@ -74,7 +79,7 @@ class Context(commands.Context):
         message
             The message (description) of the confirmation prompt.
         color
-            The color of the embed.
+            The color of the embed. Defaults to :meth:`discord.Color.red`.
         delete_after
             Deletes the confirmation after a choice has been picked.
         cancellation_message

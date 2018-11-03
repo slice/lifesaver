@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+"""Various utilities for timing and ratelimiting."""
+
 """
 MIT License
 

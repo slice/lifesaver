@@ -51,6 +51,7 @@ class BotBase(commands.bot.BotBase):
         )
 
         #: The bot's :class:`Context` subclass to use when invoking commands.
+        #: Falls back to :class:`Context`.
         self.context_cls = kwargs.get('context_cls', Context)
 
         if not issubclass(self.context_cls, Context):
@@ -62,7 +63,7 @@ class BotBase(commands.bot.BotBase):
         #: The bot's logger.
         self.log = logging.getLogger(__name__)
 
-        #: A list of extensions names to reload when calling Bot.load_all().
+        #: A list of extensions names to reload when calling :meth:`load_all`.
         self.load_list = LoadList()
 
         #: A list of included extensions built into lifesaver to load.
@@ -82,7 +83,7 @@ class BotBase(commands.bot.BotBase):
         await super().close()
 
     def emoji(self, accessor: str, *, stringify: bool = False) -> Union[str, discord.Emoji]:
-        """Return a bot emoji by name."""
+        """Return an emoji as referenced by the global emoji table."""
         emoji_id = dot_access(self.config.emojis, accessor)
 
         if isinstance(emoji_id, int):
@@ -96,7 +97,10 @@ class BotBase(commands.bot.BotBase):
             return emoji
 
     def tick(self, variant: bool = True) -> Union[str, discord.Emoji]:
-        """Return a tick bot emoji."""
+        """Return a tick emoji.
+
+        (Uses ``generic.yes`` and ``generic.no`` from the global emoji table.)
+        """
         if variant:
             return self.emoji('generic.yes')
         else:
@@ -165,6 +169,13 @@ class BotBase(commands.bot.BotBase):
             self._hot_task = self.loop.create_task(self._hot_reload())
 
     async def on_message(self, message: discord.Message):
+        """The handler that handles incoming messages from Discord.
+
+        This event automatically waits for the bot to be ready before processing
+        commands. Bots are ignored according to :attr:`BotConfig.ignore_bots`
+        and the context class used for commands is determined by
+        :attr:`context_cls`.
+        """
         await self.wait_until_ready()
 
         # Ignore bots if applicable.
@@ -176,6 +187,10 @@ class BotBase(commands.bot.BotBase):
         await self.invoke(ctx)
 
     async def on_command_error(self, ctx: Context, exception: Exception):
+        """The handler that handles command errors.
+
+        This is a no-op. The Errors cog handles errors for us.
+        """
         # Handled by errors.py.
         pass
 
