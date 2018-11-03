@@ -1,7 +1,9 @@
-.. image:: logo.png
+lifesaver
+=========
 
-lifesaver is a framework/library for Discord.py 1.0.0 that provides useful cogs,
-components, and utilities that reduce overall boilerplate during bot creation.
+lifesaver is a heavily opinionated framework/library for Discord.py 1.0.0 that
+provides useful cogs, components, and utilities that reduce boilerplate during
+bot creation.
 
 **Features:**
 
@@ -10,9 +12,8 @@ components, and utilities that reduce overall boilerplate during bot creation.
 * Lenient code execution cog
 * Formatting utilities
 
-.. raw:: html
-
-    <h2>Table of Contents</h2>
+Table of Contents
+-----------------
 
 .. toctree::
    :maxdepth: 2
