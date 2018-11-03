@@ -29,4 +29,11 @@ setup(
     packages=find_packages(),
     install_requires=['ruamel.yaml', 'click'],
     dependency_links=['git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py'],
+    extras_require={
+        'docs': [
+            'sphinx==1.8.1',
+            'sphinxcontrib-napoleon==0.7',
+            'sphinxcontrib-asyncio==0.2.0',
+        ],
+    },
 )

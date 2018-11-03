@@ -86,7 +86,7 @@ class Errors(Cog):
             return
 
         if isinstance(error, commands.BadArgument):
-            if hasattr(error, '__cause__') and 'failed for parameter' in str(error):
+            if 'failed for parameter' in str(error):
                 self.log.error('Generic check error. ' + format_traceback(error.__cause__))
             await ctx.send(f'Bad argument. {error}')
             return
