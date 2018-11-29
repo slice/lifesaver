@@ -15,7 +15,7 @@ from .config import BotConfig
 from .context import Context
 
 INCLUDED_EXTENSIONS = [
-    'lifesaver.bot.exts.admin',
+    'jishaku',
     'lifesaver.bot.exts.health',
     'lifesaver.bot.exts.exec',
     'lifesaver.bot.exts.errors',
