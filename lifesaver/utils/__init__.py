@@ -11,7 +11,7 @@ from .paginator import *
 def merge_dicts(template, to_merge):
     """Deeply merges a dict onto another dict."""
     for key, value in to_merge.items():
-        if isinstance(value, _Mapping):
+        if isinstance(value, _Mapping) and key in template:
             new_dict = template[key]
             merge_dicts(new_dict, value)
             template[key] = new_dict
