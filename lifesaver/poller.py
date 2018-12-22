@@ -34,6 +34,7 @@ class PollerPlug:
         self.bot = bot
 
     def try_load(self, name: str):
+        """Try to load a bot extension. Logs an exception upon failure."""
         try:
             self.bot.load_extension(name)
         except Exception:
