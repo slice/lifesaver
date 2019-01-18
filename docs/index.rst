@@ -9,7 +9,6 @@ bot creation.
 
 * Bot and cog configuration loader
 * Extension hot reloader
-* Lenient code execution cog
 * Formatting utilities
 
 Table of Contents

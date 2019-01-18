@@ -16,13 +16,6 @@ DEFAULT_EMOJIS = {
         'no': NO_EMOJI,
         'ok': OK_EMOJI,
     },
-    'exec': {
-        'cancelled': OK_EMOJI,
-        'kill': '\N{OCTAGONAL SIGN}',
-        'waiting': '\N{HOURGLASS WITH FLOWING SAND}',
-        'error': '\N{COLLISION SYMBOL}',
-        'ok': YES_EMOJI,
-    },
 }
 
 
