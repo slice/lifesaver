@@ -32,18 +32,18 @@ Windows
 Creating a Config File
 ----------------------
 
-All configuration files use YAML_ for the sake of simplicity. Anchors are also
-useful for the :ref:`global emoji table <global_emoji_table>`.
+All configuration files use YAML_ for the sake of simplicity. YAML anchors are
+also useful for the :ref:`global emoji table <global_emoji_table>`.
 
-Enter an empty directory and create ``config.yml``. This is where your bot's
-configuration file lives.
+Enter an empty directory and create a file named ``config.yml``. This is where
+your bot's configuration file lives.
 
-We'll specify a token for now::
+Let's specify a token::
 
     token: 'theQuiCK_b-Row-nFOxJ.U.MPsOV-ErtHElAzYdOG'
 
-This is the bare minimum config file. Other attributes may be specified for
-further customization -- see :class:`BotConfig`.
+This alone serves as the bare minimum config file. Other fields may be
+specified for further customization -- see :class:`BotConfig`.
 
 Invoking the CLI
 ----------------
@@ -51,14 +51,14 @@ Invoking the CLI
 Lifesaver includes a CLI module that automatically prepares a bot and starts it,
 performing the following steps:
 
-* uvloop_ is automatically used if available.
+* uvloop_ is automatically loaded and applied if available.
 * Lifesaver looks for your config file at ``config.yml`` and loads it into a
   :class:`BotConfig` instance at runtime.
 * The bot class (default or custom) is constructed and started.
 
 With this CLI module, writing a ``run.py``, ``launcher.py``, or any other file
-with a similar name and task should be unnecessary. It allows you to quickly get
-started scaffolding new bots: you don't have to write launcher scripts.
+with a similar name should be unnecessary. This feature allows you to quickly
+get started creating new bots.
 
 To start the CLI, use the ``-m`` argument of the Python executable to launch
 ``lifesaver.cli``::
@@ -75,32 +75,28 @@ Built-in Cogs
 The CLI module automatically loads Lifesaver's :doc:`included extensions
 <cogs>` upon startup.
 
-Exec
-~~~~
+Jishaku
+~~~~~~~
 
-The Exec cog allows you to evaluate arbitrary Python code through Discord. Right
-now, this command can only be ran by the owner of the bot.
+All bots that use Lifesaver also use Jishaku_. Jishaku is a handy development cog
+for Discord.py 1.0.0 bots, and it's very useful in helping you debug your bot
+as you write it.
 
-Simple expressions work as expected:
+Arbitrary Python code can be executed using the ``py`` subcommand of the ``jsk``
+command group::
 
-.. image:: images/exec_cog_expression.png
-    :scale: 50%
+    !jsk py 1 + 1
 
-Codeblocks work as well:
+Jishaku's Python evaluator also has import-expression-parser_ support, allowing
+you to quickly import any needed modules within identifiers in your code::
 
-.. image:: images/exec_cog_codeblock.png
-    :scale: 50%
+    !jsk py collections!.Counter
 
-You might've noticed that the :class:`discord.Message` object was returned.
-Implicit ``return`` keywords are automatically added to your code if the syntax
-is valid after the change.
+Magic locals like ``_ctx``, ``_bot``, ``_msg``, ``_guild``, and ``_channel``
+exist in the scope of any code evaluated.
 
-The cog also measures execution time, and is echoed back to you along with a
-``repr`` of the result.
-
-For a more comprehensive breakdown of the Exec cog, see the
-:ref:`built-in cogs <exec_cog>` page.
-
+.. _import-expression-parser: https://github.com/bmintz/import-expression-parser
+.. _Jishaku: https://github.com/Gorialis/Jishaku
 .. _Git: https://git-scm.com/
 .. _uvloop: https://uvloop.readthedocs.io/
 .. _YAML: https://en.wikipedia.org/wiki/YAML

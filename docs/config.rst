@@ -13,7 +13,7 @@ Configuration
 
         It is formatted as an import path and class separated by a colon, like::
 
-            coolbot5000.bot:CustomBotClass
+            coolbot.bot:CustomBotClass
 
     .. autoattribute:: command_prefix
 

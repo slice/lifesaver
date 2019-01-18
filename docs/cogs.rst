@@ -25,9 +25,9 @@ A ``ping`` command is included in this cog:
 RTT
 ~~~
 
-A ``rtt`` command is also implemented, which measures REST API response times
-and Gateway echo times for message creation (``MESSAGE_CREATE``) and message
-editing (``MESSAGE_UPDATE``).
+A ``rtt`` command is also included, which measures REST API response times
+and gateway echo times for message creation (``MESSAGE_CREATE``) and message
+edit (``MESSAGE_UPDATE``) events.
 
 .. image:: images/health_cog_rtt.png
     :scale: 50%
@@ -35,3 +35,6 @@ editing (``MESSAGE_UPDATE``).
 TX measures the amount of time it takes for the HTTP request to finish. RX
 measures how long it takes for the Discord Gateway to echo the action back to
 the bot. RTT is the sum of these two values.
+
+This command can be useful in situations where the Discord gateway or HTTP API
+are in an inconsistent state (i.e. failing).

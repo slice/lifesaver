@@ -83,7 +83,15 @@ class BotBase(commands.bot.BotBase):
         await super().close()
 
     def emoji(self, accessor: str, *, stringify: bool = False) -> Union[str, discord.Emoji]:
-        """Return an emoji as referenced by the global emoji table."""
+        """Return an emoji as referenced by the global emoji table.
+
+        The first argument accesses the :attr:`BotConfig.emojis` dict using
+        "dot access syntax" (e.g. ``generic.ok`` does ``['generic']['ok']``).
+
+        Both Unicode codepoints and custom emoji IDs are supported. If a custom
+        emoji ID is used, :meth:`discord.Client.get_emoji` is called to
+        retrieve the :class:`discord.Emoji`.
+        """
         emoji_id = dot_access(self.config.emojis, accessor)
 
         if isinstance(emoji_id, int):
