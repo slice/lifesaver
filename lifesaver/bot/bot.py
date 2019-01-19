@@ -17,7 +17,6 @@ from .context import Context
 INCLUDED_EXTENSIONS = [
     'jishaku',
     'lifesaver.bot.exts.health',
-    'lifesaver.bot.exts.exec',
     'lifesaver.bot.exts.errors',
 ]
 
