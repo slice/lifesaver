@@ -11,7 +11,8 @@ from lifesaver.logging import setup_logging
 
 @click.command()
 @click.option('--config', default='config.yml', help='The configuration file to use.')
-def cli(config):
+@click.option('--no-default-cogs', is_flag=True, default=False, help='Prevent default cogs from loading.')
+def cli(config, no_default_cogs):
     try:
         import uvloop
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
@@ -36,7 +37,7 @@ def cli(config):
 
     with setup_logging():
         bot = bot_class(config)
-        bot.load_all()
+        bot.load_all(exclude_default=no_default_cogs)
         bot.run()
 
 

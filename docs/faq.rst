@@ -22,3 +22,10 @@ accesses ``bot.config['emojis']['generic']['ok']``).
 
 How do I disable built-in cogs?
 -------------------------------
+
+When using the included CLI module, you can prevent built-in cogs from loading
+by passing the ``--no-default-cogs`` flag. It's worth mentioning that this will
+also prevent Jishaku from loading.
+
+When instantiating your own Lifesaver bot, make sure to pass ``exclude_default=True``
+to your :meth:`BotBase.load_all` call.
