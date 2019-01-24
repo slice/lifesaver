@@ -27,10 +27,11 @@ setup(
     ],
     python_requires='>=3.6',
     packages=find_packages(),
-    install_requires=['ruamel.yaml', 'click'],
-    dependency_links=[
-        'git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py',
-        'git+https://github.com/Gorialis/jishaku@master#egg=jishaku',
+    install_requires=[
+        'ruamel.yaml',
+        'click',
+        'jishaku',
+        'discord.py @ git+https://github.com/Rapptz/discord.py.git@rewrite',
     ],
     extras_require={
         'docs': [
