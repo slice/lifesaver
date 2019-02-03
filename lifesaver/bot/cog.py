@@ -48,32 +48,42 @@ class Cog:
             return cls
         return decorator
 
-    def _setup_schedules(self):
-        # Bypass Python's name mangling.
-        unload_key = '_' + type(self).__name__ + '__unload'
+    def _schedule_method(self, name, method):
+        schedule = method._schedule
 
-        self._original_unload = getattr(self, unload_key, None)
-        setattr(self, unload_key, self.__unload)  # Override.
+        async def scheduled_function_wrapper():
+            if 'wait_until_ready' in schedule:
+                await self.bot.wait_until_ready()
 
-        for key in dir(self):
-            func = getattr(self, key)
-            if not hasattr(func, '_schedule'):
-                continue
-
-            schedule = func._schedule
-
-            async def wrapped():
-                if 'wait_until_ready' in schedule:
-                    await self.bot.wait_until_ready()
-
-                while True:
-                    if 'initial_sleep' in schedule:
-                        await asyncio.sleep(schedule['interval'])
-                    await func()
+            while True:
+                if 'initial_sleep' in schedule:
                     await asyncio.sleep(schedule['interval'])
 
-            task = self.bot.loop.create_task(wrapped())
-            self._scheduled_tasks.append(task)
+                try:
+                    await method()
+                except Exception:
+                    self.log.exception(f'Exception thrown from scheduled method {name}')
+
+                await asyncio.sleep(schedule['interval'])
+
+        task = self.bot.loop.create_task(scheduled_function_wrapper())
+        self._scheduled_tasks.append(task)
+
+    def _setup_schedules(self):
+        # Cogs inheriting from this class won't inherit our __unload, because it
+        # is a "private" method. Here, we forcibly copy it into the class so we
+        # may cancel scheduled tasks.
+        unload_key = '_' + type(self).__name__ + '__unload'
+        self._original_unload = getattr(self, unload_key, None)
+        setattr(self, unload_key, self.__unload)
+
+        methods = inspect.getmembers(self, predicate=inspect.ismethod)
+
+        for (name, method) in methods:
+            if not hasattr(method, '_schedule'):
+                continue
+
+            self._schedule_method(name, method)
 
     def __unload(self):
         for scheduled_task in self._scheduled_tasks:
@@ -101,7 +111,7 @@ class Cog:
 
         def outer(func):
             if not inspect.iscoroutinefunction(func):
-                raise TypeError('Scheduled method is not a coroutine')
+                raise TypeError('You must use Cog.every on a coroutine.')
 
             func._schedule = {'interval': interval}
             func._schedule.update(kwargs)
