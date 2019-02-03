@@ -55,7 +55,10 @@ Context
 Utilities
 ---------
 
-.. automodule:: lifesaver.utils
+Dictionaries
+~~~~~~~~~~~~
+
+.. automodule:: lifesaver.utils.dicts
     :members:
 
 Formatting
@@ -67,10 +70,10 @@ Formatting
 .. autoclass:: lifesaver.utils.formatting.Table
     :members:
 
-Messages
-~~~~~~~~
+Roles
+~~~~~
 
-.. automodule:: lifesaver.utils.messages
+.. automodule:: lifesaver.utils.roles
     :members:
 
 System
