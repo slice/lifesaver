@@ -46,11 +46,7 @@ class Health(Cog):
     @command(aliases=['p'])
     async def ping(self, ctx: Context):
         """Pings the bot."""
-        with Timer() as timer:
-            message = await ctx.send('...')
-
-        content = f'Pong! GW: `{ctx.bot.latency * 1000:.2f}ms`, REST: `{timer}`'
-        await message.edit(content=content)
+        await ctx.send('Pong!')
 
     @command()
     @commands.cooldown(3, 4, type=commands.BucketType.guild)
