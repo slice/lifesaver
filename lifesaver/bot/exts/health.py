@@ -52,7 +52,7 @@ class Health(Cog):
     @command()
     @commands.cooldown(3, 4, type=commands.BucketType.guild)
     async def rtt(self, ctx: Context):
-        """Performs a full RTT to measure REST and gateway latency.
+        """Measures API and gateway latency.
 
         "TX" refers to the time it takes for the HTTP request to be sent, and
         for a response to be received and processed.
@@ -105,9 +105,12 @@ class Health(Cog):
 
             return f'RTT: {timer}\n\nTX: {tx}\nRX: {rx}'
 
-        embed = discord.Embed()
-        embed.color = discord.Color.red() if slow else discord.Color.green()
-        embed.title = 'RTT Results'
+        if slow:
+            color = discord.Color.red()
+        else:
+            color = discord.Color.green()
+
+        embed = discord.Embed(title='RTT Results', color=color)
 
         embed.add_field(
             name='MESSAGE_CREATE',
@@ -129,7 +132,6 @@ class Health(Cog):
                 for (name, result) in failures.items()
                 if result[0] is not False
             )
-            print('content:', content)
             embed.add_field(name='Failures', value=content, inline=False)
 
         await message.edit(content='', embed=embed)
