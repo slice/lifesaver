@@ -44,6 +44,7 @@ class Health(Cog):
             del self.rtt_sends[message.nonce]
 
     @command(aliases=['p'])
+    @commands.cooldown(1, 1, type=commands.BucketType.guild)
     async def ping(self, ctx: Context):
         """Pings the bot."""
         await ctx.send('Pong!')
