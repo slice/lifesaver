@@ -86,6 +86,14 @@ class Ratelimiter(commands.CooldownMapping):
     def __init__(self, rate, per):
         super().__init__(commands.Cooldown(rate, per, commands.BucketType.user))
 
+    @property
+    def rate(self):
+        return self._cooldown.rate
+
+    @property
+    def per(self):
+        return self._cooldown.per
+
     def _bucket_key(self, v):
         return v
 
