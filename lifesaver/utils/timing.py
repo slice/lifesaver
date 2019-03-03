@@ -86,6 +86,14 @@ class Ratelimiter(commands.CooldownMapping):
     def __init__(self, rate, per):
         super().__init__(commands.Cooldown(rate, per, commands.BucketType.user))
 
+    def __repr__(self):
+        return f'<Ratelimiter rate={self.rate} per={self.per}>'
+
+    def __eq__(self, other):
+        if not isinstance(other, Ratelimiter):
+            return False
+        return self.rate == other.rate and self.per == other.per
+
     @property
     def rate(self):
         return self._cooldown.rate
