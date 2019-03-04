@@ -29,6 +29,7 @@ class Health(Cog):
         self.rtt_sends = {}
         self.rtt_edits = {}
 
+    @Cog.listener()
     async def on_message_edit(self, message, _message):
         event = self.rtt_edits.get(message.id)
         if event:
@@ -36,6 +37,7 @@ class Health(Cog):
             event.set()
             del self.rtt_edits[message.id]
 
+    @Cog.listener()
     async def on_message(self, message):
         event = self.rtt_sends.get(message.nonce)
         if event:

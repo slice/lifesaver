@@ -7,13 +7,16 @@ import os
 from typing import Type
 
 import aiohttp
+from discord.ext import commands
 from lifesaver.config import Config
 
 
-class Cog:
+class Cog(commands.Cog):
     """The base class for cogs."""
 
     def __init__(self, bot):
+        super().__init__()
+
         #: The bot instance.
         self.bot = bot
 
@@ -26,9 +29,9 @@ class Cog:
 
         self.config = None
 
-        if hasattr(self, '__config_cls'):
+        if hasattr(self, '__lifesaver_config_cls__'):
             path = os.path.join(self.bot.config.cog_config_path, self.name + '.yml')
-            self.config = getattr(self, '__config_cls').load(path)
+            self.config = self.__lifesaver_config_cls__.load(path)
 
         self._scheduled_tasks = []
         self._setup_schedules()
@@ -44,12 +47,12 @@ class Cog:
     @staticmethod
     def with_config(config_cls: Type[Config]):
         def decorator(cls):
-            setattr(cls, '__config_cls', config_cls)
+            setattr(cls, '__lifesaver_config_cls__', config_cls)
             return cls
         return decorator
 
-    def _schedule_method(self, name, method):
-        schedule = method._schedule
+    def _schedule_method(self, name: str, method):
+        schedule = method.__lifesaver_schedule__
 
         async def scheduled_function_wrapper():
             if 'wait_until_ready' in schedule:
@@ -70,30 +73,20 @@ class Cog:
         self._scheduled_tasks.append(task)
 
     def _setup_schedules(self):
-        # Cogs inheriting from this class won't inherit our __unload, because it
-        # is a "private" method. Here, we forcibly copy it into the class so we
-        # may cancel scheduled tasks.
-        unload_key = '_' + type(self).__name__ + '__unload'
-        self._original_unload = getattr(self, unload_key, None)
-        setattr(self, unload_key, self.__unload)
-
         methods = inspect.getmembers(self, predicate=inspect.ismethod)
 
         for (name, method) in methods:
-            if not hasattr(method, '_schedule'):
+            if not hasattr(method, '__lifesaver_schedule__'):
                 continue
 
             self._schedule_method(name, method)
 
-    def __unload(self):
+    def cog_unload(self):
         for scheduled_task in self._scheduled_tasks:
             self.log.debug('Cancelling scheduled task: %s', scheduled_task)
             scheduled_task.cancel()
 
         self.loop.create_task(self.session.close())
-
-        if self._original_unload:
-            self._original_unload()
 
     @classmethod
     def every(cls, interval: int, **kwargs):
@@ -113,8 +106,7 @@ class Cog:
             if not inspect.iscoroutinefunction(func):
                 raise TypeError('You must use Cog.every on a coroutine.')
 
-            func._schedule = {'interval': interval}
-            func._schedule.update(kwargs)
+            func.__lifesaver_schedule__ = {'interval': interval, **kwargs}
 
             return func
 

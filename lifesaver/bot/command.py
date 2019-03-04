@@ -5,7 +5,6 @@ from discord.ext import commands
 
 class SubcommandInvocationRequired(commands.CommandError):
     """A :class:`CommandError` subclass raised when a subcommand needs to be invoked."""
-    pass
 
 
 class Command(commands.Command):
@@ -25,25 +24,7 @@ class Command(commands.Command):
             await super().invoke(ctx)
 
 
-class GroupMixin(commands.GroupMixin):
-    def command(self, *args, **kwargs):
-        def decorator(func):
-            cmd = command(*args, **kwargs)(func)
-            self.add_command(cmd)
-            return cmd
-
-        return decorator
-
-    def group(self, *args, **kwargs):
-        def decorator(func):
-            cmd = group(*args, **kwargs)(func)
-            self.add_command(cmd)
-            return cmd
-
-        return decorator
-
-
-class Group(GroupMixin, commands.Group, Command):
+class Group(commands.Group, Command):
     def __init__(self, *args, hollow: bool = False, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
@@ -58,13 +39,27 @@ class Group(GroupMixin, commands.Group, Command):
             raise SubcommandInvocationRequired()
         await super().invoke(ctx)
 
+    def command(self, *args, **kwargs):
+        def decorator(func):
+            kwargs.setdefault('parent', self)
+            result = command(*args, **kwargs)(func)
+            self.add_command(result)
+            return result
 
-def group(*args, **kwargs):
-    return command(*args, cls=Group, **kwargs)
+        return decorator
+
+    def group(self, *args, **kwargs):
+        def decorator(func):
+            kwargs.setdefault('parent', self)
+            result = group(*args, **kwargs)(func)
+            self.add_command(result)
+            return result
+
+        return decorator
 
 
-def custom_group(*args, cls, **kwargs):
-    return command(*args, cls=cls, **kwargs)
+def group(name: str = None, **kwargs):
+    return command(name, Group, **kwargs)
 
 
 def command(name: str = None, cls=Command, **kwargs):

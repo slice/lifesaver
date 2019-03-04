@@ -18,8 +18,10 @@ class Sample(Cog):
 
         self.tags = AsyncJSONStorage('tags.json')
 
-    def __unload(self):
-        print('Original unload.')
+    def cog_unload(self):
+        print('Calling super unload:', super().cog_unload)
+        super().cog_unload()
+        print('My unload.')
 
     @group()
     async def samplegroup(self, ctx: Context):
@@ -58,7 +60,7 @@ class Sample(Cog):
 
     @Cog.every(10, wait_until_ready=True)
     async def scheduled(self):
-        pass
+        print('Scheduled function.')
 
     @group(invoke_without_command=True)
     async def tag(self, ctx: Context, *, key):
