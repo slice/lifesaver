@@ -2,7 +2,7 @@
 
 __all__ = ['BotConfig']
 
-from typing import Union, List, Dict, Any
+from typing import Union, List, Dict, Optional, Any
 
 from lifesaver.config import Config
 
@@ -48,7 +48,7 @@ class BotConfig(Config):
     hot_reload: bool = False
 
     #: The global bot emoji table.
-    emojis: Dict[str, Union[str, int]] = DEFAULT_EMOJIS
+    emojis: Dict[str, Any] = DEFAULT_EMOJIS
 
     #: PostgreSQL access credentials.
-    postgres: Dict[str, Any] = None
+    postgres: Optional[Dict[str, Any]] = None

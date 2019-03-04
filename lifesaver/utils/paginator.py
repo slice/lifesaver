@@ -55,7 +55,7 @@ class Paginator:
         conditions = [
             not user.bot,
             reaction.emoji in self.actions.keys(),
-            reaction.message.id == self.message.id,
+            reaction.message.id == self.message.id,  # type: ignore
             user == self.invoker,
         ]
 

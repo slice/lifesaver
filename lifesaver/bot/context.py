@@ -2,7 +2,7 @@
 
 __all__ = ['Context']
 
-from typing import Any, List, TypeVar
+from typing import Any, List, Optional, TypeVar
 
 import discord
 from discord.ext import commands
@@ -146,7 +146,7 @@ class Context(commands.Context):
         *,
         delete_after_choice: bool = False,
         tries: int = 3
-    ) -> T:
+    ) -> Optional[T]:
         """Show the user a list of items to pick from, and returns the picked item.
 
         Parameters
