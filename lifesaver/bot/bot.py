@@ -96,7 +96,7 @@ class BotBase(commands.bot.BotBase):
     def tick(self, variant: bool = True) -> Union[str, discord.Emoji]:
         """Return a tick emoji.
 
-        (Uses ``generic.yes`` and ``generic.no`` from the global emoji table.)
+        Uses ``generic.yes`` and ``generic.no`` from the global emoji table.
         """
         if variant:
             return self.emoji('generic.yes')

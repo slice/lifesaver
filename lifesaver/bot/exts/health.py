@@ -2,8 +2,8 @@
 
 import asyncio
 import logging
-import typing
-from random import randint
+import random
+from typing import Tuple, Optional
 
 import discord
 from discord.ext import commands
@@ -12,7 +12,7 @@ from lifesaver.utils.formatting import truncate
 from lifesaver.utils.timing import Timer, format_seconds
 
 log = logging.getLogger(__name__)
-SendVerdict = typing.Tuple[bool, typing.Optional[Exception]]
+SendVerdict = Tuple[bool, Optional[Exception]]
 
 
 def bold_timer(timer: Timer) -> str:
@@ -62,7 +62,7 @@ class Health(Cog):
         for example "Edit RX" refers to the time between editing a message with
         the APIand the gateway dispatching a MESSAGE_UPDATE packet.
         """
-        nonce = randint(1000, 10000)
+        nonce = random.randint(1000, 10000)
 
         send_failed: SendVerdict = (False, None)
         edit_failed: SendVerdict = (False, None)

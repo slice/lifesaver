@@ -1,15 +1,14 @@
 # encoding: utf-8
 
-from typing import Any, List
+__all__ = ['Context']
+
+from typing import Any, List, TypeVar
 
 import discord
 from discord.ext import commands
 from lifesaver import utils
 
-SCRUBBING = {
-    '@everyone': '@\u200beveryone',
-    '@here': '@\u200bhere',
-}
+T = TypeVar('T')
 
 
 class Context(commands.Context):
@@ -21,16 +20,6 @@ class Context(commands.Context):
     def __iadd__(self, line: str) -> 'Context':
         self._paginator.add_line(line)
         return self
-
-    @property
-    def emoji(self):
-        """A shortcut to BotBase.emoji."""
-        return self.bot.emoji
-
-    @property
-    def tick(self):
-        """A shortcut to BotBase.tick."""
-        return self.bot.tick
 
     @property
     def pg_pool(self):
@@ -49,16 +38,31 @@ class Context(commands.Context):
         perms = channel.permissions_for(guild.me)
         return perms.embed_links
 
-    async def send(self, content: Any = None, *args, scrub: bool = True, **kwargs) -> discord.Message:
-        """Sends a message to wherever this context points to. Identical to
-        :meth:`discord.abc.Messageable.send`.
+    def emoji(self, *args, **kwargs):
+        """A shortcut to :meth:`BotBase.emoji`."""
+        return self.bot.emoji(*args, **kwargs)
+
+    def tick(self, *args, **kwargs):
+        """A shortcut to :meth:`BotBase.tick`."""
+        return self.bot.tick(*args, **kwargs)
+
+    async def send(
+        self,
+        content: Any = None,
+        *args,
+        scrub: bool = True,
+        **kwargs
+    ) -> discord.Message:
+        """Sends a message to this context. Identical to :meth:`discord.abc.Messageable.send`.
 
         If a string is passed as ``content``, then @everyone and @here mentions
         will scrubbed if ``scrub`` is ``True``.
         """
-        if isinstance(content, str) and scrub:
-            for from_, to in SCRUBBING.items():
-                content = content.replace(from_, to)
+        if content is not None:
+            content = str(content)
+            if scrub:
+                content = content.replace('@everyone', '@\u200beveryone') \
+                    .replace('@here', '@\u200bhere')
         return await super().send(content, *args, **kwargs)
 
     async def confirm(
@@ -90,7 +94,6 @@ class Context(commands.Context):
         bool
             Whether the user confirmed or not.
         """
-
         embed = discord.Embed(title=title, description=message, color=color)
         msg: discord.Message = await self.send(embed=embed)
 
@@ -137,7 +140,13 @@ class Context(commands.Context):
 
         return await self.bot.wait_for('message', check=check)
 
-    async def pick_from_list(self, choices: List[Any], *, delete_after_choice: bool = False, tries: int = 3) -> Any:
+    async def pick_from_list(
+        self,
+        choices: List[T],
+        *,
+        delete_after_choice: bool = False,
+        tries: int = 3
+    ) -> T:
         """Show the user a list of items to pick from, and returns the picked item.
 
         Parameters

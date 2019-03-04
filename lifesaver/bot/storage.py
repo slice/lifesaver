@@ -44,24 +44,14 @@ class AsyncJSONStorage(AsyncStorage):
         self.object_hook = object_hook
         self.encoder = encoder
 
-        # Attempt to load.
         self._load()
 
     def _save(self):
-        # Generate a filename.
         atomic_name = f'{uuid.uuid4()}.tmp'
 
-        # Save to a file with a randomly-generated filename.
         with open(atomic_name, 'w', encoding='utf-8') as fp:
-            json.dump(
-                self._data.copy(),
-                fp,
-                ensure_ascii=True,
-                cls=self.encoder,
-                indent=2
-            )
+            json.dump(self._data.copy(), fp, ensure_ascii=True, cls=self.encoder, indent=2)
 
-        # Rename the "atomic" file to the actual file to prevent corruptions.
         os.replace(atomic_name, self.file)
 
     def _load(self):
