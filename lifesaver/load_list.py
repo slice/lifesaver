@@ -6,7 +6,7 @@ import typing
 from collections import UserList
 from pathlib import Path
 
-FORBIDDEN_EXTENSIONS = {'.pyc', '.log', '.ini', '.DS_Store', '.db', '.mypy_cache'}
+FORBIDDEN_EXTENSIONS = {'.pyc', '.log', '.ini', '.DS_Store', '.db', '.mypy_cache', '.tmp'}
 FORBIDDEN_NAMES = {'__pycache__'}
 
 
