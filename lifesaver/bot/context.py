@@ -32,10 +32,7 @@ class Context(commands.Context):
         if self.guild is None:
             return True
 
-        channel = self.channel
-        guild = self.guild
-
-        perms = channel.permissions_for(guild.me)
+        perms = self.channel.permissions_for(self.guild.me)
         return perms.embed_links
 
     def emoji(self, *args, **kwargs):
