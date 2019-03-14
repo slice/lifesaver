@@ -53,39 +53,19 @@ import discord
 MENTION_RE = re.compile(r"<@!?&?(\d{15,21})>|(@everyone|@here)")
 
 
-def format_list(lst: List[Any]) -> str:
+def format_list(items: List[Any]) -> str:
     """Format a list as an ordered list, with numerals preceding every item.
     List numerals are padded to ensure that there are at least 3 digits.
-
-    Parameters
-    ----------
-    lst
-        The list to format.
-
-    Returns
-    -------
-    str
-        The formatted string.
     """
     return '\n'.join(
-        '`{:03d}`: {}'.format(index + 1, value)
-        for index, value in enumerate(lst)
+        f'{index + 1:03d}: {value}'
+        for index, value in enumerate(items)
     )
 
 
 def escape_backticks(text: str) -> str:
-    """
-    Replace backticks with a homoglyph to prevent codeblock and inline code breakout.
-
-    Parameters
-    ----------
-    text : str
-        The text to escape.
-
-    Returns
-    -------
-    str
-        The escaped text.
+    """Replace backticks with a homoglyph to prevent text in codeblocks and
+    inline code segments from escaping.
     """
     return text.replace('\N{GRAVE ACCENT}', '\N{MODIFIER LETTER GRAVE ACCENT}')
 
@@ -198,7 +178,7 @@ def truncate(text: str, desired_length: int, *, suffix: str = '...') -> str:
 
 
 class Table:
-    """A class to format tabular data into rows and columns using ASCII art.
+    """A class to format tabular data into rows and columns.
 
     Example
     -------
@@ -343,7 +323,8 @@ def pluralize(*, with_quantity: bool = False, with_indicative: bool = False, **w
 
 
 def format_traceback(exc: Exception, *, limit: int = 7, hide_paths: bool = False) -> str:
-    """Format a traceback.
+    """Format an exception into a traceback, akin to ones emitted by the
+    interpreter during runtime.
 
     Parameters
     ----------

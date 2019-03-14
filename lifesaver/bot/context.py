@@ -21,9 +21,17 @@ class Context(commands.Context):
         self._paginator.add_line(line)
         return self
 
+    def emoji(self, *args, **kwargs):
+        """A shortcut to :meth:`BotBase.emoji`."""
+        return self.bot.emoji(*args, **kwargs)
+
+    def tick(self, *args, **kwargs):
+        """A shortcut to :meth:`BotBase.tick`."""
+        return self.bot.tick(*args, **kwargs)
+
     @property
     def pg_pool(self):
-        """A shortcut to BotBase.pg_pool."""
+        """A shortcut to :attr:`BotBase.pg_pool`."""
         return self.bot.pg_pool
 
     @property
@@ -35,14 +43,6 @@ class Context(commands.Context):
         perms = self.channel.permissions_for(self.guild.me)
         return perms.embed_links
 
-    def emoji(self, *args, **kwargs):
-        """A shortcut to :meth:`BotBase.emoji`."""
-        return self.bot.emoji(*args, **kwargs)
-
-    def tick(self, *args, **kwargs):
-        """A shortcut to :meth:`BotBase.tick`."""
-        return self.bot.tick(*args, **kwargs)
-
     async def send(
         self,
         content: Any = None,
@@ -50,10 +50,10 @@ class Context(commands.Context):
         scrub: bool = True,
         **kwargs
     ) -> discord.Message:
-        """Sends a message to this context. Identical to :meth:`discord.abc.Messageable.send`.
+        """Send a message to this context. Identical to :meth:`discord.abc.Messageable.send`.
 
-        If a string is passed as ``content``, then @everyone and @here mentions
-        will scrubbed if ``scrub`` is ``True``.
+        If ``scrub`` is ``True``, then @everyone and @here mentions are removed
+        from the content (after going through :py:func:`str`).
         """
         if content is not None:
             content = str(content)
@@ -71,7 +71,8 @@ class Context(commands.Context):
         delete_after: bool = False,
         cancellation_message: str = None
     ) -> bool:
-        """Wait for confirmation by the user.
+        """Create a confirmation prompt for the user. Returns whether the user
+        reacted with an affirmative emoji.
 
         Parameters
         ----------
@@ -99,11 +100,11 @@ class Context(commands.Context):
             await msg.add_reaction(emoji)
 
         def check(reaction: discord.Reaction, user: discord.User) -> bool:
-            return all([
-                user == self.author,
-                reaction.message.id == msg.id,
-                reaction.emoji in reactions,
-            ])
+            return (
+                user == self.author
+                and reaction.message.id == msg.id
+                and reaction.emoji in reactions
+            )
 
         reaction, _ = await self.bot.wait_for('reaction_add', check=check)
 
@@ -117,7 +118,7 @@ class Context(commands.Context):
         return confirmed
 
     async def wait_for_response(self) -> discord.Message:
-        """Wait for a message response from the message author, then returns it.
+        """Wait for a message from the message author, then returns it.
 
         The message we are waiting for will only be accepted if it was sent by
         the original command invoker, and if it was sent in the same channel as
@@ -129,11 +130,11 @@ class Context(commands.Context):
             The sent message.
         """
 
-        def check(m: discord.Message):
-            if isinstance(m.channel, discord.DMChannel):
+        def check(msg: discord.Message):
+            if isinstance(msg.channel, discord.DMChannel):
                 # Accept any message, because we are in a DM.
                 return True
-            return m.channel.id == self.channel.id and m.author == self.author
+            return msg.channel == self.channel and msg.author == self.author
 
         return await self.bot.wait_for('message', check=check)
 
@@ -144,7 +145,10 @@ class Context(commands.Context):
         delete_after_choice: bool = False,
         tries: int = 3
     ) -> Optional[T]:
-        """Show the user a list of items to pick from, and returns the picked item.
+        """Send a list of items, allowing the user to pick one. Returns the
+        picked item.
+
+        The choices are formatted with :func:`lifesaver.utils.formatting.format_list`.
 
         Parameters
         ----------
@@ -200,6 +204,12 @@ class Context(commands.Context):
 
     async def ok(self, emoji: str = None):
         """Respond with an emoji in acknowledgement to an action performed by the user.
+
+        This method tries to react to the original message, falling back to the
+        emoji being sent a message in the channel. This additionally falls back
+        to sending the author a direct message with the emoji.
+
+        If all of these fail, the message author will not be notified.
 
         Parameters
         ----------
