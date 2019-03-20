@@ -127,15 +127,17 @@ class BotBase(commands.bot.BotBase):
     def _rebuild_load_list(self):
         self.load_list.build(Path(self.config.extensions_path))
 
-    def load_all(self, *, unload_first: bool = False, exclude_default: bool = False):
+    def load_all(self, *, reload: bool = False, exclude_default: bool = False):
         """Load all extensions in the load list.
+
         The load list is always rebuilt first when called.
-        When done, the ``load_all`` event is dispatched with the value of ``unload_first``.
+        When done, the ``load_all`` event is dispatched with the value of ``reload``.
 
         Parameters
         ----------
-        unload_first
-            Unload extensions before loading them (makes the call function as a reload).
+        reload
+            Reload extensions instead of loading them. Uses
+            :meth:`discord.ext.commands.Bot.reload_extension`.
         exclude_default
             Exclude default extensions from being loaded.
         """
@@ -147,11 +149,12 @@ class BotBase(commands.bot.BotBase):
             load_list = self.load_list + self._included_extensions
 
         for extension_name in load_list:
-            if unload_first:
-                self.unload_extension(extension_name)
-            self.load_extension(extension_name)
+            if reload:
+                self.reload_extension(extension_name)
+            else:
+                self.load_extension(extension_name)
 
-        self.dispatch('load_all', unload_first)
+        self.dispatch('load_all', reload)
 
     async def on_ready(self):
         self.log.info('Ready! %s (%d)', self.user, self.user.id)
