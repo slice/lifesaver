@@ -38,8 +38,9 @@ class BotConfig(Config):
     #: The bot's description.
     description: str = 'A Discord bot.'
 
-    #: PMs help messages.
-    pm_help: Union[bool, None] = None
+    #: A tribool describing how the bot should decide to DM help messages.
+    #: See :attr:`discord.ext.commands.DefaultHelpCommand.dm_help`.
+    dm_help: Optional[bool] = None
 
     #: Determines whether mentions work as a prefix.
     command_prefix_include_mentions: bool = True

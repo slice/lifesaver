@@ -44,8 +44,7 @@ class BotBase(commands.bot.BotBase):
         super().__init__(
             command_prefix=compute_command_prefix(cfg),
             description=self.config.description,
-            pm_help=self.config.pm_help,
-
+            help_command=commands.DefaultHelpCommand(dm_help=self.config.dm_help),
             **kwargs,
         )
 
