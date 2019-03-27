@@ -57,6 +57,7 @@ class Errors(Cog):
         """Throws an intentional error. Used for debugging."""
         raise RuntimeError(f'Intentional error: {message}')
 
+    @Cog.listener()
     async def on_command_error(self, ctx: Context, error: Exception):
         """Default error handler."""
 
