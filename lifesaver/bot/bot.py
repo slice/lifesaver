@@ -41,10 +41,14 @@ class BotBase(commands.bot.BotBase):
         #: The bot's :class:`BotConfig`.
         self.config = cfg
 
+        command_prefix = kwargs.pop('command_prefix', compute_command_prefix(cfg))
+        description = kwargs.pop('description', self.config.description)
+        help_command = kwargs.pop('help_command', commands.DefaultHelpCommand(dm_help=cfg.dm_help))
+
         super().__init__(
-            command_prefix=compute_command_prefix(cfg),
-            description=self.config.description,
-            help_command=commands.DefaultHelpCommand(dm_help=self.config.dm_help),
+            command_prefix=command_prefix,
+            description=description,
+            help_command=help_command,
             **kwargs,
         )
 
