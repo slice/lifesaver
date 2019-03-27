@@ -65,7 +65,7 @@ class Context(commands.Context):
     async def confirm(
         self,
         title: str,
-        message: str = None,
+        message=discord.Embed.Empty,
         *,
         color: discord.Color = discord.Color.red(),
         delete_after: bool = False,
