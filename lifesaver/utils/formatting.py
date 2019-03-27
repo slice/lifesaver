@@ -279,7 +279,7 @@ def clean_mentions(channel: discord.TextChannel, text: str) -> str:
     return MENTION_RE.sub(replace, text)
 
 
-def pluralize(*, with_quantity: bool = False, with_indicative: bool = False, **word) -> str:
+def pluralize(*, with_quantity: bool = True, with_indicative: bool = False, **word) -> str:
     """Pluralize a single kwarg's name depending on the value.
 
     ``with_indicative`` must be used with ``with_quantity``.
@@ -288,16 +288,16 @@ def pluralize(*, with_quantity: bool = False, with_indicative: bool = False, **w
     -------
 
     >>> pluralize(object=2)
-    "objects"
+    "2 objects"
     >>> pluralize(object=1)
-    "object"
-    >>> pluralize(object=1, with_quantity=True)
     "1 object"
-    >>> pluralize(object=2, with_quantity=True)
-    "1 objects"
-    >>> pluralize(object=2, with_quantity=True, with_indicative=True)
+    >>> pluralize(object=1, with_quantity=False)
+    "object"
+    >>> pluralize(object=2, with_quantity=False)
+    "objects"
+    >>> pluralize(object=2, with_indicative=True)
     "2 objects are"
-    >>> pluralize(object=1, with_quantity=True, with_indicative=True)
+    >>> pluralize(object=1, with_indicative=True)
     "1 object is"
     """
 
@@ -318,8 +318,8 @@ def pluralize(*, with_quantity: bool = False, with_indicative: bool = False, **w
 
     if with_quantity:
         return f'{value} {with_s}{indicative}'
-    else:
-        return with_s + indicative
+
+    return with_s + indicative
 
 
 def format_traceback(exc: Exception, *, limit: int = 7, hide_paths: bool = False) -> str:
