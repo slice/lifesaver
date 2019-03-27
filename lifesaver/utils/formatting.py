@@ -317,7 +317,7 @@ def pluralize(*, with_quantity: bool = True, with_indicative: bool = False, **wo
         indicative = ' is' if value == 1 else ' are'
 
     if with_quantity:
-        return f'{value} {with_s}{indicative}'
+        return f'{value:,} {with_s}{indicative}'
 
     return with_s + indicative
 
