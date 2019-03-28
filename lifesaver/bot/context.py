@@ -30,9 +30,9 @@ class Context(commands.Context):
         return self.bot.tick(*args, **kwargs)
 
     @property
-    def pg_pool(self):
-        """A shortcut to :attr:`BotBase.pg_pool`."""
-        return self.bot.pg_pool
+    def pool(self):
+        """A shortcut to :attr:`BotBase.pool`."""
+        return self.bot.pool
 
     @property
     def can_send_embeds(self) -> bool:

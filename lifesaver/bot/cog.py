@@ -38,11 +38,13 @@ class Cog(commands.Cog):
 
     @property
     def loop(self):
+        """A shortcut to :attr:`BotBase.loop`."""
         return self.bot.loop
 
     @property
-    def pg_pool(self):
-        return self.bot.pg_pool
+    def pool(self):
+        """A shortcut to :attr:`BotBase.pool`."""
+        return self.bot.pool
 
     @staticmethod
     def with_config(config_cls: Type[Config]):

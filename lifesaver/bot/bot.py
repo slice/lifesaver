@@ -60,7 +60,7 @@ class BotBase(commands.bot.BotBase):
             raise TypeError(f'{self.context_cls} is not a lifesaver Context subclass')
 
         #: The Postgres pool connection.
-        self.pg_pool = None
+        self.pool = None
 
         #: The bot's logger.
         self.log = logging.getLogger(__name__)
@@ -121,11 +121,7 @@ class BotBase(commands.bot.BotBase):
             raise RuntimeError('Cannot connect to Postgres, asyncpg is not installed')
 
         self.log.debug('creating a postgres pool')
-
-        self.pg_pool = await asyncpg.create_pool(
-            dsn=self.config.postgres['dsn'],
-        )
-
+        self.pool = await asyncpg.create_pool(dsn=self.config.postgres['dsn'])
         self.log.debug('created postgres pool')
 
     def _rebuild_load_list(self):
