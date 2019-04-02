@@ -159,10 +159,10 @@ class BotBase(commands.bot.BotBase):
     async def on_ready(self):
         self.log.info('Ready! %s (%d)', self.user, self.user.id)
 
-        if self.config.postgres:
+        if self.config.postgres and self.pool is None:
             await self._postgres_connect()
 
-        if self.config.hot_reload:
+        if self.config.hot_reload and self._hot_plug is None:
             self.log.debug('Setting up hot reload.')
             self._hot_plug = PollerPlug(self)
             self._hot_task = self.loop.create_task(self._hot_reload())
