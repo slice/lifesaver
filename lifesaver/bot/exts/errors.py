@@ -28,6 +28,7 @@ class Errors(Cog):
 
     # Default error handlers.
     error_handlers = OrderedDict([
+        (commands.TooManyArguments, ('Too many arguments.', False)),
         (commands.BotMissingPermissions, ('Permissions error', True)),
         (commands.MissingPermissions, ('Permissions error', True)),
         (commands.NoPrivateMessage, ("You can't do that in a direct message.", False)),
@@ -148,10 +149,9 @@ class Errors(Cog):
 
             return
 
-        if isinstance(error, commands.CommandInvokeError):
-            insect_id = await self.create_insect(error)
-            await ctx.send(f'Something went wrong. \N{BUG} `{insect_id}`')
-            self.log.error('Fatal error. %s', format_traceback(error))
+        insect_id = await self.create_insect(error)
+        await ctx.send(f'Something went wrong. \N{BUG} `{insect_id}`')
+        self.log.error('Fatal error. %s', format_traceback(error))
 
 
 def setup(bot):
