@@ -26,7 +26,16 @@ class Errors(Cog):
         self.insects = AsyncJSONStorage('./insects.json')
         self.insect_creation_lock = asyncio.Lock()
 
-    # Default error handlers.
+    #: Errors to ignore.
+    ignored_errors = {
+        # Silently ignore ratelimit violations.
+        commands.CommandOnCooldown,
+
+        # Silently ignore other check failures.
+        commands.CheckFailure,
+    }
+
+    #: Default error handlers.
     error_handlers = OrderedDict([
         (commands.TooManyArguments, ('Too many arguments.', False)),
         (commands.BotMissingPermissions, ('Permissions error', True)),
@@ -147,6 +156,9 @@ class Errors(Cog):
             else:
                 await ctx.send(message)
 
+            return
+
+        if type(error) in self.ignored_errors:
             return
 
         insect_id = await self.create_insect(error)
