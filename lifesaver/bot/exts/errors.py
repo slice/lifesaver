@@ -33,6 +33,9 @@ class Errors(Cog):
 
         # Silently ignore other check failures.
         commands.CheckFailure,
+
+        # Silently ignore command not found errors.
+        commands.CommandNotFound,
     }
 
     #: Default error handlers.
