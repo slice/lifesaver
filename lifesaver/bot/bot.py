@@ -185,14 +185,6 @@ class BotBase(commands.bot.BotBase):
         ctx = await self.get_context(message, cls=self.context_cls)
         await self.invoke(ctx)
 
-    async def on_command_error(self, ctx: Context, exception: Exception):
-        """The handler that handles command errors.
-
-        This is a no-op. The Errors cog handles errors for us.
-        """
-        # Handled by errors.py.
-        pass
-
 
 class Bot(BotBase, discord.Client):
     def run(self):
