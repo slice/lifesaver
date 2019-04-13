@@ -58,6 +58,8 @@ class Errors(Cog):
     ])
 
     def cog_unload(self):
+        super().cog_unload()
+
         # restore original on_error
         self.bot.on_error = self._original_on_error
 
