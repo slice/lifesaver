@@ -11,7 +11,7 @@ deps = [
     'ruamel.yaml',
     'click',
     'jishaku',
-    'discord.py >= 1.0.0a1767',
+    'discord.py',
 ]
 
 setup(
