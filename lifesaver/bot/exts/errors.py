@@ -177,9 +177,9 @@ class Errors(Cog):
         if type(error) in self.ignored_errors:
             return
 
+        self.log.error('Fatal error. %s', format_traceback(error))
         insect_id = await self.create_insect(error)
         await ctx.send(f'Something went wrong. \N{BUG} `{insect_id}`')
-        self.log.error('Fatal error. %s', format_traceback(error))
 
 
 def setup(bot):
