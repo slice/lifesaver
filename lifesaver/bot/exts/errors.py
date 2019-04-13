@@ -3,6 +3,7 @@
 import asyncio
 import datetime
 import secrets
+import sys
 import time
 from collections import OrderedDict
 
@@ -21,10 +22,14 @@ def summarize_traceback(traceback: str, *, max_len: int = 30) -> str:
 
 
 class Errors(Cog):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, bot):
+        super().__init__(bot)
         self.insects = AsyncJSONStorage('./insects.json')
         self.insect_creation_lock = asyncio.Lock()
+
+        # clobber original on_error because it's a faux-event
+        self._original_on_error = bot.on_error
+        bot.on_error = self.on_error
 
     #: Errors to ignore.
     ignored_errors = {
@@ -52,13 +57,17 @@ class Errors(Cog):
             'You need to specify a subcommand to run. Run `{prefix}help {command}` for help.', False)),
     ])
 
+    def cog_unload(self):
+        # restore original on_error
+        self.bot.on_error = self._original_on_error
+
     def make_insect_id(self) -> str:
         return secrets.token_hex(6)
 
     async def create_insect(self, error: Exception) -> str:
         """Create and save an insect object, returning its ID."""
         async with self.insect_creation_lock:
-            insects = self.insects.get('insects') or []
+            insects = self.insects.get('insects', [])
 
             insect_id = self.make_insect_id()
             insects.append({
@@ -130,10 +139,14 @@ class Errors(Cog):
         """Throws an error. Useful for debugging."""
         raise RuntimeError(f'Intentional error: {message}')
 
+    async def on_error(self, event, *args, **kwargs):
+        type, value, traceback = sys.exc_info()
+        self.log.error('Fatal error in on_%s (args=%r, kwargs=%r). %s',
+                       event, args, kwargs, format_traceback(value))
+        await self.create_insect(value)
+
     @Cog.listener()
     async def on_command_error(self, ctx: Context, error: Exception):
-        """Default error handler."""
-
         ignored_errors = getattr(ctx.bot, 'ignored_errors', [])
         filtered_handlers = OrderedDict(
             (key, value) for (key, value) in self.error_handlers.items() if key not in ignored_errors)
