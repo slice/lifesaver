@@ -3,11 +3,11 @@
 API Reference
 =============
 
-Subclasses
-----------
+Bot
+---
 
-Lifesaver subclasses several Discord.py classes in order to provide extra
-functionality.
+Lifesaver subclasses Discord.py's command extension's bot class in order to
+provide extra features.
 
 Bot
 ~~~
@@ -42,15 +42,50 @@ BotBase
     and :class:`lifesaver.bot.Selfbot`. It provides most of the custom
     functionality that Lifesaver bots use.
 
+Commands
+--------
+
+Lifesaver extends the commands extension in order to provide useful features
+that you might find helpful. These classes and functions are also available
+through the ``lifesaver`` module, because the name of this module would
+conflict with imports of ``discord.ext.commands``::
+
+    # ✅ Use lifesaver.Cog, @lifesaver.command, ...
+    import lifesaver
+    from discord.ext import commands
+
+    # ❌ Clashing namespaces!
+    from lifesaver import commands
+    frmo discord.ext import commands
+
+Cog
+~~~
+
+Lifesaver provides a custom cog class which works exactly like :class:`discord.ext.commands.Cog`,
+but provides some useful tools, like an automatically created :class:`aiohttp.ClientSession`,
+integration with :class:`lifesaver.config.Config`, and more.
+
+.. autoclass:: lifesaver.commands.Cog
+    :members:
+
+Commands
+~~~~~~~~
+
+.. autofunction:: lifesaver.commands.command
+
+.. autofunction:: lifesaver.commands.group
+
+.. autoclass:: lifesaver.commands.SubcommandInvocationRequired
+
+.. autoclass:: lifesaver.commands.Command
+
+.. autoclass:: lifesaver.commands.Group
 
 Context
 ~~~~~~~
 
-.. autoclass:: lifesaver.bot.Context
+.. autoclass:: lifesaver.commands.Context
     :members:
-
-    This context is automatically used by :class:`lifesaver.bot.Bot` and similar
-    classes. It also provides extra functionality.
 
 Utilities
 ---------

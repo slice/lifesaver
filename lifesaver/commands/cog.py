@@ -10,25 +10,34 @@ from typing import Type
 
 import aiohttp
 from discord.ext import commands
+import lifesaver
 from lifesaver.config import Config
 
 
 class Cog(commands.Cog):
-    """The base class for cogs."""
+    """The base class for cogs.
+
+    It inherits from :class:`discord.ext.commands.Cog`. It differs in that the
+    bot instance must be passed when constructing the cog. Some helpful
+    properties and methods are also provided.
+    """
 
     def __init__(self, bot):
         super().__init__()
 
         #: The bot instance.
-        self.bot = bot
+        self.bot: lifesaver.bot.Bot = bot
 
-        #: The logger for this cog.
+        #: The lowercased name of the class.
         self.name = type(self).__name__.lower()
-        self.log = logging.getLogger('cog.' + self.name)  # type: logging.Logger
 
-        #: A ClientSession for this cog.
+        #: The logger for this cog. The name of the logger is derived from :attr:`name`.
+        self.log: logging.Logger = logging.getLogger(f'cog.{self.name}')
+
+        #: The :class:`aiohttp.ClientSession` for this cog.
         self.session = aiohttp.ClientSession(loop=self.loop)
 
+        #: The loaded config file. Only present when :meth:`with_config` is used.
         self.config = None
 
         if hasattr(self, '__lifesaver_config_cls__'):
@@ -40,16 +49,22 @@ class Cog(commands.Cog):
 
     @property
     def loop(self):
-        """A shortcut to :attr:`BotBase.loop`."""
+        """A shortcut to the :class:`asyncio.AbstractEventLoop` that the bot is running on."""
         return self.bot.loop
 
     @property
     def pool(self):
-        """A shortcut to :attr:`BotBase.pool`."""
+        """A shortcut to :attr:`lifesaver.bot.BotBase.pool`."""
         return self.bot.pool
 
     @staticmethod
     def with_config(config_cls: Type[Config]):
+        """Specifies a :class:`lifesaver.config.Config` to load when
+        constructing the cog.
+
+        The config file is loaded according to :attr:`lifesaver.bot.BotConfig.cog_config_path`
+        and :attr:`name` when constructed. The parsed config resides in :attr:`config`.
+        """
         def decorator(cls):
             setattr(cls, '__lifesaver_config_cls__', config_cls)
             return cls
@@ -86,6 +101,13 @@ class Cog(commands.Cog):
             self._schedule_method(name, method)
 
     def cog_unload(self):
+        """The special method called upon this cog being unloaded.
+
+        It cancels scheduled tasks created through :meth:`every`, and destroys
+        :attr:`session`.
+
+        If you override this, make sure to call ``super().cog_unload()``.
+        """
         for scheduled_task in self._scheduled_tasks:
             self.log.debug('Cancelling scheduled task: %s', scheduled_task)
             scheduled_task.cancel()

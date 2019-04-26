@@ -6,11 +6,11 @@ from discord.ext import commands
 
 
 class SubcommandInvocationRequired(commands.CommandError):
-    """A :class:`CommandError` subclass raised when a subcommand needs to be invoked."""
+    """A :class:`discord.ext.commands.CommandError` that is subclass raised when a subcommand needs to be invoked."""
 
 
 class Command(commands.Command):
-    """A :class:`commands.Command` subclass that implements additional useful features."""
+    """A :class:`discord.ext.commands.Command` subclass that implements additional features."""
 
     def __init__(self, *args, typing: bool = False, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -27,6 +27,8 @@ class Command(commands.Command):
 
 
 class Group(commands.Group, Command):
+    """A :class:`discord.ext.commands.Group` subclass that implements additional features."""
+
     def __init__(self, *args, hollow: bool = False, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
@@ -61,8 +63,23 @@ class Group(commands.Group, Command):
 
 
 def command(name: str = None, cls=Command, **kwargs):
+    """The command decorator.
+
+    Works exactly like :func:`discord.ext.commands.command`.
+
+    You can pass the ``typing`` keyword argument to wrap the entire command
+    invocation in a :meth:`discord.ext.commands.Context.typing`, making the
+    bot type for the duration the command runs.
+    """
     return commands.command(name, cls, **kwargs)
 
 
 def group(name: str = None, **kwargs):
+    """The command group decorator.
+
+    Works exactly like :func:`discord.ext.commands.group`.
+
+    You can pass the ``hollow`` keyword argument in order to force the command invoker to
+    specify a subcommand (raises :class:`lifesaver.commands.SubcommandInvocationRequired`).
+    """
     return command(name, Group, **kwargs)

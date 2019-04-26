@@ -22,16 +22,16 @@ class Context(commands.Context):
         return self
 
     def emoji(self, *args, **kwargs):
-        """A shortcut to :meth:`BotBase.emoji`."""
+        """A shortcut to :meth:`lifesaver.bot.BotBase.emoji`."""
         return self.bot.emoji(*args, **kwargs)
 
     def tick(self, *args, **kwargs):
-        """A shortcut to :meth:`BotBase.tick`."""
+        """A shortcut to :meth:`lifesaver.bot.BotBase.tick`."""
         return self.bot.tick(*args, **kwargs)
 
     @property
     def pool(self):
-        """A shortcut to :attr:`BotBase.pool`."""
+        """A shortcut to :attr:`lifesaver.bot.BotBase.pool`."""
         return self.bot.pool
 
     @property
