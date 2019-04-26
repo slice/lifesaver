@@ -7,10 +7,9 @@ import sys
 import time
 from collections import OrderedDict
 
+import lifesaver
 import discord
 from discord.ext import commands
-from lifesaver.bot import Cog, Context, group, errors
-from lifesaver.bot.command import SubcommandInvocationRequired
 from lifesaver.bot.storage import AsyncJSONStorage
 from lifesaver.utils import codeblock, format_traceback, human_delta, truncate, pluralize
 
@@ -21,7 +20,7 @@ def summarize_traceback(traceback: str, *, max_len: int = 30) -> str:
     return truncate(last_line, max_len)
 
 
-class Errors(Cog):
+class Errors(lifesaver.Cog):
     def __init__(self, bot):
         super().__init__(bot)
         self.insects = AsyncJSONStorage('./insects.json')
@@ -53,7 +52,7 @@ class Errors(Cog):
         (commands.DisabledCommand, ('This command has been disabled.', False)),
         (commands.UserInputError, ('User input error', True)),
         (commands.CheckFailure, ('Permissions error', True)),
-        (SubcommandInvocationRequired, (
+        (lifesaver.commands.SubcommandInvocationRequired, (
             'You need to specify a subcommand to run. Run `{prefix}help {command}` for help.', False)),
     ])
 
@@ -82,13 +81,13 @@ class Errors(Cog):
 
         return insect_id
 
-    @group(hidden=True, hollow=True)
+    @lifesaver.group(hidden=True, hollow=True)
     @commands.is_owner()
-    async def errors(self, ctx: Context):
+    async def errors(self, ctx: lifesaver.commands.Context):
         """Manages errors."""
 
     @errors.command(name='recent')
-    async def errors_recent(self, ctx: Context, amount: int = 5):
+    async def errors_recent(self, ctx: lifesaver.commands.Context, amount: int = 5):
         """Shows recent insects."""
         all_insects = self.insects.get('insects', [])
 
@@ -117,7 +116,7 @@ class Errors(Cog):
             await ctx.send('Too much information to display.')
 
     @errors.command(name='view', aliases=['show', 'info'])
-    async def errors_view(self, ctx: Context, insect_id):
+    async def errors_view(self, ctx: lifesaver.commands.Context, insect_id):
         """Views an error by insect ID."""
         all_insects = self.insects.get('insects', [])
         insect = discord.utils.find(lambda insect: insect['id'] == insect_id, all_insects)
@@ -137,7 +136,7 @@ class Errors(Cog):
         await ctx.send(embed=embed)
 
     @errors.command(name='throw', hidden=True)
-    async def errors_throw(self, ctx: Context, *, message='!'):
+    async def errors_throw(self, ctx: lifesaver.commands.Context, *, message='!'):
         """Throws an error. Useful for debugging."""
         raise RuntimeError(f'Intentional error: {message}')
 
@@ -147,15 +146,11 @@ class Errors(Cog):
                        event, args, kwargs, format_traceback(value))
         await self.create_insect(value)
 
-    @Cog.listener()
-    async def on_command_error(self, ctx: Context, error: Exception):
+    @lifesaver.Cog.listener()
+    async def on_command_error(self, ctx: lifesaver.commands.Context, error: Exception):
         ignored_errors = getattr(ctx.bot, 'ignored_errors', [])
         filtered_handlers = OrderedDict(
             (key, value) for (key, value) in self.error_handlers.items() if key not in ignored_errors)
-
-        if isinstance(error, errors.MessageError):
-            await ctx.send(str(error))
-            return
 
         if isinstance(error, commands.BadArgument):
             if 'failed for parameter' in str(error):

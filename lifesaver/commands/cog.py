@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+__all__ = ['Cog']
+
 import asyncio
 import inspect
 import logging

@@ -7,7 +7,7 @@ from typing import Tuple, Optional
 
 import discord
 from discord.ext import commands
-from lifesaver.bot import command, Cog, Context
+import lifesaver
 from lifesaver.utils.formatting import truncate
 from lifesaver.utils.timing import Timer, format_seconds
 
@@ -22,14 +22,14 @@ def bold_timer(timer: Timer) -> str:
         return str(timer)
 
 
-class Health(Cog):
+class Health(lifesaver.Cog):
     def __init__(self, bot, *args, **kwargs):
         super().__init__(bot, *args, **kwargs)
 
         self.rtt_sends = {}
         self.rtt_edits = {}
 
-    @Cog.listener()
+    @commands.Cog.listener()
     async def on_message_edit(self, message, _message):
         event = self.rtt_edits.get(message.id)
         if event:
@@ -37,7 +37,7 @@ class Health(Cog):
             event.set()
             del self.rtt_edits[message.id]
 
-    @Cog.listener()
+    @commands.Cog.listener()
     async def on_message(self, message):
         event = self.rtt_sends.get(message.nonce)
         if event:
@@ -45,15 +45,15 @@ class Health(Cog):
             event.set()
             del self.rtt_sends[message.nonce]
 
-    @command(aliases=['p'])
+    @lifesaver.command(aliases=['p'])
     @commands.cooldown(1, 1, type=commands.BucketType.guild)
-    async def ping(self, ctx: Context):
+    async def ping(self, ctx: lifesaver.commands.Context):
         """Pings the bot."""
         await ctx.send('Pong!')
 
-    @command()
+    @lifesaver.command()
     @commands.cooldown(3, 4, type=commands.BucketType.guild)
-    async def rtt(self, ctx: Context):
+    async def rtt(self, ctx: lifesaver.commands.Context):
         """Measures API and gateway latency.
 
         "TX" refers to the time it takes for the HTTP request to be sent, and

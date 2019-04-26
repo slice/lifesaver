@@ -7,12 +7,12 @@ from typing import Union
 import discord
 from discord.ext import commands
 
+import lifesaver
 from lifesaver.poller import Poller, PollerPlug
 from lifesaver.utils import dot_access
 from lifesaver.load_list import LoadList
 
 from .config import BotConfig
-from .context import Context
 
 INCLUDED_EXTENSIONS = [
     'jishaku',
@@ -54,9 +54,9 @@ class BotBase(commands.bot.BotBase):
 
         #: The bot's :class:`Context` subclass to use when invoking commands.
         #: Falls back to :class:`Context`.
-        self.context_cls = kwargs.get('context_cls', Context)
+        self.context_cls = kwargs.get('context_cls', lifesaver.commands.Context)
 
-        if not issubclass(self.context_cls, Context):
+        if not issubclass(self.context_cls, lifesaver.commands.Context):
             raise TypeError(f'{self.context_cls} is not a lifesaver Context subclass')
 
         #: The Postgres pool connection.

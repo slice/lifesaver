@@ -25,3 +25,5 @@ SOFTWARE.
 """
 
 __version__ = '0.0.0'
+
+from .commands import Cog, command, group
