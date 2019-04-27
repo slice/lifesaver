@@ -27,4 +27,4 @@ SOFTWARE.
 __version__ = '0.0.0'
 
 from .bot import AutoShardedBot, Bot
-from .commands import Cog, command, group
+from .commands import Cog, Context, command, group
