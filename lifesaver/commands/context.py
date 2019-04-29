@@ -6,8 +6,8 @@ from typing import Any, List, Type, Optional, TypeVar, Union
 
 import discord
 import jishaku
+import lifesaver
 from discord.ext import commands
-from lifesaver import utils
 
 T = TypeVar('T')
 
@@ -24,16 +24,16 @@ class Context(commands.Context):
         #: (see :meth:`paginate`).
         self.paginator = commands.Paginator(prefix='', suffix='', max_size=1900)
 
-    def emoji(self, *args, **kwargs):
+    def emoji(self, *args, **kwargs) -> Union[str, discord.Emoji]:
         """A shortcut to :meth:`lifesaver.bot.BotBase.emoji`."""
         return self.bot.emoji(*args, **kwargs)
 
-    def tick(self, *args, **kwargs):
+    def tick(self, *args, **kwargs) -> Union[str, discord.Emoji]:
         """A shortcut to :meth:`lifesaver.bot.BotBase.tick`."""
         return self.bot.tick(*args, **kwargs)
 
     @property
-    def pool(self):
+    def pool(self) -> 'asyncpg.pool.Pool':
         """A shortcut to :attr:`lifesaver.bot.BotBase.pool`."""
         return self.bot.pool
 
@@ -162,7 +162,7 @@ class Context(commands.Context):
         tries
             The amount of tries to grant the user.
         """
-        choices_list = utils.format_list(choices)
+        choices_list = lifesaver.utils.format_list(choices)
 
         choices_message = await self.send('Pick one, or send `cancel`.\n\n' + choices_list)
         remaining_tries = tries

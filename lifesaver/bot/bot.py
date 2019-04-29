@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional
 
 import discord
 from discord.ext import commands
@@ -60,7 +60,7 @@ class BotBase(commands.bot.BotBase):
             raise TypeError(f'{self.context_cls} is not a lifesaver Context subclass')
 
         #: The Postgres pool connection.
-        self.pool = None
+        self.pool: Optional['asyncpg.pool.Pool'] = None
 
         #: The bot's logger.
         self.log = logging.getLogger(__name__)
