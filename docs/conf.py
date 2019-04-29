@@ -32,7 +32,9 @@ rst_prolog = """
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
-    'discord.py': ('https://discordpy.readthedocs.io/en/rewrite/', None),
+    'discord.py': ('https://discordpy.readthedocs.io/en/rewrite', None),
+    'aiohttp': ('https://aiohttp.readthedocs.io/en/stable/', None),
+    'jishaku': ('https://jishaku.readthedocs.io/en/latest/', None),
 }
 
 templates_path = ['_templates']
