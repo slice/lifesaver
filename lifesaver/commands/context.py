@@ -2,9 +2,10 @@
 
 __all__ = ['Context']
 
-from typing import Any, List, Optional, TypeVar
+from typing import Any, List, Type, Optional, TypeVar, Union
 
 import discord
+import jishaku
 from discord.ext import commands
 from lifesaver import utils
 
@@ -12,14 +13,16 @@ T = TypeVar('T')
 
 
 class Context(commands.Context):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
-        self._paginator = commands.Paginator()
-
-    def __iadd__(self, line: str) -> 'Context':
-        self._paginator.add_line(line)
-        return self
+        #: The paginator associated with this context.
+        #:
+        #: To mimic :meth:`send`, the default prefix and suffix
+        #: is ``''``, and the ``max_size`` is 1,900 to prevent filling the chat
+        #: window when the paginator interface automatically kicks in
+        #: (see :meth:`paginate`).
+        self.paginator = commands.Paginator(prefix='', suffix='', max_size=1900)
 
     def emoji(self, *args, **kwargs):
         """A shortcut to :meth:`lifesaver.bot.BotBase.emoji`."""
@@ -195,14 +198,79 @@ class Context(commands.Context):
 
         return picked
 
-    def new_paginator(self, *args, **kwargs):
-        self._paginator = commands.Paginator(*args, **kwargs)
+    def add_line(self, line) -> None:
+        """Add a line to the paginator.
 
-    async def send_pages(self):
-        for page in self._paginator.pages:
+        Works exactly like :meth:`discord.ext.commands.Paginator.add_line`.
+        See :attr:`paginator` and :meth:`paginate`.
+        """
+        self.paginator.add_line(line)
+
+    async def send_pages(self) -> None:
+        """Send the pages in the paginator.
+
+        You probably want to use :meth:`paginate` instead, as it automatically
+        wraps the pages in a :class:`jishaku.paginators.PaginatorInterface` if
+        there's more than one page.
+        """
+        for page in self.paginator.pages:
             await self.send(page)
 
-    async def ok(self, emoji: str = None):
+    async def paginate(
+        self,
+        *,
+        force_interface: bool = False,
+        interface: Type[jishaku.paginators.PaginatorInterface] = jishaku.paginators.PaginatorInterface,
+    ) -> Optional[jishaku.paginators.PaginatorInterface]:
+        """Send the pages in the paginator in an appropriate manner.
+
+        Adding to the paginator is done by :meth:`add_line` or manual access to
+        :attr:`paginator`.
+
+        If there's more than one page present (or ``force_interface`` is
+        ``True``), then the paginator is wrapped in an :class:`jishaku.paginators.PaginatorInterface`,
+        sent, and returned. This is for maximum user convenience as it allows
+        them to browse the pages interactively using reaction buttons.
+
+        Otherwise, the only page is sent as a message without being wrapped.
+
+        Parameters
+        ----------
+        force_interface
+            Forces the paginator to be sent through a :class:`jishaku.paginators.PaginatorInterface`.
+        interface
+            Customizes the paginator interface to use. Must be a subclass of
+            :class:`jishaku.paginators.PaginatorInterface`.
+
+        Raises
+        ------
+        RuntimeError
+            The paginator is empty.
+        """
+        if (
+            # We're using `_pages` here because the `pages` attribute closes the
+            # page if the current page is nonempty, which is not what we want.
+            not self.paginator._pages
+
+            # The prefix is always present as a line in the page, so if it's the
+            # only line in the page, then it's empty.
+            and len(self.paginator._current_page) == 1
+        ):
+            raise RuntimeError('Cannot paginate with an empty paginator')
+
+        if not issubclass(interface, jishaku.paginators.PaginatorInterface):
+            raise TypeError(
+                f"Provided custom interface ({interface!r}) isn't a subclass of jishaku.paginators.PaginatorInterface")
+
+        if len(self.paginator._pages) > 1 or force_interface:
+            interface_instance = interface(self.bot, self.paginator, owner=self.author)
+            await interface_instance.send_to(self)
+            return interface_instance
+        else:
+            # Send the lone page normally.
+            await self.send_pages()
+
+    async def ok(self, emoji: str = None) -> None:
         """Respond with an emoji in acknowledgement to an action performed by the user.
 
         This method tries to react to the original message, falling back to the
