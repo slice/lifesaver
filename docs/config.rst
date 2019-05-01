@@ -7,18 +7,7 @@ Configuration
     A bot config file. The only required value is the :attr:`token` field, which
     is required to connect to Discord's gateway and use the REST API.
 
-    .. attribute:: bot_class
+.. autoclass:: lifesaver.bot.config.BotLoggingConfig
+    :members:
 
-        The custom bot class to instantiate when using the CLI module.
-
-        It is formatted as an import path and class separated by a colon, like::
-
-            coolbot.bot:CustomBotClass
-
-    .. autoattribute:: command_prefix
-
-        Can be a string or a list of strings.
-
-    .. autoattribute:: description
-
-        Shown in the bot's help command.
+    The subconfig for tweaking logging options.

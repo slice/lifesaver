@@ -4,9 +4,17 @@ import asyncio
 import importlib
 
 import click
+import ruamel.yaml
 from lifesaver.bot import Bot, BotConfig
 from lifesaver.config import ConfigError
 from lifesaver.logging import setup_logging
+
+
+def resolve_class(specifier: str):
+    module, class_name = specifier.split(':')
+    imported = importlib.import_module(module)
+    loaded_class = getattr(imported, class_name)
+    return loaded_class
 
 
 @click.command()
@@ -20,22 +28,35 @@ def cli(config, no_default_cogs):
         pass
 
     try:
-        config = BotConfig.load(config)
+        # Manually load the config first in order to detect a custom config
+        # class to use.
+        #
+        # We must do this because the custom config class is specified in the
+        # config itself, and we don't know which config class to load yet.
+        with open(config, 'r') as fp:
+            first_config = ruamel.yaml.YAML().load(fp)
+
+        config_class = BotConfig
+
+        custom_config_class = first_config.get('config_class')
+        if custom_config_class:
+            config_class = resolve_class(custom_config_class)
+
+        config = config_class.load(config)
+    except ruamel.yaml.error.YAMLError as error:
+        raise ConfigError('Invalid config. Is the syntax correct?') from error
     except FileNotFoundError as error:
         raise ConfigError(f'No config file was found at {config}.') from error
 
-    custom_bot_module = getattr(config, 'bot_class', None)
     bot_class = Bot
 
-    if custom_bot_module is not None:
-        module, class_name = custom_bot_module.split(':')
-        imported = importlib.import_module(module)
-        bot_class = getattr(imported, class_name)
+    if config.bot_class:
+        bot_class = resolve_class(config.bot_class)
 
         if not issubclass(bot_class, Bot):
             raise TypeError('Custom bot class is not a subclass of lifesaver.bot.Bot')
 
-    with setup_logging():
+    with setup_logging(config.logging):
         bot = bot_class(config)
         bot.load_all(exclude_default=no_default_cogs)
         bot.run()

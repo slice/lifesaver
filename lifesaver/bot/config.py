@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-__all__ = ['BotConfig']
+__all__ = ['BotConfig', 'BotLoggingConfig']
 
 from typing import Union, List, Dict, Optional, Any
 
@@ -19,9 +19,36 @@ DEFAULT_EMOJIS = {
 }
 
 
+class BotLoggingConfig(Config):
+    #: The logging level to use.
+    level: str = 'INFO'
+
+    #: The file to output to.
+    file: str = 'bot.log'
+
+    #: The logging format.
+    format: str = '[{asctime}] [{levelname}] {name}: {message}'
+
+    #: The time logging format.
+    time_format: str = '%Y-%m-%d %H:%M:%S'
+
+
 class BotConfig(Config):
     #: The token of the bot.
     token: str
+
+    #: The custom bot class to instantiate when using the CLI module.
+    #:
+    #: It is formatted as an import path and class separated by a colon, like::
+    #:
+    #:     coolbot.bot:CustomBotClass
+    bot_class: Optional[str] = None
+
+    #: The custom config class to use when using the CLI.
+    config_class: Optional[str] = None
+
+    #: The logging config to use when using the CLI. See :class:`BotLoggingConfig`.
+    logging: BotLoggingConfig
 
     #: The path to load extensions from.
     extensions_path: str = './exts'
@@ -32,10 +59,10 @@ class BotConfig(Config):
     #: Ignores bots when processing commands.
     ignore_bots: bool = True
 
-    #: The command prefix to use.
+    #: The command prefix to use. Can be a string or a list of strings.
     command_prefix: Union[List[str], str] = '!'
 
-    #: The bot's description.
+    #: The bot's description. Shown in the help command.
     description: str = 'A Discord bot.'
 
     #: A tribool describing how the bot should decide to DM help messages.

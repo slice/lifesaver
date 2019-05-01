@@ -1,7 +1,8 @@
 # encoding: utf-8
 
+import collections
+import inspect
 import typing
-from collections import UserDict
 
 from ruamel.yaml import YAML
 
@@ -13,7 +14,7 @@ class ConfigError(LifesaverError):
     """An error thrown by the Config loader."""
 
 
-class Config(UserDict):
+class Config:
     """A dict-like object that encompasses a configuration of some kind.
 
     All config files use YAML_ for markup.
@@ -21,32 +22,36 @@ class Config(UserDict):
     .. _YAML: https://en.wikipedia.org/wiki/YAML
     """
 
-    def __init__(self, data, *, loaded_from: str = None):
-        """Create a new Config instance from a dict.
+    def __init__(self, data: dict) -> None:
+        """Create a new Config instance.
 
         Parameters
         ----------
         data
-            The dict that will act as the configuration.
-        loaded_from
-            The filename that this Config was loaded from.
+            The configuration data.
         """
-        super().__init__(data)
-        self.loaded_from = loaded_from
+        self._load_data(data)
 
-        for key, value in data.items():
-            try:
-                default_value = getattr(self, key)
+    def _load_data(self, data):
+        # Grab the type hints as defined in the class.
+        # (Can't do it on the instance, or else it doesn't traverse the MRO.)
+        hints = typing.get_type_hints(self.__class__)
 
-                if isinstance(default_value, dict) and isinstance(value, dict):
-                    # Merge dictionaries instead of overwriting the default value.
-                    setattr(self, key, merge_dicts(default_value, value))
-                    continue
-            except AttributeError:
-                # Let custom attributes be set.
-                pass
+        for name, hint in hints.items():
+            # The default value is already set (it's the class attribute!)
+            default_value = getattr(self, name, None)
+            value = data.get(name, default_value)
 
-            setattr(self, key, value)
+            if inspect.isclass(hint) and issubclass(hint, Config):
+                # Load a nested config using the provided inner mapping, or fall
+                # back to an empty dict to use the nested config's defaults.
+                value = hint(value or {})
+
+            if isinstance(default_value, collections.abc.Mapping) and isinstance(value, dict):
+                # Merge the provided dict into the default mapping instead of overwriting.
+                value = merge_dicts(default_value, value)
+
+            setattr(self, name, value)
 
     @classmethod
     def load(cls, path: str) -> 'Config':
@@ -59,9 +64,4 @@ class Config(UserDict):
         """
         with open(path, 'r') as fp:
             yaml = fp.read()
-            return cls(YAML().load(yaml), loaded_from=path)
-
-    @property
-    def as_dict(self) -> typing.Dict:
-        """Return this Config as a dict."""
-        return self.data
+            return cls(YAML().load(yaml))
