@@ -98,7 +98,7 @@ class Sample(lifesaver.Cog):
         from inspect import getsource
         await ctx.send(codeblock(getsource(cmd.callback), lang='py'))
 
-    @Cog.every(10, wait_until_ready=True)
+    @lifesaver.Cog.every(10, wait_until_ready=True)
     async def scheduled(self):
         print('Scheduled function.')
 
