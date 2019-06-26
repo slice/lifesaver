@@ -58,7 +58,7 @@ def format_list(items: List[Any]) -> str:
     List numerals are padded to ensure that there are at least 3 digits.
     """
     return '\n'.join(
-        f'{index + 1:03d}: {value}'
+        f'{index + 1}. {value}'
         for index, value in enumerate(items)
     )
 
