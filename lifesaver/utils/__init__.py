@@ -2,7 +2,6 @@
 
 from .dicts import *
 from .formatting import *
-from .messages import *
 from .paginator import *
 from .roles import *
 from .system import *
