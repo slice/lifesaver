@@ -2,7 +2,7 @@
 
 __all__ = ['Context']
 
-from typing import Any, List, Type, Optional, TypeVar, Union
+from typing import Any, Callable, List, Type, Optional, TypeVar, Union
 
 import discord
 import jishaku
@@ -146,6 +146,7 @@ class Context(commands.Context):
         choices: List[T],
         *,
         delete_after_choice: bool = False,
+        formatter: Callable[[T, int], str] = None,
         tries: int = 3
     ) -> Optional[T]:
         """Send a list of items, allowing the user to pick one. Returns the
@@ -159,10 +160,12 @@ class Context(commands.Context):
             The list of choices.
         delete_after_choice
             Deletes the message prompt after the user has picked.
+        formatter
+            The formatter used to format the list.
         tries
             The amount of tries to grant the user.
         """
-        choices_list = lifesaver.utils.format_list(choices)
+        choices_list = lifesaver.utils.format_list(choices, formatter=formatter)
 
         choices_message = await self.send('Pick one, or send `cancel`.\n\n' + choices_list)
         remaining_tries = tries

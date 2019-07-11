@@ -46,21 +46,24 @@ import os
 import pathlib
 import re
 import traceback
-from typing import Any, List, Union
+from typing import Any, Callable, List, TypeVar, Union
 
 import discord
 
 MENTION_RE = re.compile(r"<@!?&?(\d{15,21})>|(@everyone|@here)")
+_T = TypeVar('_T')
 
 
-def format_list(items: List[Any]) -> str:
+def _default_list_formatter(value: Any, index: int) -> str:
+    return f'{index + 1}. {value}'
+
+
+def format_list(items: List[_T], formatter: Callable[[_T, int], str] = None) -> str:
     """Format a list as an ordered list, with numerals preceding every item.
     List numerals are padded to ensure that there are at least 3 digits.
     """
-    return '\n'.join(
-        f'{index + 1}. {value}'
-        for index, value in enumerate(items)
-    )
+    formatter = formatter or _default_list_formatter
+    return '\n'.join(formatter(value, index) for index, value in enumerate(items))
 
 
 def escape_backticks(text: str) -> str:
