@@ -142,7 +142,7 @@ class Errors(lifesaver.Cog):
 
     async def on_error(self, event, *args, **kwargs):
         type, value, traceback = sys.exc_info()
-        self.log.error('Fatal error in on_%s (args=%r, kwargs=%r). %s',
+        self.log.error('Fatal error in %s (args=%r, kwargs=%r). %s',
                        event, args, kwargs, format_traceback(value))
         await self.create_insect(value)
 
