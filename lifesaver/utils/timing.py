@@ -89,7 +89,7 @@ class Ratelimiter:
     A timing mechanism to limit requests to ``rate`` per ``per`` seconds.
     """
 
-    def __init__(self, rate: int, per: float) -> None:
+    def __init__(self, rate: int, per: T.Union[int, float]) -> None:
         self.rate = rate
         self.per = per
 
