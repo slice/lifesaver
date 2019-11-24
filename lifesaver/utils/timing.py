@@ -151,4 +151,8 @@ class Ratelimiter:
         return f"<Ratelimiter rate={self.rate} per={self.per}>"
 
     def __eq__(self, other) -> bool:
-        return self.rate == other.rate and self.per == other.per
+        return (
+            isinstance(other, Ratelimiter)
+            and self.rate == other.rate
+            and self.per == other.per
+        )
