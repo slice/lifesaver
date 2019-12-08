@@ -72,6 +72,7 @@ class BotBase(commands.bot.BotBase):
         self._included_extensions = INCLUDED_EXTENSIONS  # type: list
 
         self._hot_task = None
+        self._hot_reload_poller = None
         self._hot_plug = None
 
     def emoji(self, accessor: str, *, stringify: bool = False) -> Union[str, discord.Emoji]:
@@ -106,11 +107,20 @@ class BotBase(commands.bot.BotBase):
         else:
             return self.emoji('generic.no')
 
-    async def _hot_reload(self):
-        poller = Poller(path=self.config.extensions_path, polling_interval=0.1)
-        self.log.debug('created poller: %s', poller)
+    async def _setup_hot_reload(self) -> None:
+        self.log.debug("Setting up hot reload.")
 
-        async for event in poller:
+        self._hot_reload_poller = Poller(Path(self.config.extensions_path))
+        self.log.debug("Created poller: %r", self._hot_reload_poller)
+
+        # setup plug, which handles the extension {un,re,}loading for us
+        self._hot_plug = PollerPlug(self)
+
+        # infinitely consume hot reload events
+        self._hot_task = self.loop.create_task(self._consume_hot_reload())
+
+    async def _consume_hot_reload(self):
+        async for event in self._hot_reload_poller:
             self._hot_plug.handle(event)
             self._rebuild_load_list()
 
@@ -163,9 +173,7 @@ class BotBase(commands.bot.BotBase):
             await self._postgres_connect()
 
         if self.config.hot_reload and self._hot_plug is None:
-            self.log.debug('Setting up hot reload.')
-            self._hot_plug = PollerPlug(self)
-            self._hot_task = self.loop.create_task(self._hot_reload())
+            await self._setup_hot_reload()
 
     async def on_message(self, message: discord.Message):
         """The handler that handles incoming messages from Discord.

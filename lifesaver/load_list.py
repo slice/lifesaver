@@ -15,6 +15,7 @@ def transform_path(path: typing.Union[Path, str]) -> str:
 
 
 def filter_path(path: typing.Union[Path, str]) -> bool:
+    """Return whether a path is appropriate for extension loading."""
     string_path = str(path)
 
     if any(string_path.endswith(ext) for ext in FORBIDDEN_EXTENSIONS):
