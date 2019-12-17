@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-__all__ = ['SubcommandInvocationRequired', 'Command', 'Group', 'command', 'group']
+__all__ = ["SubcommandInvocationRequired", "Command", "Group", "command", "group"]
 
 from discord.ext import commands
 
@@ -45,7 +45,7 @@ class Group(commands.Group, Command):
 
     def command(self, *args, **kwargs):
         def decorator(func):
-            kwargs.setdefault('parent', self)
+            kwargs.setdefault("parent", self)
             result = command(*args, **kwargs)(func)
             self.add_command(result)
             return result
@@ -54,7 +54,7 @@ class Group(commands.Group, Command):
 
     def group(self, *args, **kwargs):
         def decorator(func):
-            kwargs.setdefault('parent', self)
+            kwargs.setdefault("parent", self)
             result = group(*args, **kwargs)(func)
             self.add_command(result)
             return result

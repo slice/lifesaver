@@ -47,16 +47,18 @@ class AsyncJSONStorage(AsyncStorage):
         self._load()
 
     def _save(self):
-        atomic_name = f'{uuid.uuid4()}.tmp'
+        atomic_name = f"{uuid.uuid4()}.tmp"
 
-        with open(atomic_name, 'w', encoding='utf-8') as fp:
-            json.dump(self._data.copy(), fp, ensure_ascii=True, cls=self.encoder, indent=2)
+        with open(atomic_name, "w", encoding="utf-8") as fp:
+            json.dump(
+                self._data.copy(), fp, ensure_ascii=True, cls=self.encoder, indent=2
+            )
 
         os.replace(atomic_name, self.file)
 
     def _load(self):
         try:
-            with open(self.file, 'r', encoding='utf-8') as fp:
+            with open(self.file, "r", encoding="utf-8") as fp:
                 self._data = json.load(fp, object_hook=self.object_hook)
         except FileNotFoundError:
             self._data = {}

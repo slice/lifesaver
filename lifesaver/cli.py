@@ -11,18 +11,24 @@ from lifesaver.logging import setup_logging
 
 
 def resolve_class(specifier: str):
-    module, class_name = specifier.split(':')
+    module, class_name = specifier.split(":")
     imported = importlib.import_module(module)
     loaded_class = getattr(imported, class_name)
     return loaded_class
 
 
 @click.command()
-@click.option('--config', default='config.yml', help='The configuration file to use.')
-@click.option('--no-default-cogs', is_flag=True, default=False, help='Prevent default cogs from loading.')
+@click.option("--config", default="config.yml", help="The configuration file to use.")
+@click.option(
+    "--no-default-cogs",
+    is_flag=True,
+    default=False,
+    help="Prevent default cogs from loading.",
+)
 def cli(config, no_default_cogs):
     try:
         import uvloop
+
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     except ImportError:
         pass
@@ -33,20 +39,20 @@ def cli(config, no_default_cogs):
         #
         # We must do this because the custom config class is specified in the
         # config itself, and we don't know which config class to load yet.
-        with open(config, 'r') as fp:
+        with open(config, "r") as fp:
             first_config = ruamel.yaml.YAML().load(fp)
 
         config_class = BotConfig
 
-        custom_config_class = first_config.get('config_class')
+        custom_config_class = first_config.get("config_class")
         if custom_config_class:
             config_class = resolve_class(custom_config_class)
 
         config = config_class.load(config)
     except ruamel.yaml.error.YAMLError as error:
-        raise ConfigError('Invalid config. Is the syntax correct?') from error
+        raise ConfigError("Invalid config. Is the syntax correct?") from error
     except FileNotFoundError as error:
-        raise ConfigError(f'No config file was found at {config}.') from error
+        raise ConfigError(f"No config file was found at {config}.") from error
 
     bot_class = Bot
 
@@ -54,7 +60,7 @@ def cli(config, no_default_cogs):
         bot_class = resolve_class(config.bot_class)
 
         if not issubclass(bot_class, Bot):
-            raise TypeError('Custom bot class is not a subclass of lifesaver.bot.Bot')
+            raise TypeError("Custom bot class is not a subclass of lifesaver.bot.Bot")
 
     with setup_logging(config.logging):
         bot = bot_class(config)
@@ -62,5 +68,5 @@ def cli(config, no_default_cogs):
         bot.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli()

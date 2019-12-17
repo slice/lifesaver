@@ -15,9 +15,9 @@ from lifesaver.load_list import LoadList
 from .config import BotConfig
 
 INCLUDED_EXTENSIONS = [
-    'jishaku',
-    'lifesaver.bot.exts.health',
-    'lifesaver.bot.exts.errors',
+    "jishaku",
+    "lifesaver.bot.exts.health",
+    "lifesaver.bot.exts.errors",
 ]
 
 
@@ -41,9 +41,11 @@ class BotBase(commands.bot.BotBase):
         #: The bot's :class:`BotConfig`.
         self.config = cfg
 
-        command_prefix = kwargs.pop('command_prefix', compute_command_prefix(cfg))
-        description = kwargs.pop('description', self.config.description)
-        help_command = kwargs.pop('help_command', commands.DefaultHelpCommand(dm_help=cfg.dm_help))
+        command_prefix = kwargs.pop("command_prefix", compute_command_prefix(cfg))
+        description = kwargs.pop("description", self.config.description)
+        help_command = kwargs.pop(
+            "help_command", commands.DefaultHelpCommand(dm_help=cfg.dm_help)
+        )
 
         super().__init__(
             command_prefix=command_prefix,
@@ -54,13 +56,13 @@ class BotBase(commands.bot.BotBase):
 
         #: The bot's :class:`Context` subclass to use when invoking commands.
         #: Falls back to :class:`Context`.
-        self.context_cls = kwargs.get('context_cls', lifesaver.commands.Context)
+        self.context_cls = kwargs.get("context_cls", lifesaver.commands.Context)
 
         if not issubclass(self.context_cls, lifesaver.commands.Context):
-            raise TypeError(f'{self.context_cls} is not a lifesaver Context subclass')
+            raise TypeError(f"{self.context_cls} is not a lifesaver Context subclass")
 
         #: The Postgres pool connection.
-        self.pool: Optional['asyncpg.pool.Pool'] = None
+        self.pool: Optional["asyncpg.pool.Pool"] = None
 
         #: The bot's logger.
         self.log = logging.getLogger(__name__)
@@ -75,7 +77,9 @@ class BotBase(commands.bot.BotBase):
         self._hot_reload_poller = None
         self._hot_plug = None
 
-    def emoji(self, accessor: str, *, stringify: bool = False) -> Union[str, discord.Emoji]:
+    def emoji(
+        self, accessor: str, *, stringify: bool = False
+    ) -> Union[str, discord.Emoji]:
         """Return an emoji as referenced by the global emoji table.
 
         The first argument accesses the :attr:`BotConfig.emojis` dict using
@@ -103,9 +107,9 @@ class BotBase(commands.bot.BotBase):
         Uses ``generic.yes`` and ``generic.no`` from the global emoji table.
         """
         if variant:
-            return self.emoji('generic.yes')
+            return self.emoji("generic.yes")
         else:
-            return self.emoji('generic.no')
+            return self.emoji("generic.no")
 
     async def _setup_hot_reload(self) -> None:
         self.log.debug("Setting up hot reload.")
@@ -128,11 +132,11 @@ class BotBase(commands.bot.BotBase):
         try:
             import asyncpg
         except ImportError:
-            raise RuntimeError('Cannot connect to Postgres, asyncpg is not installed')
+            raise RuntimeError("Cannot connect to Postgres, asyncpg is not installed")
 
-        self.log.debug('creating a postgres pool')
-        self.pool = await asyncpg.create_pool(dsn=self.config.postgres['dsn'])
-        self.log.debug('created postgres pool')
+        self.log.debug("creating a postgres pool")
+        self.pool = await asyncpg.create_pool(dsn=self.config.postgres["dsn"])
+        self.log.debug("created postgres pool")
 
     def _rebuild_load_list(self):
         self.load_list.build(Path(self.config.extensions_path))
@@ -164,10 +168,10 @@ class BotBase(commands.bot.BotBase):
             else:
                 self.load_extension(extension_name)
 
-        self.dispatch('load_all', reload)
+        self.dispatch("load_all", reload)
 
     async def on_ready(self):
-        self.log.info('Ready! %s (%d)', self.user, self.user.id)
+        self.log.info("Ready! Logged in as %s (%d)", self.user, self.user.id)
 
         if self.config.postgres and self.pool is None:
             await self._postgres_connect()

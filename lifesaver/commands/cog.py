@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-__all__ = ['Cog']
+__all__ = ["Cog"]
 
 import asyncio
 import inspect
@@ -32,7 +32,7 @@ class Cog(commands.Cog):
         self.name = type(self).__name__.lower()
 
         #: The logger for this cog. The name of the logger is derived from :attr:`name`.
-        self.log: logging.Logger = logging.getLogger(f'cog.{self.name}')
+        self.log: logging.Logger = logging.getLogger(f"cog.{self.name}")
 
         #: The :class:`aiohttp.ClientSession` for this cog.
         self.session = aiohttp.ClientSession(loop=self.loop)
@@ -40,8 +40,8 @@ class Cog(commands.Cog):
         #: The loaded config file. Only present when :meth:`with_config` is used.
         self.config = None
 
-        if hasattr(self, '__lifesaver_config_cls__'):
-            path = os.path.join(self.bot.config.cog_config_path, self.name + '.yml')
+        if hasattr(self, "__lifesaver_config_cls__"):
+            path = os.path.join(self.bot.config.cog_config_path, self.name + ".yml")
             self.config = self.__lifesaver_config_cls__.load(path)
 
         self._scheduled_tasks = []
@@ -65,28 +65,30 @@ class Cog(commands.Cog):
         The config file is loaded according to :attr:`lifesaver.bot.BotConfig.cog_config_path`
         and :attr:`name` when constructed. The parsed config resides in :attr:`config`.
         """
+
         def decorator(cls):
-            setattr(cls, '__lifesaver_config_cls__', config_cls)
+            setattr(cls, "__lifesaver_config_cls__", config_cls)
             return cls
+
         return decorator
 
     def _schedule_method(self, name: str, method):
         schedule = method.__lifesaver_schedule__
 
         async def scheduled_function_wrapper():
-            if 'wait_until_ready' in schedule:
+            if "wait_until_ready" in schedule:
                 await self.bot.wait_until_ready()
 
             while True:
-                if 'initial_sleep' in schedule:
-                    await asyncio.sleep(schedule['interval'])
+                if "initial_sleep" in schedule:
+                    await asyncio.sleep(schedule["interval"])
 
                 try:
                     await method()
                 except Exception:
-                    self.log.exception(f'Exception thrown from scheduled method {name}')
+                    self.log.exception(f"Exception thrown from scheduled method {name}")
 
-                await asyncio.sleep(schedule['interval'])
+                await asyncio.sleep(schedule["interval"])
 
         task = self.bot.loop.create_task(scheduled_function_wrapper())
         self._scheduled_tasks.append(task)
@@ -95,7 +97,7 @@ class Cog(commands.Cog):
         methods = inspect.getmembers(self, predicate=inspect.ismethod)
 
         for (name, method) in methods:
-            if not hasattr(method, '__lifesaver_schedule__'):
+            if not hasattr(method, "__lifesaver_schedule__"):
                 continue
 
             self._schedule_method(name, method)
@@ -109,7 +111,7 @@ class Cog(commands.Cog):
         If you override this, make sure to call ``super().cog_unload()``.
         """
         for scheduled_task in self._scheduled_tasks:
-            self.log.debug('Cancelling scheduled task: %s', scheduled_task)
+            self.log.debug("Cancelling scheduled task: %s", scheduled_task)
             scheduled_task.cancel()
 
         self.loop.create_task(self.session.close())
@@ -130,9 +132,9 @@ class Cog(commands.Cog):
 
         def outer(func):
             if not inspect.iscoroutinefunction(func):
-                raise TypeError('You must use Cog.every on a coroutine.')
+                raise TypeError("You must use Cog.every on a coroutine.")
 
-            func.__lifesaver_schedule__ = {'interval': interval, **kwargs}
+            func.__lifesaver_schedule__ = {"interval": interval, **kwargs}
 
             return func
 

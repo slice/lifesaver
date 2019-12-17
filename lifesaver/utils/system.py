@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-__all__ = ['shell']
+__all__ = ["shell"]
 
 import asyncio
 
@@ -37,4 +37,4 @@ async def shell(command: str) -> str:
         command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
     )
     results = await shell.communicate()
-    return ''.join(x.decode() for x in results)
+    return "".join(x.decode() for x in results)

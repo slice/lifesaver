@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-__all__ = ['setup_logging']
+__all__ = ["setup_logging"]
 
 import contextlib
 import logging
@@ -21,9 +21,9 @@ def setup_logging(config: lifesaver.bot.config.BotLoggingConfig):
         root_logger = logging.getLogger()
         root_logger.setLevel(config.level)
 
-        formatter = logging.Formatter(config.format, config.time_format, style='{')
+        formatter = logging.Formatter(config.format, config.time_format, style="{")
 
-        file_stream = logging.FileHandler(config.file, encoding='utf-8')
+        file_stream = logging.FileHandler(config.file, encoding="utf-8")
         stream = logging.StreamHandler()
 
         stream.setFormatter(formatter)

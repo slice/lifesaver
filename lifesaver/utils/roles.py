@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-__all__ = ['mentionable_role']
+__all__ = ["mentionable_role"]
 
 import contextlib
 

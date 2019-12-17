@@ -17,7 +17,7 @@ SendVerdict = Tuple[bool, Optional[Exception]]
 
 def bold_timer(timer: Timer) -> str:
     if timer.duration > 1:
-        return f'**{timer}**'
+        return f"**{timer}**"
     else:
         return str(timer)
 
@@ -33,7 +33,7 @@ class Health(lifesaver.Cog):
     async def on_message_edit(self, message, _message):
         event = self.rtt_edits.get(message.id)
         if event:
-            log.debug('RTT: Received edit_rx for %d.', message.id)
+            log.debug("RTT: Received edit_rx for %d.", message.id)
             event.set()
             del self.rtt_edits[message.id]
 
@@ -41,15 +41,17 @@ class Health(lifesaver.Cog):
     async def on_message(self, message):
         event = self.rtt_sends.get(message.nonce)
         if event:
-            log.debug('RTT: Received send_rx for %d (nonce=%d).', message.id, message.nonce)
+            log.debug(
+                "RTT: Received send_rx for %d (nonce=%d).", message.id, message.nonce
+            )
             event.set()
             del self.rtt_sends[message.nonce]
 
-    @lifesaver.command(aliases=['p'])
+    @lifesaver.command(aliases=["p"])
     @commands.cooldown(1, 1, type=commands.BucketType.guild)
     async def ping(self, ctx: lifesaver.commands.Context):
         """Pings the bot."""
-        await ctx.send('Pong!')
+        await ctx.send("Pong!")
 
     @lifesaver.command()
     @commands.cooldown(3, 4, type=commands.BucketType.guild)
@@ -74,7 +76,7 @@ class Health(lifesaver.Cog):
 
             with Timer() as send_tx:
                 try:
-                    message = await ctx.send('RTT: `\N{LOWER HALF BLOCK}`', nonce=nonce)
+                    message = await ctx.send("RTT: `\N{LOWER HALF BLOCK}`", nonce=nonce)
                 except discord.HTTPException as error:
                     send_failed = (True, error)
 
@@ -88,7 +90,7 @@ class Health(lifesaver.Cog):
 
             with Timer() as edit_tx:
                 try:
-                    await message.edit(content='RTT: `\N{FULL BLOCK}`')
+                    await message.edit(content="RTT: `\N{FULL BLOCK}`")
                 except discord.HTTPException as error:
                     edit_failed = (True, error)
 
@@ -105,38 +107,36 @@ class Health(lifesaver.Cog):
             tx = bold_timer(tx)
             rx = bold_timer(rx)
 
-            return f'RTT: {timer}\n\nTX: {tx}\nRX: {rx}'
+            return f"RTT: {timer}\n\nTX: {tx}\nRX: {rx}"
 
         if slow:
             color = discord.Color.red()
         else:
             color = discord.Color.green()
 
-        embed = discord.Embed(title='RTT Results', color=color)
+        embed = discord.Embed(title="RTT Results", color=color)
 
         embed.add_field(
-            name='MESSAGE_CREATE',
-            value=format_transfer(send, send_tx, send_rx),
+            name="MESSAGE_CREATE", value=format_transfer(send, send_tx, send_rx),
         )
         embed.add_field(
-            name='MESSAGE_UPDATE',
-            value=format_transfer(edit, edit_tx, edit_rx),
+            name="MESSAGE_UPDATE", value=format_transfer(edit, edit_tx, edit_rx),
         )
         embed.set_footer(
-            text=f'Avg. TX: {format_seconds(avg_tx)}, RX: {format_seconds(avg_rx)}',
+            text=f"Avg. TX: {format_seconds(avg_tx)}, RX: {format_seconds(avg_rx)}",
         )
 
-        failures = {'Send': send_failed, 'Edit': edit_failed}
+        failures = {"Send": send_failed, "Edit": edit_failed}
 
         if any(result[0] for (name, result) in failures.items()):
-            content = '\n'.join(
-                f'{name}: Failed with HTTP {result[1].code}: {truncate(result[1].message, 100)}'  # type: ignore
+            content = "\n".join(
+                f"{name}: Failed with HTTP {result[1].code}: {truncate(result[1].message, 100)}"  # type: ignore
                 for (name, result) in failures.items()
                 if result[0] is not False
             )
-            embed.add_field(name='Failures', value=content, inline=False)
+            embed.add_field(name="Failures", value=content, inline=False)
 
-        await message.edit(content='', embed=embed)
+        await message.edit(content="", embed=embed)
 
 
 def setup(bot):

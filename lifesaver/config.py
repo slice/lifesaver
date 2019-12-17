@@ -47,14 +47,16 @@ class Config:
                 # back to an empty dict to use the nested config's defaults.
                 value = hint(value or {})
 
-            if isinstance(default_value, collections.abc.Mapping) and isinstance(value, dict):
+            if isinstance(default_value, collections.abc.Mapping) and isinstance(
+                value, dict
+            ):
                 # Merge the provided dict into the default mapping instead of overwriting.
                 value = merge_dicts(default_value, value)
 
             setattr(self, name, value)
 
     @classmethod
-    def load(cls, path: str) -> 'Config':
+    def load(cls, path: str) -> "Config":
         """Creates a Config instance from a file path.
 
         Parameters
@@ -62,6 +64,6 @@ class Config:
         path
             A path to a YAML_ file.
         """
-        with open(path, 'r') as fp:
+        with open(path, "r") as fp:
             yaml = fp.read()
             return cls(YAML().load(yaml))

@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-__all__ = ['Paginator', 'ListPaginator']
+__all__ = ["Paginator", "ListPaginator"]
 
 import logging
 from typing import Optional, Any, List
@@ -12,7 +12,9 @@ log = logging.getLogger(__name__)
 
 
 class Paginator:
-    def __init__(self, invoker: discord.User, destination: discord.abc.Messageable, *, bot) -> None:
+    def __init__(
+        self, invoker: discord.User, destination: discord.abc.Messageable, *, bot
+    ) -> None:
         self.invoker = invoker
         self.bot = bot
         self.destination = destination
@@ -59,7 +61,7 @@ class Paginator:
             user == self.invoker,
         ]
 
-        log.debug('Checks: %s', conditions)
+        log.debug("Checks: %s", conditions)
 
         return all(conditions)
 
@@ -69,25 +71,27 @@ class Paginator:
     def get_embed_for_page(self, page: int) -> discord.Embed:
         embed = self.get_base_embed()
         embed.description = self.get_page_contents(page)
-        embed.set_footer(text=f'Page {page + 1}/{self.max_pages}')
+        embed.set_footer(text=f"Page {page + 1}/{self.max_pages}")
         return embed
 
     async def handle_reaction(self, reaction: discord.Reaction, user: discord.User):
         emoji = reaction.emoji
 
         action = self.actions.get(emoji)
-        log.debug('Grabbed action for %s: %s', emoji, action)
+        log.debug("Grabbed action for %s: %s", emoji, action)
 
         if action:
             await discord.utils.maybe_coroutine(action)
 
     async def handle_events(self):
         while True:
-            reaction, user = await self.bot.wait_for('reaction_add', check=self.reaction_check)
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", check=self.reaction_check
+            )
             await self.handle_reaction(reaction, user)
 
             if self.stopped:
-                log.debug('Paginator stopped, breaking.')
+                log.debug("Paginator stopped, breaking.")
                 break
 
             try:
@@ -118,7 +122,9 @@ class Paginator:
 
 
 class ListPaginator(Paginator):
-    def __init__(self, things: List[Any], *args, title: str = None, per_page: int = 10, **kwargs) -> None:
+    def __init__(
+        self, things: List[Any], *args, title: str = None, per_page: int = 10, **kwargs
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.title = title
         self.things = things
@@ -135,9 +141,9 @@ class ListPaginator(Paginator):
         return ceil(len(self.things) / self.per_page)
 
     def format_things(self, things: List[Any]) -> str:
-        return '\n'.join(map(lambda thing: f'\N{BULLET} {thing}', things))
+        return "\n".join(map(lambda thing: f"\N{BULLET} {thing}", things))
 
     def get_page_contents(self, page: int) -> str:
         starting_index = page * self.per_page
-        things = self.things[starting_index:starting_index + self.per_page]
+        things = self.things[starting_index : starting_index + self.per_page]
         return self.format_things(things)

@@ -1,16 +1,16 @@
 # encoding: utf-8
 
 __all__ = [
-    'MENTION_RE',
-    'format_list',
-    'escape_backticks',
-    'human_delta',
-    'codeblock',
-    'truncate',
-    'Table',
-    'clean_mentions',
-    'pluralize',
-    'format_traceback',
+    "MENTION_RE",
+    "format_list",
+    "escape_backticks",
+    "human_delta",
+    "codeblock",
+    "truncate",
+    "Table",
+    "clean_mentions",
+    "pluralize",
+    "format_traceback",
 ]
 
 """Text formatting and processing utilities."""
@@ -51,11 +51,11 @@ from typing import Any, Callable, List, TypeVar, Union
 import discord
 
 MENTION_RE = re.compile(r"<@!?&?(\d{15,21})>|(@everyone|@here)")
-_T = TypeVar('_T')
+_T = TypeVar("_T")
 
 
 def _default_list_formatter(value: Any, index: int) -> str:
-    return f'{index + 1}. {value}'
+    return f"{index + 1}. {value}"
 
 
 def format_list(items: List[_T], formatter: Callable[[_T, int], str] = None) -> str:
@@ -63,14 +63,14 @@ def format_list(items: List[_T], formatter: Callable[[_T, int], str] = None) -> 
     List numerals are padded to ensure that there are at least 3 digits.
     """
     formatter = formatter or _default_list_formatter
-    return '\n'.join(formatter(value, index) for index, value in enumerate(items))
+    return "\n".join(formatter(value, index) for index, value in enumerate(items))
 
 
 def escape_backticks(text: str) -> str:
     """Replace backticks with a homoglyph to prevent text in codeblocks and
     inline code segments from escaping.
     """
-    return text.replace('\N{GRAVE ACCENT}', '\N{MODIFIER LETTER GRAVE ACCENT}')
+    return text.replace("\N{GRAVE ACCENT}", "\N{MODIFIER LETTER GRAVE ACCENT}")
 
 
 SECOND = 1
@@ -85,7 +85,7 @@ YEAR = DAY * 365
 def human_delta(
     delta: Union[int, float, datetime.datetime, datetime.timedelta],
     *,
-    short: bool = True
+    short: bool = True,
 ) -> str:
     """Convert a time unit to a human readable time delta string.
 
@@ -120,19 +120,26 @@ def human_delta(
     hours, rest = divmod(rest, HOUR)
     minutes, seconds = divmod(rest, MINUTE)
 
-    units = [("y", years), ("mo", months), ("d", days), ("h", hours), ("m", minutes), ("s", seconds)]
+    units = [
+        ("y", years),
+        ("mo", months),
+        ("d", days),
+        ("h", hours),
+        ("m", minutes),
+        ("s", seconds),
+    ]
     periods = [f"{value}{name}" for name, value in units if value > 0]
 
     if len(periods) > 2:
         if short:
             # Only the biggest three.
-            return f'{periods[0]}, {periods[1]} and {periods[2]}'
+            return f"{periods[0]}, {periods[1]} and {periods[2]}"
 
         return f'{", ".join(periods[:-1])} and {periods[-1]}'
     return " and ".join(periods)
 
 
-def codeblock(code: str, *, lang: str = '', escape: bool = True) -> str:
+def codeblock(code: str, *, lang: str = "", escape: bool = True) -> str:
     """Construct a Markdown codeblock.
 
     Parameters
@@ -149,13 +156,10 @@ def codeblock(code: str, *, lang: str = '', escape: bool = True) -> str:
     str
         The formatted codeblock.
     """
-    return "```{}\n{}\n```".format(
-        lang,
-        escape_backticks(code) if escape else code,
-    )
+    return "```{}\n{}\n```".format(lang, escape_backticks(code) if escape else code,)
 
 
-def truncate(text: str, desired_length: int, *, suffix: str = '...') -> str:
+def truncate(text: str, desired_length: int, *, suffix: str = "...") -> str:
     """
     Truncates text and returns it. Three periods will be inserted as a suffix.
 
@@ -175,7 +179,7 @@ def truncate(text: str, desired_length: int, *, suffix: str = '...') -> str:
         The truncated text.
     """
     if len(text) > desired_length:
-        return text[:desired_length - len(suffix)] + suffix
+        return text[: desired_length - len(suffix)] + suffix
     else:
         return text
 
@@ -235,7 +239,10 @@ class Table:
             return "|".join(columns)
 
         # Column title is centered in the middle of each field.
-        title_row = "|".join(f" {field:^{self._widths[index]}} " for index, field in enumerate(self._rows[0]))
+        title_row = "|".join(
+            f" {field:^{self._widths[index]}} "
+            for index, field in enumerate(self._rows[0])
+        )
         separator_row = "+".join("-" * (width + 2) for width in self._widths)
 
         drawn = [title_row, separator_row]
@@ -258,6 +265,7 @@ class Table:
 
 def clean_mentions(channel: discord.TextChannel, text: str) -> str:
     """Escape all user and role mentions which would mention someone in the specified channel."""
+
     def replace(match):
         mention = match.group()
 
@@ -270,7 +278,11 @@ def clean_mentions(channel: discord.TextChannel, text: str) -> str:
         elif "<@" in mention:
             user_id = int(match.groups()[0])
             member = guild.get_member(user_id)
-            if member is not None and not member.bot and channel.permissions_for(member).read_messages:
+            if (
+                member is not None
+                and not member.bot
+                and channel.permissions_for(member).read_messages
+            ):
                 mention = f"@{member.name}"
 
         if mention in ("@everyone", "@here"):
@@ -282,7 +294,9 @@ def clean_mentions(channel: discord.TextChannel, text: str) -> str:
     return MENTION_RE.sub(replace, text)
 
 
-def pluralize(*, with_quantity: bool = True, with_indicative: bool = False, **word) -> str:
+def pluralize(
+    *, with_quantity: bool = True, with_indicative: bool = False, **word
+) -> str:
     """Pluralize a single kwarg's name depending on the value.
 
     ``with_indicative`` must be used with ``with_quantity``.
@@ -306,26 +320,28 @@ def pluralize(*, with_quantity: bool = True, with_indicative: bool = False, **wo
 
     try:
         items = word.items()
-        kwargs = {'with_quantity', 'with_indicative'}
+        kwargs = {"with_quantity", "with_indicative"}
         key = next(item[0] for item in items if item not in kwargs)
     except KeyError:
-        raise ValueError('Cannot find kwarg key to pluralize')
+        raise ValueError("Cannot find kwarg key to pluralize")
 
     value = word[key]
 
-    with_s = key + ('' if value == 1 else 's')
-    indicative = ''
+    with_s = key + ("" if value == 1 else "s")
+    indicative = ""
 
     if with_indicative:
-        indicative = ' is' if value == 1 else ' are'
+        indicative = " is" if value == 1 else " are"
 
     if with_quantity:
-        return f'{value:,} {with_s}{indicative}'
+        return f"{value:,} {with_s}{indicative}"
 
     return with_s + indicative
 
 
-def format_traceback(exc: Exception, *, limit: int = 7, hide_paths: bool = False) -> str:
+def format_traceback(
+    exc: Exception, *, limit: int = 7, hide_paths: bool = False
+) -> str:
     """Format an exception into a traceback, akin to ones emitted by the
     interpreter during runtime.
 
@@ -337,14 +353,16 @@ def format_traceback(exc: Exception, *, limit: int = 7, hide_paths: bool = False
         Conceals the current working directory and packages path.
     """
 
-    formatted = ''.join(traceback.format_exception(type(exc), exc, exc.__traceback__, limit=limit))
+    formatted = "".join(
+        traceback.format_exception(type(exc), exc, exc.__traceback__, limit=limit)
+    )
 
     if hide_paths:
         # Hide the current working directory to shorten text.
-        formatted = formatted.replace(os.getcwd(), '/...')
+        formatted = formatted.replace(os.getcwd(), "/...")
 
         # Hide the path to the Python packages directory to shorten text.
         packages_dir = str(pathlib.Path(discord.__file__).parent.parent.resolve())
-        formatted = formatted.replace(packages_dir, '/packages')
+        formatted = formatted.replace(packages_dir, "/packages")
 
     return formatted

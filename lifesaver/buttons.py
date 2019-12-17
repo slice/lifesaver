@@ -18,7 +18,7 @@ class Buttons:
         self,
         message: discord.Message,
         *,
-        owner: T.Union[discord.abc.User, T.List[discord.abc.User]]
+        owner: T.Union[discord.abc.User, T.List[discord.abc.User]],
     ) -> None:
         self.message = message
         self.owner = owner
