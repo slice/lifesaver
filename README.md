@@ -2,6 +2,7 @@
 
 ![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)
 ![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 Lifesaver is an opinionated Discord bot framework built on top of
 [discord.py][dpy]. It aims to reduce boilerplate as much as possible and provide
