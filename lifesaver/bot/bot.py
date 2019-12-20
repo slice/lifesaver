@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+import asyncio
 import logging
 from pathlib import Path
 from typing import Union, Optional
@@ -63,6 +64,8 @@ class BotBase(commands.bot.BotBase):
 
         #: The Postgres pool connection.
         self.pool: Optional["asyncpg.pool.Pool"] = None
+        if self.config.postgres and self.pool is None:
+            asyncio.run_until_complete(self._postgres_connect())
 
         #: The bot's logger.
         self.log = logging.getLogger(__name__)
@@ -172,9 +175,6 @@ class BotBase(commands.bot.BotBase):
 
     async def on_ready(self):
         self.log.info("Ready! Logged in as %s (%d)", self.user, self.user.id)
-
-        if self.config.postgres and self.pool is None:
-            await self._postgres_connect()
 
         if self.config.hot_reload and self._hot_plug is None:
             await self._setup_hot_reload()
