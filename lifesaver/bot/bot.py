@@ -65,7 +65,7 @@ class BotBase(commands.bot.BotBase):
         #: The Postgres pool connection.
         self.pool: Optional["asyncpg.pool.Pool"] = None
         if self.config.postgres and self.pool is None:
-            asyncio.run_until_complete(self._postgres_connect())
+            self.loop.run_until_complete(self._postgres_connect())
 
         #: The bot's logger.
         self.log = logging.getLogger(__name__)
