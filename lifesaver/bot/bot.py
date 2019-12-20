@@ -62,13 +62,13 @@ class BotBase(commands.bot.BotBase):
         if not issubclass(self.context_cls, lifesaver.commands.Context):
             raise TypeError(f"{self.context_cls} is not a lifesaver Context subclass")
 
+        #: The bot's logger.
+        self.log = logging.getLogger(__name__)
+
         #: The Postgres pool connection.
         self.pool: Optional["asyncpg.pool.Pool"] = None
         if self.config.postgres and self.pool is None:
             self.loop.run_until_complete(self._postgres_connect())
-
-        #: The bot's logger.
-        self.log = logging.getLogger(__name__)
 
         #: A list of extensions names to reload when calling :meth:`load_all`.
         self.load_list = LoadList()
