@@ -66,8 +66,6 @@ class BotBase(commands.bot.BotBase):
 
         #: The Postgres pool connection.
         self.pool: Optional["asyncpg.pool.Pool"] = None
-        if self.config.postgres and self.pool is None:
-            self.loop.run_until_complete(self._postgres_connect())
 
         #: A list of extensions names to reload when calling :meth:`load_all`.
         self.load_list = LoadList()
@@ -129,16 +127,6 @@ class BotBase(commands.bot.BotBase):
         async for event in self._hot_reload_poller:
             self._hot_plug.handle(event)
             self._rebuild_load_list()
-
-    async def _postgres_connect(self):
-        try:
-            import asyncpg
-        except ImportError:
-            raise RuntimeError("Cannot connect to Postgres, asyncpg is not installed")
-
-        self.log.debug("creating a postgres pool")
-        self.pool = await asyncpg.create_pool(dsn=self.config.postgres["dsn"])
-        self.log.debug("created postgres pool")
 
     def _rebuild_load_list(self):
         self.load_list.build(Path(self.config.extensions_path))

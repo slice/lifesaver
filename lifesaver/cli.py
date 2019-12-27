@@ -17,6 +17,17 @@ def resolve_class(specifier: str):
     return loaded_class
 
 
+async def _postgres_connect(bot):
+    try:
+        import asyncpg
+    except ImportError:
+        raise RuntimeError("Cannot connect to Postgres, asyncpg is not installed")
+
+    bot.log.debug("creating a postgres pool")
+    bot.pool = await asyncpg.create_pool(dsn=bot.config.postgres["dsn"])
+    bot.log.debug("created postgres pool")
+
+
 @click.command()
 @click.option("--config", default="config.yml", help="The configuration file to use.")
 @click.option(
@@ -32,6 +43,8 @@ def cli(config, no_default_cogs):
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     except ImportError:
         pass
+
+    loop = asyncio.get_event_loop()
 
     try:
         # Manually load the config first in order to detect a custom config
@@ -64,6 +77,10 @@ def cli(config, no_default_cogs):
 
     with setup_logging(config.logging):
         bot = bot_class(config)
+
+        if bot.config.postgres and bot.pool is None:
+            loop.run_until_complete(_postgres_connect(bot))
+
         bot.load_all(exclude_default=no_default_cogs)
         bot.run()
 
