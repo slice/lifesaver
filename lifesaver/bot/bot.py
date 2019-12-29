@@ -128,6 +128,16 @@ class BotBase(commands.bot.BotBase):
             self._hot_plug.handle(event)
             self._rebuild_load_list()
 
+    async def _postgres_connect(self):
+        try:
+            import asyncpg
+        except ImportError:
+            raise RuntimeError("Cannot connect to Postgres, asyncpg is not installed")
+
+        self.log.debug("creating a postgres pool")
+        self.pool = await asyncpg.create_pool(dsn=self.config.postgres["dsn"])
+        self.log.debug("created postgres pool")
+
     def _rebuild_load_list(self):
         self.load_list.build(Path(self.config.extensions_path))
 
