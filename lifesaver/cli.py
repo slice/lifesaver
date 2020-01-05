@@ -33,6 +33,8 @@ def cli(config, no_default_cogs):
     except ImportError:
         pass
 
+    loop = asyncio.get_event_loop()
+
     try:
         # Manually load the config first in order to detect a custom config
         # class to use.
@@ -64,6 +66,10 @@ def cli(config, no_default_cogs):
 
     with setup_logging(config.logging):
         bot = bot_class(config)
+
+        if bot.config.postgres and bot.pool is None:
+            loop.run_until_complete(bot._postgres_connect())
+
         bot.load_all(exclude_default=no_default_cogs)
         bot.run()
 
