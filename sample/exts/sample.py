@@ -1,6 +1,7 @@
 import asyncio
 
 from discord.ext import commands
+
 import lifesaver
 from lifesaver.bot.storage import AsyncJSONStorage
 from lifesaver.config import Config
@@ -8,19 +9,19 @@ from lifesaver.utils.formatting import codeblock
 
 
 class SampleConfig(Config):
-    configurable_message: str = 'Hello there'
+    configurable_message: str = "Hello there"
 
 
 @lifesaver.Cog.with_config(SampleConfig)
 class Sample(lifesaver.Cog):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.tags = AsyncJSONStorage('tags.json')
+        self.tags = AsyncJSONStorage("tags.json")
 
     def cog_unload(self):
-        print('Calling super unload:', super().cog_unload)
+        print("Calling super unload:", super().cog_unload)
         super().cog_unload()
-        print('My unload.')
+        print("My unload.")
 
     @lifesaver.command()
     async def long_help(self, ctx: lifesaver.commands.Context):
@@ -62,13 +63,13 @@ class Sample(lifesaver.Cog):
     async def subcommand_two(self, ctx: lifesaver.commands.Context):
         """I am a second subcommand."""
         await asyncio.sleep(5)
-        await ctx.send('yo!')
+        await ctx.send("yo!")
 
     @sample_group.command(typing=True)
     async def subcommand(self, ctx: lifesaver.commands.Context):
         """I am a subcommand."""
         await asyncio.sleep(5)
-        await ctx.send('yo!')
+        await ctx.send("yo!")
 
     @lifesaver.command()
     async def message(self, ctx: lifesaver.commands.Context):
@@ -79,6 +80,7 @@ class Sample(lifesaver.Cog):
     async def pages_example(self, ctx: lifesaver.commands.Context):
         """A demonstration of `ctx +=`."""
         from random import random
+
         for _ in range(150):
             ctx += str(random())
         await ctx.send_pages()
@@ -86,28 +88,29 @@ class Sample(lifesaver.Cog):
     @lifesaver.command()
     async def sample(self, ctx: lifesaver.commands.Context):
         """A sample command."""
-        await ctx.send('Hello!')
+        await ctx.send("Hello!")
 
     @lifesaver.command()
     async def source(self, ctx: lifesaver.commands.Context, command):
         """View the source of a command."""
         cmd = ctx.bot.get_command(command)
         if not cmd:
-            await ctx.send('No such command.')
+            await ctx.send("No such command.")
             return
         from inspect import getsource
-        await ctx.send(codeblock(getsource(cmd.callback), lang='py'))
+
+        await ctx.send(codeblock(getsource(cmd.callback), lang="py"))
 
     @lifesaver.Cog.every(10, wait_until_ready=True)
     async def scheduled(self):
-        print('Scheduled function.')
+        print("Scheduled function.")
 
     @lifesaver.group(invoke_without_command=True)
     async def tag(self, ctx: lifesaver.commands.Context, *, key):
         """Tag management commands."""
         tag = self.tags.get(key)
         if not tag:
-            await ctx.send('No such tag.')
+            await ctx.send("No such tag.")
         else:
             await ctx.send(tag)
 
@@ -117,7 +120,7 @@ class Sample(lifesaver.Cog):
         tags = self.tags.all().keys()
         await ctx.send(f'{len(tags)}: {", ".join(tags)}')
 
-    @tag.command(aliases=['create'])
+    @tag.command(aliases=["create"])
     async def make(
         self,
         ctx: lifesaver.commands.Context,
@@ -127,7 +130,7 @@ class Sample(lifesaver.Cog):
     ):
         """Creates a tag."""
         if key in self.tags:
-            await ctx.send('Tag already exists.')
+            await ctx.send("Tag already exists.")
             return
         await self.tags.put(key, value)
         await ctx.ok()

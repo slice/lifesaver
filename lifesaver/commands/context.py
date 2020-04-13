@@ -2,12 +2,13 @@
 
 __all__ = ["Context"]
 
-from typing import Any, Callable, List, Type, Optional, TypeVar, Union
+from typing import Any, Callable, List, Optional, Type, TypeVar, Union
 
 import discord
 import jishaku
-import lifesaver
 from discord.ext import commands
+
+import lifesaver
 
 T = TypeVar("T")
 

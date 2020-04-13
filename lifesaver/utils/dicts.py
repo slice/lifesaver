@@ -3,7 +3,7 @@
 __all__ = ["merge_dicts", "dot_access"]
 
 import collections
-from typing import MutableMapping, Mapping, Any
+from typing import Any, Mapping, MutableMapping
 
 
 def merge_dicts(

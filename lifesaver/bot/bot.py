@@ -2,15 +2,15 @@
 
 import logging
 from pathlib import Path
-from typing import Union, Optional
+from typing import Optional, Union
 
 import discord
 from discord.ext import commands
 
 import lifesaver
+from lifesaver.load_list import LoadList
 from lifesaver.poller import Poller, PollerPlug
 from lifesaver.utils import dot_access
-from lifesaver.load_list import LoadList
 
 from .config import BotConfig
 

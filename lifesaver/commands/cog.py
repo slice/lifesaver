@@ -10,6 +10,7 @@ from typing import Type
 
 import aiohttp
 from discord.ext import commands
+
 import lifesaver
 from lifesaver.config import Config
 

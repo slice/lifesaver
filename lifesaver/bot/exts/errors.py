@@ -7,16 +7,17 @@ import sys
 import time
 from collections import OrderedDict
 
-import lifesaver
 import discord
 from discord.ext import commands
+
+import lifesaver
 from lifesaver.bot.storage import AsyncJSONStorage
 from lifesaver.utils import (
     codeblock,
     format_traceback,
     human_delta,
-    truncate,
     pluralize,
+    truncate,
 )
 
 

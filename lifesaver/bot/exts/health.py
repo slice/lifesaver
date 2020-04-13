@@ -3,10 +3,11 @@
 import asyncio
 import logging
 import random
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
 import discord
 from discord.ext import commands
+
 import lifesaver
 from lifesaver.utils.formatting import truncate
 from lifesaver.utils.timing import Timer, format_seconds

@@ -5,6 +5,7 @@ import importlib
 
 import click
 import ruamel.yaml
+
 from lifesaver.bot import Bot, BotConfig
 from lifesaver.config import ConfigError
 from lifesaver.logging import setup_logging

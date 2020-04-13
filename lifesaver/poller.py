@@ -9,7 +9,7 @@ import typing as T
 from collections import defaultdict
 from pathlib import Path
 
-from lifesaver.load_list import transform_path, filter_path
+from lifesaver.load_list import filter_path, transform_path
 
 HotEvent = T.Dict[str, T.Set[Path]]
 

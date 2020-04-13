@@ -2,7 +2,7 @@
 
 __all__ = ["BotConfig", "BotLoggingConfig"]
 
-from typing import Union, List, Dict, Optional, Any
+from typing import Any, Dict, List, Optional, Union
 
 from lifesaver.config import Config
 

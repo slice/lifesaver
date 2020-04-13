@@ -3,8 +3,8 @@
 __all__ = ["Paginator", "ListPaginator"]
 
 import logging
-from typing import Optional, Any, List
 from math import ceil
+from typing import Any, List, Optional
 
 import discord
 
