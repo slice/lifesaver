@@ -17,7 +17,10 @@ from lifesaver.utils import dot_access
 from .config import BotConfig
 
 if TYPE_CHECKING:
+    BB = commands.bot.BotBase[lifesaver.Context]
     import asyncpg
+else:
+    BB = commands.bot.BotBase
 
 INCLUDED_EXTENSIONS = [
     "jishaku",
@@ -46,7 +49,7 @@ def compute_command_prefix(
         return prefix
 
 
-class BotBase(commands.bot.BotBase[lifesaver.Context]):
+class BotBase(BB):
     """The base bot class for Lifesaver bots.
 
     This is a :class:`discord.ext.commands.bot.BotBase` subclass that is

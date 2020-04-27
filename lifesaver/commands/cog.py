@@ -6,7 +6,16 @@ import asyncio
 import inspect
 import logging
 import os
-from typing import Callable, Awaitable, List, Any, Optional, Type, TypeVar
+from typing import (
+    Callable,
+    Awaitable,
+    List,
+    Any,
+    Optional,
+    Type,
+    TypeVar,
+    TYPE_CHECKING,
+)
 
 import aiohttp
 from discord.ext import commands
@@ -16,8 +25,13 @@ from lifesaver.config import Config
 
 F = TypeVar("F", bound=Callable[..., Any])
 
+if TYPE_CHECKING:
+    C = commands.Cog[lifesaver.Context]
+else:
+    C = commands.Cog
 
-class Cog(commands.Cog[lifesaver.Context]):
+
+class Cog(C):
     """The base class for cogs.
 
     It inherits from :class:`discord.ext.commands.Cog`. It differs in that the
