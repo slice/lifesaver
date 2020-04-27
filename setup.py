@@ -33,6 +33,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
     ],
+    package_data={"lifesaver": ["py.typed"]},
     python_requires=">=3.7",
     packages=find_packages(),
     install_requires=deps,
@@ -43,4 +44,5 @@ setup(
             "sphinxcontrib-asyncio==0.2.0",
         ],
     },
+    zip_safe=False,
 )

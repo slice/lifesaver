@@ -37,11 +37,6 @@ BotBase
 .. autoclass:: lifesaver.bot.BotBase
     :members:
 
-    This is a :class:`discord.ext.commands.bot.BotBase` subclass that is
-    used by :class:`lifesaver.bot.Bot`, :class:`lifesaver.bot.AutoShardedBot`,
-    and :class:`lifesaver.bot.Selfbot`. It provides most of the custom
-    functionality that Lifesaver bots use.
-
 Commands
 --------
 

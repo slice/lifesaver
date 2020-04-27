@@ -26,6 +26,17 @@ SOFTWARE.
 
 __version__ = "0.0.0"
 
+__all__ = [
+    "AutoShardedBot",
+    "Bot",
+    "Buttons",
+    "Cog",
+    "Context",
+    "command",
+    "group",
+    "__version__",
+]
+
 from .bot import AutoShardedBot, Bot
 from .buttons import Buttons
 from .commands import Cog, Context, command, group

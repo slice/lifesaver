@@ -14,6 +14,8 @@ T = TypeVar("T")
 
 
 class Context(commands.Context):
+    bot: lifesaver.Bot
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 

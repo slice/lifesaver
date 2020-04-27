@@ -1,8 +1,10 @@
 # encoding: utf-8
 
+"""Main Lifesaver bot classes."""
+
 import logging
 from pathlib import Path
-from typing import Optional, Union
+from typing import List, Callable, Iterable, Optional, Union, TYPE_CHECKING
 
 import discord
 from discord.ext import commands
@@ -14,6 +16,9 @@ from lifesaver.utils import dot_access
 
 from .config import BotConfig
 
+if TYPE_CHECKING:
+    import asyncpg
+
 INCLUDED_EXTENSIONS = [
     "jishaku",
     "lifesaver.bot.exts.health",
@@ -21,7 +26,10 @@ INCLUDED_EXTENSIONS = [
 ]
 
 
-def compute_command_prefix(cfg: BotConfig):
+def compute_command_prefix(
+    cfg: BotConfig,
+) -> Union[str, Iterable[str], Callable[[discord.Message], str]]:
+    """Compute the final value to be passed as the ``command_prefix`` kwarg."""
     prefix = cfg.command_prefix
 
     if cfg.command_prefix_include_mentions:
@@ -32,12 +40,27 @@ def compute_command_prefix(cfg: BotConfig):
                 return commands.when_mentioned_or(prefix)
             elif isinstance(prefix, list):
                 return commands.when_mentioned_or(*prefix)
+            else:
+                return commands.when_mentioned_or(str(prefix))
     else:
         return prefix
 
 
-class BotBase(commands.bot.BotBase):
+class BotBase(commands.bot.BotBase[lifesaver.Context]):
+    """The base bot class for Lifesaver bots.
+
+    This is a :class:`discord.ext.commands.bot.BotBase` subclass that is
+    used by :class:`lifesaver.bot.Bot`, :class:`lifesaver.bot.AutoShardedBot`,
+    and :class:`lifesaver.bot.Selfbot`. It provides most of the custom
+    functionality that Lifesaver bots use.
+    """
+
     def __init__(self, cfg: BotConfig, **kwargs) -> None:
+        """Initialize a BotBase from a :class:`BotConfig` and other kwargs.
+
+        The kwargs override any related BotConfig values and are all passed to
+        :class:`commands.bot.BotBase`'s initializer.
+        """
         #: The bot's :class:`BotConfig`.
         self.config = cfg
 
@@ -71,7 +94,7 @@ class BotBase(commands.bot.BotBase):
         self.load_list = LoadList()
 
         #: A list of included extensions built into lifesaver to load.
-        self._included_extensions = INCLUDED_EXTENSIONS  # type: list
+        self._included_extensions: List[str] = INCLUDED_EXTENSIONS
 
         self._hot_task = None
         self._hot_reload_poller = None
