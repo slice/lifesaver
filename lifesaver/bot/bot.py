@@ -73,10 +73,19 @@ class BotBase(BB):
             "help_command", commands.DefaultHelpCommand(dm_help=cfg.dm_help)
         )
 
+        intents_specifier = cfg.intents
+        intents = discord.Intents.default()
+        if isinstance(intents_specifier, list):
+            kwargs = {key: True for key in intents_specifier}
+            intents = discord.Intents(**kwargs)
+        elif hasattr(discord.Intents, intents_specifier):
+            intents = getattr(discord.Intents, intents_specifier)()
+
         super().__init__(
             command_prefix=command_prefix,
             description=description,
             help_command=help_command,
+            intents=intents,
             **kwargs,
         )
 

@@ -58,6 +58,9 @@ class BotConfig(Config):
     #: The command prefix to use. Can be a string or a list of strings.
     command_prefix: Union[List[str], str] = "!"
 
+    #: The intent flag used when connecting to the gateway.
+    intents: Union[List[str], str] = "default"
+
     #: The bot's description. Shown in the help command.
     description: str = "A Discord bot."
 
