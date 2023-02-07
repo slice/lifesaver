@@ -5,13 +5,13 @@ __all__ = ["HotEvent", "PollerPlug", "Poller"]
 import asyncio
 import logging
 import re
-import typing as T
 from collections import defaultdict
 from pathlib import Path
+from typing import Dict, Set, Union, List, Optional, DefaultDict
 
 from lifesaver.load_list import filter_path, transform_path
 
-HotEvent = T.Dict[str, T.Set[Path]]
+HotEvent = Dict[str, Set[Path]]
 
 HASHED_FILENAME = re.compile(r"[a-f0-9]{8,}")
 
@@ -19,10 +19,10 @@ log = logging.getLogger(__name__)
 
 
 class Poller:
-    """A time-based filesystem poller for detecting file creation, modification,
-    and deletion.
+    """A crude, timer-based filesystem poller for detecting file creation,
+    modification, and deletion.
 
-    It works by repeatedly globbing the search paths every ``polling_interval``
+    It works by repeatedly querying the search paths every ``polling_interval``
     seconds (by default, ``1``).
 
     **Caveat:** All files are filtered through :func:`lifesaver.load_list.filter_path`,
@@ -47,10 +47,10 @@ class Poller:
 
     def __init__(
         self,
-        paths: T.Union[T.List[Path], Path],
+        paths: Union[List[Path], Path],
         *,
         polling_interval: float = 1,
-        name: str = None,
+        name: Optional[str] = None,
     ) -> None:
         if isinstance(paths, list):
             self.paths = paths
@@ -84,7 +84,7 @@ class Poller:
 
         return match is None
 
-    def _build_state(self) -> T.Dict[Path, float]:
+    def _build_state(self) -> Dict[Path, float]:
         """Return a dict of all applicable files to their last modified time."""
         state = {}
 
@@ -99,14 +99,14 @@ class Poller:
 
         return state
 
-    def detect(self) -> T.Optional[HotEvent]:
+    def detect(self) -> Optional[HotEvent]:
         """Diff the old state with a new state, returning a dict describing
         the new changes, or `None` if no changes were detected.
         """
         new_state = self._build_state()
         new_state_filenames = set(new_state.keys())
         old_state_filenames = set(self.state.keys())
-        changes: T.DefaultDict[str, set] = defaultdict(set)
+        changes: DefaultDict[str, set] = defaultdict(set)
 
         if new_state == self.state:
             return None
@@ -148,10 +148,10 @@ class PollerPlug:
         """The path to the bot extensions."""
         return Path(self.bot.config.extensions_path)
 
-    def try_load(self, name: str) -> None:
+    async def try_load(self, name: str) -> None:
         """Try to load a bot extension. Logs an exception upon failure."""
         try:
-            self.bot.load_extension(name)
+            await self.bot.load_extension(name)
         except Exception:
             log.exception("failed to load %s:", name)
 
@@ -166,7 +166,7 @@ class PollerPlug:
         """
         return path.parent == self.root
 
-    def _resolve_extension_from_subfile(self, path: Path) -> T.Optional[Path]:
+    def _resolve_extension_from_subfile(self, path: Path) -> Optional[Path]:
         """Resolve the extension path from an extension subfile.
 
         Because extensions can be modules, the point of this method is to
@@ -190,7 +190,7 @@ class PollerPlug:
 
     def resolve_module(
         self, path: Path, *, resolve_subfiles: bool = True
-    ) -> T.Optional[str]:
+    ) -> Optional[str]:
         """Resolve a path to a changed file to a module to load, unload, or reload."""
         if self._path_is_extension(path):
             # an extension file was changed
@@ -219,13 +219,13 @@ class PollerPlug:
         log.debug("resolved extension %s from path %s", extension_module, path)
         return extension_module
 
-    def handle(self, event: HotEvent) -> None:
+    async def handle(self, event: HotEvent) -> None:
         # load new extensions
         for created in event["created"]:
             module = self.resolve_module(created, resolve_subfiles=False)
             if module is not None:
                 log.info("loading new extension %s", module)
-                self.try_load(module)
+                await self.try_load(module)
 
         # unload deleted extensions
         for deleted in event["deleted"]:
@@ -233,11 +233,11 @@ class PollerPlug:
 
             if module is not None and module in self.bot.extensions:
                 log.info("unloading deleted extension %s", module)
-                self.bot.unload_extension(module)
+                await self.bot.unload_extension(module)
 
         # reload updated extensions
         for updated in event["updated"]:
             module = self.resolve_module(updated)
             log.info("reloading extension %s", module)
 
-            self.bot.reload_extension(module)
+            await self.bot.reload_extension(module)

@@ -34,8 +34,6 @@ def cli(config, no_default_cogs):
     except ImportError:
         pass
 
-    loop = asyncio.get_event_loop()
-
     try:
         # Manually load the config first in order to detect a custom config
         # class to use.
@@ -51,28 +49,29 @@ def cli(config, no_default_cogs):
         if custom_config_class:
             config_class = resolve_class(custom_config_class)
 
-        config = config_class.load(config)
-    except ruamel.yaml.error.YAMLError as error:
+        config_instance: BotConfig = config_class.load(config)
+    except ruamel.yaml.error.YAMLError as error:  # type: ignore
         raise ConfigError("Invalid config. Is the syntax correct?") from error
     except FileNotFoundError as error:
         raise ConfigError(f"No config file was found at {config}.") from error
 
     bot_class = Bot
 
-    if config.bot_class:
-        bot_class = resolve_class(config.bot_class)
+    if config_instance.bot_class:
+        bot_class = resolve_class(config_instance.bot_class)
 
         if not issubclass(bot_class, Bot):
             raise TypeError("Custom bot class is not a subclass of lifesaver.bot.Bot")
 
-    with setup_logging(config.logging):
-        bot = bot_class(config)
+    with setup_logging(config_instance.logging):
+        bot = bot_class(config_instance)
 
-        if bot.config.postgres and bot.pool is None:
-            loop.run_until_complete(bot._postgres_connect())
+        async def main():
+            async with bot:
+                await bot.load_all(exclude_default=no_default_cogs)
+                await bot.start(bot.config.token)
 
-        bot.load_all(exclude_default=no_default_cogs)
-        bot.run()
+        asyncio.run(main())
 
 
 if __name__ == "__main__":

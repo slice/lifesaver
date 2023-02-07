@@ -4,10 +4,12 @@
 
 import logging
 from pathlib import Path
-from typing import List, Callable, Iterable, Optional, Union, TYPE_CHECKING
+from typing import Any, Callable, Iterable, List, Optional, Union, TYPE_CHECKING
 
 import discord
 from discord.ext import commands
+from discord.ext.commands.core import GroupMixin
+from discord.ext.commands.help import HelpCommand
 
 import lifesaver
 from lifesaver.load_list import LoadList
@@ -17,10 +19,9 @@ from lifesaver.utils import dot_access
 from .config import BotConfig
 
 if TYPE_CHECKING:
-    BB = commands.bot.BotBase[lifesaver.Context]
     import asyncpg
-else:
-    BB = commands.bot.BotBase
+
+PrefixType = Union[Iterable[str], str, Callable[[Any, discord.Message], Iterable[str]]]
 
 INCLUDED_EXTENSIONS = [
     "jishaku",
@@ -31,34 +32,40 @@ INCLUDED_EXTENSIONS = [
 
 def compute_command_prefix(
     cfg: BotConfig,
-) -> Union[str, Iterable[str], Callable[[discord.Message], str]]:
+) -> PrefixType:
     """Compute the final value to be passed as the ``command_prefix`` kwarg."""
     prefix = cfg.command_prefix
 
     if cfg.command_prefix_include_mentions:
         if prefix is None:
             return commands.when_mentioned
+        elif isinstance(prefix, str):
+            return commands.when_mentioned_or(prefix)
+        elif isinstance(prefix, list):
+            return commands.when_mentioned_or(*prefix)
         else:
-            if isinstance(prefix, str):
-                return commands.when_mentioned_or(prefix)
-            elif isinstance(prefix, list):
-                return commands.when_mentioned_or(*prefix)
-            else:
-                return commands.when_mentioned_or(str(prefix))
-    else:
-        return prefix
+            return commands.when_mentioned_or(str(prefix))
+
+    return prefix
 
 
-class BotBase(BB):
+class BotBase(commands.bot.BotBase, GroupMixin['lifesaver.Cog']):
     """The base bot class for Lifesaver bots.
 
     This is a :class:`discord.ext.commands.bot.BotBase` subclass that is
-    used by :class:`lifesaver.bot.Bot`, :class:`lifesaver.bot.AutoShardedBot`,
-    and :class:`lifesaver.bot.Selfbot`. It provides most of the custom
-    functionality that Lifesaver bots use.
+    used by :class:`lifesaver.bot.Bot` and :class:`lifesaver.bot.AutoShardedBot`.
+    It provides most of the custom functionality that Lifesaver bots use.
     """
 
-    def __init__(self, cfg: BotConfig, **kwargs) -> None:
+    def __init__(
+        self,
+        cfg: BotConfig,
+        *,
+        command_prefix: Optional[PrefixType] = None,
+        description: Optional[str] = None,
+        help_command: Optional[HelpCommand] = None,
+        **kwargs: Any,
+    ) -> None:
         """Initialize a BotBase from a :class:`BotConfig` and other kwargs.
 
         The kwargs override any related BotConfig values and are all passed to
@@ -67,11 +74,9 @@ class BotBase(BB):
         #: The bot's :class:`BotConfig`.
         self.config = cfg
 
-        command_prefix = kwargs.pop("command_prefix", compute_command_prefix(cfg))
-        description = kwargs.pop("description", self.config.description)
-        help_command = kwargs.pop(
-            "help_command", commands.DefaultHelpCommand(dm_help=cfg.dm_help)
-        )
+        command_prefix = command_prefix or compute_command_prefix(cfg)
+        description = description or cfg.description
+        help_command = help_command or commands.DefaultHelpCommand(dm_help=cfg.dm_help)
 
         intents_specifier = cfg.intents
         intents = discord.Intents.default()
@@ -94,7 +99,7 @@ class BotBase(BB):
         self.context_cls = kwargs.get("context_cls", lifesaver.commands.Context)
 
         if not issubclass(self.context_cls, lifesaver.commands.Context):
-            raise TypeError(f"{self.context_cls} is not a lifesaver Context subclass")
+            raise TypeError(f"{self.context_cls} must subclass lifeaver.Context")
 
         #: The bot's logger.
         self.log = logging.getLogger(__name__)
@@ -109,42 +114,56 @@ class BotBase(BB):
         self._included_extensions: List[str] = INCLUDED_EXTENSIONS
 
         self._hot_task = None
-        self._hot_reload_poller = None
-        self._hot_plug = None
+        self._hot_reload_poller: Optional[Poller] = None
+        self._hot_plug: Optional[PollerPlug] = None
+
+    async def setup_hook(self) -> None:
+        if self.config.postgres and self.pool is None:
+            await self._postgres_connect()
 
     def emoji(
         self, accessor: str, *, stringify: bool = False
     ) -> Union[str, discord.Emoji]:
-        """Return an emoji as referenced by the global emoji table.
+        """Return an emoji from the global emoji table.
 
-        The first argument accesses the :attr:`BotConfig.emojis` dict using
-        "dot access syntax" (e.g. ``generic.ok`` does ``['generic']['ok']``).
+        The string you pass accesses the :attr:`BotConfig.emojis` dict using
+        a string of keys separated by dots. For example, ``generic.ok``
+        accesses ``['generic']['ok']``.
 
-        Both Unicode codepoints and custom emoji IDs are supported. If a custom
-        emoji ID is used, :meth:`discord.Client.get_emoji` is called to
-        retrieve the :class:`discord.Emoji`.
+        The global emoji table can contain both Unicode emoji and custom emoji
+        IDs. If a custom emoji ID is used, :meth:`discord.Client.get_emoji` is
+        called to fetch the :class:`discord.Emoji`.
+
+        Raises
+        ------
+        LookupError
+            The the corresponding value in the global emoji table could not be
+            found.
+        RuntimeError
+            The custom emoji with the ID of the value in the global emoji table
+            could not be found.
         """
-        emoji_id = dot_access(self.config.emojis, accessor)
+        try:
+            emoji_id = dot_access(self.config.emojis, accessor)
+        except KeyError as exc:
+            raise LookupError(f"No such emoji \"{accessor}\" in global emoji table") from exc
 
         if isinstance(emoji_id, int):
-            emoji = self.get_emoji(emoji_id)
+            emoji = self.get_emoji(emoji_id)  # type: ignore
         else:
             emoji = emoji_id
 
-        if stringify:
-            return str(emoji)
-        else:
-            return emoji
+        if emoji is None:
+            raise RuntimeError(f"Cannot find custom emoji with ID of {emoji_id} (while looking up \"{accessor}\")")
 
-    def tick(self, variant: bool = True) -> Union[str, discord.Emoji]:
+        return str(emoji) if stringify else emoji
+
+    def tick(self, affirmative: bool = True) -> Union[str, discord.Emoji]:
         """Return a tick emoji.
 
         Uses ``generic.yes`` and ``generic.no`` from the global emoji table.
         """
-        if variant:
-            return self.emoji("generic.yes")
-        else:
-            return self.emoji("generic.no")
+        return self.emoji("generic.yes" if affirmative else "generic.no")
 
     async def _setup_hot_reload(self) -> None:
         self.log.debug("Setting up hot reload.")
@@ -156,11 +175,14 @@ class BotBase(BB):
         self._hot_plug = PollerPlug(self)
 
         # infinitely consume hot reload events
-        self._hot_task = self.loop.create_task(self._consume_hot_reload())
+        self._hot_task = self.loop.create_task(self._consume_hot_reload())  # type: ignore
 
     async def _consume_hot_reload(self):
+        assert self._hot_reload_poller is not None
+        assert self._hot_plug is not None
+
         async for event in self._hot_reload_poller:
-            self._hot_plug.handle(event)
+            await self._hot_plug.handle(event)
             self._rebuild_load_list()
 
     async def _postgres_connect(self):
@@ -170,13 +192,14 @@ class BotBase(BB):
             raise RuntimeError("Cannot connect to Postgres, asyncpg is not installed")
 
         self.log.debug("creating a postgres pool")
+        assert isinstance(self.config.postgres, dict)
         self.pool = await asyncpg.create_pool(dsn=self.config.postgres["dsn"])
         self.log.debug("created postgres pool")
 
     def _rebuild_load_list(self):
         self.load_list.build(Path(self.config.extensions_path))
 
-    def load_all(self, *, reload: bool = False, exclude_default: bool = False):
+    async def load_all(self, *, reload: bool = False, exclude_default: bool = False):
         """Load all extensions in the load list.
 
         The load list is always rebuilt first when called.
@@ -199,14 +222,14 @@ class BotBase(BB):
 
         for extension_name in load_list:
             if reload:
-                self.reload_extension(extension_name)
+                await self.reload_extension(extension_name)
             else:
-                self.load_extension(extension_name)
+                await self.load_extension(extension_name)
 
         self.dispatch("load_all", reload)
 
     async def on_ready(self):
-        self.log.info("Ready! Logged in as %s (%d)", self.user, self.user.id)
+        self.log.info("Ready! Logged in as %s (%d)", self.user, self.user.id)  # type: ignore
 
         if self.config.hot_reload and self._hot_plug is None:
             await self._setup_hot_reload()
@@ -219,13 +242,11 @@ class BotBase(BB):
         and the context class used for commands is determined by
         :attr:`context_cls`.
         """
-        await self.wait_until_ready()
+        await self.wait_until_ready()  # type: ignore
 
-        # Ignore bots if applicable.
         if self.config.ignore_bots and message.author.bot:
             return
 
-        # Grab a context, then invoke it.
         ctx = await self.get_context(message, cls=self.context_cls)
         await self.invoke(ctx)
 
@@ -233,14 +254,6 @@ class BotBase(BB):
 class Bot(BotBase, discord.Client):
     def run(self):
         super().run(self.config.token)
-
-
-class Selfbot(BotBase, discord.Client):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, self_bot=True, **kwargs)
-
-    def run(self):
-        super().run(self.config.token, bot=False)
 
 
 class AutoShardedBot(BotBase, discord.AutoShardedClient):

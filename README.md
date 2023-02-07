@@ -5,26 +5,26 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 Lifesaver is an opinionated Discord bot framework built on top of
-[discord.py][dpy]. It aims to reduce boilerplate as much as possible and provide
-common and helpful utilities that would be handy for bot developers.
+[discord.py][dpy]. It exports an assortment of utilities and helpers that eases
+the burden of maintenance when it comes to everyday botmaking, and is especially
+handy to those who maintain multiple bots at a time.
 
-> **Disclaimer:** Lifesaver was born from an attempt to package together common
-> code that the author found himself duplicating throughout his bots. Therefore,
-> this framework is inherently opinionated and is not intended to be consumed by
-> the average bot developer.
+> **Warning**: Lifesaver is a glorified deduplication of common code that the
+> author found himself needing across bots, and is not inherently useful to
+> everyone.
 
 ## Features
 
 - Built-in cogs
   - [jishaku][jsk]
   - Command error handler (`Errors`)
-  - Ping and RTT (`Health`)
+  - Ping (`Health`)
 - Extension hot reloading via filesystem polling
 - Bot (and cog) configuration primitives
 - Command line module (`python -m lifesaver.cli`) for starting bots
 - Global emoji table
 - PostgreSQL integration
-- A myraid of various utilities
+- A myriad of various utilities
   - String and date formatting
   - `await ctx.ok()`
 

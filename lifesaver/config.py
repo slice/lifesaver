@@ -1,13 +1,14 @@
 # encoding: utf-8
 
-import collections
 import inspect
 import typing
+from collections.abc import Mapping
 
 from ruamel.yaml import YAML
+from typing_extensions import Self
 
 from lifesaver.errors import LifesaverError
-from lifesaver.utils import merge_dicts
+from lifesaver.utils import merge_defaults
 
 
 class ConfigError(LifesaverError):
@@ -47,16 +48,14 @@ class Config:
                 # back to an empty dict to use the nested config's defaults.
                 value = hint(value or {})
 
-            if isinstance(default_value, collections.abc.Mapping) and isinstance(
-                value, dict
-            ):
+            if isinstance(default_value, Mapping) and isinstance(value, dict):
                 # Merge the provided dict into the default mapping instead of overwriting.
-                value = merge_dicts(default_value, value)
+                value = merge_defaults(value, defaults=default_value)
 
             setattr(self, name, value)
 
     @classmethod
-    def load(cls, path: str) -> "Config":
+    def load(cls, path: str) -> Self:
         """Creates a Config instance from a file path.
 
         Parameters

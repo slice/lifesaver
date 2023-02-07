@@ -24,13 +24,6 @@ These classes gain their functionality from :class:`lifesaver.bot.BotBase`.
     An autosharded bot, using :class:`lifesaver.bot.BotBase` and
     :class:`discord.AutoShardedClient`.
 
-.. autoclass:: lifesaver.bot.Selfbot
-
-    A selfbot, using :class:`lifesaver.bot.BotBase` and
-    :class:`discord.Client`.
-
-    Automatically passes ``bot=False`` when calling ``run()``.
-
 BotBase
 ~~~~~~~
 

@@ -29,7 +29,6 @@ __version__ = "0.0.0"
 __all__ = [
     "AutoShardedBot",
     "Bot",
-    "Buttons",
     "Cog",
     "Context",
     "command",
@@ -38,5 +37,4 @@ __all__ = [
 ]
 
 from .bot import AutoShardedBot, Bot
-from .buttons import Buttons
 from .commands import Cog, Context, command, group

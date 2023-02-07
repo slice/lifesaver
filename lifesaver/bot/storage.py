@@ -5,17 +5,17 @@ import json
 import os
 import uuid
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Type
+from typing import Optional, Any, Dict, Type
 
 
 class AsyncStorage(ABC):
     @abstractmethod
-    async def put(self, key: str, value: Any):
+    async def put(self, key: str, value: Any) -> None:
         """Put a value into storage."""
         raise NotImplementedError
 
     @abstractmethod
-    def get(self, key: str):
+    def get(self, key: str) -> Any:
         """Return a value from storage."""
 
 
@@ -34,7 +34,7 @@ class AsyncJSONStorage(AsyncStorage):
         *,
         encoder: Type[json.JSONEncoder] = json.JSONEncoder,
         object_hook=None,
-        loop: asyncio.AbstractEventLoop = None,
+        loop: Optional[asyncio.AbstractEventLoop] = None,
     ) -> None:
         self.file = file
         self._data: Dict[str, Any] = {}
@@ -45,7 +45,7 @@ class AsyncJSONStorage(AsyncStorage):
 
         self._load()
 
-    def _save(self):
+    def _save(self) -> None:
         atomic_name = f"{uuid.uuid4()}.tmp"
 
         with open(atomic_name, "w", encoding="utf-8") as fp:
@@ -55,42 +55,42 @@ class AsyncJSONStorage(AsyncStorage):
 
         os.replace(atomic_name, self.file)
 
-    def _load(self):
+    def _load(self) -> None:
         try:
             with open(self.file, "r", encoding="utf-8") as fp:
                 self._data = json.load(fp, object_hook=self.object_hook)
         except FileNotFoundError:
             self._data = {}
 
-    async def save(self):
+    async def save(self) -> None:
         """Save the data in memory to disk."""
         async with self.lock:
             await self.loop.run_in_executor(None, self._save)
 
-    async def load(self):
+    async def load(self) -> None:
         """Load data from the JSON file on disk."""
         async with self.lock:
             await self.loop.run_in_executor(None, self._load)
 
-    async def put(self, key, value):
+    async def put(self, key: Any, value: Any) -> None:
         self._data[str(key)] = value
         await self.save()
 
-    async def delete(self, key):
+    async def delete(self, key: Any) -> None:
         del self._data[str(key)]
         await self.save()
 
-    def get(self, key, *args):
-        return self._data.get(str(key), *args)
+    def get(self, key: Any, default: Any = None) -> Any:
+        return self._data.get(str(key), default)
 
     def all(self):
         return self._data
 
-    def __contains__(self, key):
+    def __contains__(self, key: Any) -> bool:
         return str(key) in self._data
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: Any) -> Any:
         return self._data[str(key)]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._data)

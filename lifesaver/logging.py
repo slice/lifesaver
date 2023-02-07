@@ -4,11 +4,10 @@ __all__ = ["setup_logging"]
 
 import contextlib
 import logging
-import typing
 
 import lifesaver
 
-# The idea of having setup_logging as a context manager is from Danny's R. Danny:
+# The idea of having setup_logging as a context manager is from RoboDanny, by Danny:
 # https://github.com/Rapptz/RoboDanny/blob/1013d990b2e8fb343389e5ec7ffeeda4a8c449da/launcher.py#L25
 
 
@@ -17,6 +16,7 @@ def setup_logging(config: lifesaver.bot.config.BotLoggingConfig):
     """A context manager that sets up logging according to a :class:`lifesaver.bot.config.BotLoggingConfig`.
     Gracefully destroys handlers when exited.
     """
+    root_logger = None
     try:
         root_logger = logging.getLogger()
         root_logger.setLevel(config.level)
@@ -34,6 +34,8 @@ def setup_logging(config: lifesaver.bot.config.BotLoggingConfig):
 
         yield
     finally:
+        if root_logger is None:
+            return
         handlers = root_logger.handlers[:]
         for handler in handlers:
             handler.close()

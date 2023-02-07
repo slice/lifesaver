@@ -2,13 +2,17 @@
 
 __all__ = ["Context"]
 
-from typing import Any, Callable, List, Optional, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type, TypeVar, Union
 
 import discord
 import jishaku
+from jishaku.paginators import PaginatorInterface
 from discord.ext import commands
 
 import lifesaver
+
+if TYPE_CHECKING:
+    import asyncpg
 
 T = TypeVar("T")
 
@@ -36,7 +40,7 @@ class Context(commands.Context):
         return self.bot.tick(*args, **kwargs)
 
     @property
-    def pool(self) -> "asyncpg.pool.Pool":
+    def pool(self) -> "Optional[asyncpg.pool.Pool]":
         """A shortcut to :attr:`lifesaver.bot.BotBase.pool`."""
         return self.bot.pool
 
@@ -68,7 +72,7 @@ class Context(commands.Context):
     async def confirm(
         self,
         title: str,
-        message=discord.Embed.Empty,
+        message=None,
         *,
         color: discord.Color = discord.Color.red(),
         delete_after: bool = False,
@@ -225,10 +229,8 @@ class Context(commands.Context):
         self,
         *,
         force_interface: bool = False,
-        interface: Type[
-            jishaku.paginators.PaginatorInterface
-        ] = jishaku.paginators.PaginatorInterface,
-    ) -> Optional[jishaku.paginators.PaginatorInterface]:
+        interface: Type[PaginatorInterface] = PaginatorInterface,
+    ) -> Optional[PaginatorInterface]:
         """Send the pages in the paginator in an appropriate manner.
 
         Adding to the paginator is done by :meth:`add_line` or manual access to
@@ -264,20 +266,20 @@ class Context(commands.Context):
         ):
             raise RuntimeError("Cannot paginate with an empty paginator")
 
-        if not issubclass(interface, jishaku.paginators.PaginatorInterface):
+        if not issubclass(interface, PaginatorInterface):
             raise TypeError(
                 f"Provided custom interface ({interface!r}) isn't a subclass of jishaku.paginators.PaginatorInterface"
             )
 
         if len(self.paginator._pages) > 1 or force_interface:
-            interface_instance = interface(self.bot, self.paginator, owner=self.author)
+            interface_instance = interface(self.bot, self.paginator, owner=self.author)  # type: ignore
             await interface_instance.send_to(self)
             return interface_instance
         else:
             # Send the lone page normally.
             await self.send_pages()
 
-    async def ok(self, emoji: str = None) -> None:
+    async def ok(self, emoji: Optional[str] = None) -> None:
         """Respond with an emoji in acknowledgement to an action performed by the user.
 
         This method tries to react to the original message, falling back to the

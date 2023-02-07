@@ -136,5 +136,5 @@ class Sample(lifesaver.Cog):
         await ctx.ok()
 
 
-def setup(bot):
-    bot.add_cog(Sample(bot))
+async def setup(bot):
+    await bot.add_cog(Sample(bot))

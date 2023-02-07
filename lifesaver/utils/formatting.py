@@ -340,7 +340,7 @@ def pluralize(
 
 
 def format_traceback(
-    exc: Exception, *, limit: int = 7, hide_paths: bool = False
+    exc: BaseException, *, limit: int = 7, hide_paths: bool = False
 ) -> str:
     """Format an exception into a traceback, akin to ones emitted by the
     interpreter during runtime.

@@ -83,7 +83,7 @@ class Errors(lifesaver.Cog):
     def make_insect_id(self) -> str:
         return secrets.token_hex(6)
 
-    async def create_insect(self, error: Exception) -> str:
+    async def create_insect(self, error: BaseException) -> str:
         """Create and save an insect object, returning its ID."""
         async with self.insect_creation_lock:
             insects = self.insects.get("insects", [])
@@ -171,7 +171,10 @@ class Errors(lifesaver.Cog):
         raise RuntimeError(f"Intentional error: {message}")
 
     async def on_error(self, event, *args, **kwargs):
-        type, value, traceback = sys.exc_info()
+        _, value, _ = sys.exc_info()
+        if value is None:
+            self.log.error("Fatal error occurred, but exc_info returned None.")
+            return
         self.log.error(
             "Fatal error in %s (args=%r, kwargs=%r). %s",
             event,
@@ -182,7 +185,7 @@ class Errors(lifesaver.Cog):
         await self.create_insect(value)
 
     @lifesaver.Cog.listener()
-    async def on_command_error(self, ctx: lifesaver.commands.Context, error: Exception):
+    async def on_command_error(self, ctx: lifesaver.commands.Context, error: BaseException):
         ignored_errors = getattr(ctx.bot, "ignored_errors", [])
         filtered_handlers = OrderedDict(
             (key, value)
@@ -191,7 +194,7 @@ class Errors(lifesaver.Cog):
         )
 
         if isinstance(error, commands.BadArgument):
-            if "failed for parameter" in str(error):
+            if "failed for parameter" in str(error) and error.__cause__ is not None:
                 self.log.error(
                     "Generic check error. %s", format_traceback(error.__cause__)
                 )
@@ -205,6 +208,7 @@ class Errors(lifesaver.Cog):
             if not isinstance(error, error_type):
                 continue
 
+            assert ctx.command is not None
             message = message_format.format(
                 prefix=ctx.prefix, command=ctx.command.qualified_name
             )
@@ -224,5 +228,5 @@ class Errors(lifesaver.Cog):
         await ctx.send(f"Something went wrong. \N{BUG} `{insect_id}`")
 
 
-def setup(bot):
-    bot.add_cog(Errors(bot))
+async def setup(bot):
+    await bot.add_cog(Errors(bot))
