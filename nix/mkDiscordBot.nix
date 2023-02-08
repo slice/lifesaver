@@ -7,6 +7,7 @@
 let
   cfg = config.lifesaver.${name};
   yaml = pkgs.formats.yaml { };
+  defaultCogConfigPath = "${cfg.dataDir}/config";
 in {
   options.lifesaver.${name} = with lib; {
     enable = mkEnableOption ''Enables Lifesaver-powered Discord bot "${name}"'';
@@ -55,7 +56,7 @@ in {
           bot_class = opt (types.nullOr types.str) null;
           config_class = opt (types.nullOr types.str) null;
           extensions_path = opt types.str "./exts";
-          cog_config_path = opt types.str "./config";
+          cog_config_path = opt types.str defaultCogConfigPath;
           ignore_bots = opt types.bool true;
           command_prefix =
             opt (types.either (types.listOf types.str) types.str) "!";
@@ -99,13 +100,36 @@ in {
     systemd.services."lifesaver-${name}" = let
       python = cfg.python.withPackages
         (pythonPackages: [ lifesaver pythonPackages.discordpy ]);
+
       botYamlConfig = yaml.generate "lifesaver-${name}-config.yml" ({
         token = cfg.token;
         logging.file = "${cfg.dataDir}/bot.log";
       } // cfg.settings);
+
+      cogConfigs = lib.mapAttrs (cogName: config:
+        yaml.generate "lifesaver-${name}-cog-${cogName}-config.yml" config)
+        cfg.cogConfig;
+
+      usingNonstandardCogConfigPath = cfg.settings.cog_config_path
+        != defaultCogConfigPath;
+      linkCogConfigsPreamble = ''
+        echo "Linking in cog configurations"
+        cd ${cfg.dataDir}
+        mkdir -p config
+      '';
+      # Don't bother linking cog configurations into the data directory if
+      # the user has specified them to be located elsewhere.
+      linkCogConfigsShell = if usingNonstandardCogConfigPath then
+        ''
+          echo "Not linking in cog configurations; using nonstandard cog config path"''
+      else
+        linkCogConfigsPreamble + (builtins.concatStringsSep "\n"
+          (lib.mapAttrsToList
+            (cogName: file: "ln -s ${file} config/${cogName}.yml") cogConfigs));
     in {
       wantedBy = [ "multi-user.target" ];
       script = ''
+        ${linkCogConfigsShell}
         echo "Starting Lifesaver Discord bot with source at: ${src}"
         cd ${src}
         ${python}/bin/python -mlifesaver.cli --config=${botYamlConfig}
