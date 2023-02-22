@@ -2,7 +2,7 @@
 
 __all__ = ["BotConfig", "BotLoggingConfig"]
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional
 
 from lifesaver.config import Config
 
@@ -11,7 +11,11 @@ NO_EMOJI = "\N{CROSS MARK}"
 OK_EMOJI = "\N{OK HAND SIGN}"
 
 DEFAULT_EMOJIS = {
-    "generic": {"yes": YES_EMOJI, "no": NO_EMOJI, "ok": OK_EMOJI,},
+    "generic": {
+        "yes": YES_EMOJI,
+        "no": NO_EMOJI,
+        "ok": OK_EMOJI,
+    },
 }
 
 
@@ -56,10 +60,10 @@ class BotConfig(Config):
     ignore_bots: bool = True
 
     #: The command prefix to use. Can be a string or a list of strings.
-    command_prefix: Union[List[str], str] = "!"
+    command_prefix: list[str] | str = "!"
 
     #: The intent flag used when connecting to the gateway.
-    intents: Union[List[str], str] = "default"
+    intents: list[str] | str = "default"
 
     #: The bot's description. Shown in the help command.
     description: str = "A Discord bot."

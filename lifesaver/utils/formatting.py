@@ -46,7 +46,7 @@ import os
 import pathlib
 import re
 import traceback
-from typing import Any, Callable, List, TypeVar, Union
+from typing import Any, Callable, TypeVar, Union, Optional
 
 import discord
 
@@ -58,7 +58,9 @@ def _default_list_formatter(value: Any, index: int) -> str:
     return f"{index + 1}. {value}"
 
 
-def format_list(items: List[_T], formatter: Callable[[_T, int], str] = None) -> str:
+def format_list(
+    items: list[_T], formatter: Optional[Callable[[_T, int], str]] = None
+) -> str:
     """Format a list as an ordered list, with numerals preceding every item.
     List numerals are padded to ensure that there are at least 3 digits.
     """
@@ -156,7 +158,10 @@ def codeblock(code: str, *, lang: str = "", escape: bool = True) -> str:
     str
         The formatted codeblock.
     """
-    return "```{}\n{}\n```".format(lang, escape_backticks(code) if escape else code,)
+    return "```{}\n{}\n```".format(
+        lang,
+        escape_backticks(code) if escape else code,
+    )
 
 
 def truncate(text: str, desired_length: int, *, suffix: str = "...") -> str:
@@ -199,7 +204,7 @@ class Table:
 
     def __init__(self, *column_titles: str) -> None:
         self._rows = [column_titles]
-        self._widths: List[int] = []
+        self._widths: list[int] = []
 
         for index, entry in enumerate(column_titles):
             self._widths.append(len(entry))
@@ -219,7 +224,7 @@ class Table:
         self._rows.append(row)
         self._update_widths(row)
 
-    def add_rows(self, *rows: List[str]):
+    def add_rows(self, *rows: list[str]):
         for row in rows:
             self.add_row(*row)
 

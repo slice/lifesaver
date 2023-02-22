@@ -4,12 +4,20 @@
 
 import logging
 from pathlib import Path
-from typing import Any, Callable, Iterable, List, Optional, Union, TYPE_CHECKING
+from typing import (
+    Any,
+    Callable,
+    Literal,
+    overload,
+    Iterable,
+    Optional,
+    TYPE_CHECKING,
+    cast,
+)
 
 import discord
 from discord.ext import commands
-from discord.ext.commands.core import GroupMixin
-from discord.ext.commands.help import HelpCommand
+from discord.ext.commands import GroupMixin, HelpCommand
 
 import lifesaver
 from lifesaver.load_list import LoadList
@@ -21,35 +29,31 @@ from .config import BotConfig
 if TYPE_CHECKING:
     import asyncpg
 
-PrefixType = Union[Iterable[str], str, Callable[[Any, discord.Message], Iterable[str]]]
-
 INCLUDED_EXTENSIONS = [
     "jishaku",
     "lifesaver.bot.exts.health",
     "lifesaver.bot.exts.errors",
 ]
 
+PrefixType = Iterable[str] | str | Callable[[Any, discord.Message], Iterable[str]]
+
 
 def compute_command_prefix(
     cfg: BotConfig,
 ) -> PrefixType:
-    """Compute the final value to be passed as the ``command_prefix`` kwarg."""
+    """Compute the appropriate ``command_prefix`` for the bot from the :class:`BotConfig`."""
     prefix = cfg.command_prefix
 
     if cfg.command_prefix_include_mentions:
-        if prefix is None:
-            return commands.when_mentioned
-        elif isinstance(prefix, str):
+        if isinstance(prefix, str):
             return commands.when_mentioned_or(prefix)
-        elif isinstance(prefix, list):
-            return commands.when_mentioned_or(*prefix)
         else:
-            return commands.when_mentioned_or(str(prefix))
+            return commands.when_mentioned_or(*prefix)
 
     return prefix
 
 
-class BotBase(commands.bot.BotBase, GroupMixin['lifesaver.Cog']):
+class BotBase(commands.bot.BotBase, GroupMixin["lifesaver.Cog"]):
     """The base bot class for Lifesaver bots.
 
     This is a :class:`discord.ext.commands.bot.BotBase` subclass that is
@@ -64,6 +68,10 @@ class BotBase(commands.bot.BotBase, GroupMixin['lifesaver.Cog']):
         command_prefix: Optional[PrefixType] = None,
         description: Optional[str] = None,
         help_command: Optional[HelpCommand] = None,
+        # This is `Any` because there doesn't seem to be a way for Python type
+        # checkers to infer the rest of the keyword arguments from the
+        # superclass, and I don't anticipate users of this library needing this
+        # too badly. Otherwise, I'd just copy everything here.
         **kwargs: Any,
     ) -> None:
         """Initialize a BotBase from a :class:`BotConfig` and other kwargs.
@@ -74,7 +82,6 @@ class BotBase(commands.bot.BotBase, GroupMixin['lifesaver.Cog']):
         #: The bot's :class:`BotConfig`.
         self.config = cfg
 
-        command_prefix = command_prefix or compute_command_prefix(cfg)
         description = description or cfg.description
         help_command = help_command or commands.DefaultHelpCommand(dm_help=cfg.dm_help)
 
@@ -87,7 +94,7 @@ class BotBase(commands.bot.BotBase, GroupMixin['lifesaver.Cog']):
             intents = getattr(discord.Intents, intents_specifier)()
 
         super().__init__(
-            command_prefix=command_prefix,
+            command_prefix=command_prefix or compute_command_prefix(cfg),
             description=description,
             help_command=help_command,
             intents=intents,
@@ -111,7 +118,7 @@ class BotBase(commands.bot.BotBase, GroupMixin['lifesaver.Cog']):
         self.load_list = LoadList()
 
         #: A list of included extensions built into lifesaver to load.
-        self._included_extensions: List[str] = INCLUDED_EXTENSIONS
+        self._included_extensions: list[str] = INCLUDED_EXTENSIONS
 
         self._hot_task = None
         self._hot_reload_poller: Optional[Poller] = None
@@ -121,9 +128,17 @@ class BotBase(commands.bot.BotBase, GroupMixin['lifesaver.Cog']):
         if self.config.postgres and self.pool is None:
             await self._postgres_connect()
 
+    @overload
+    def emoji(self, accessor: str, *, stringify: Literal[True] = True) -> str | None:
+        ...
+
+    @overload
     def emoji(
-        self, accessor: str, *, stringify: bool = False
-    ) -> Union[str, discord.Emoji]:
+        self, accessor: str, *, stringify: Literal[False]
+    ) -> discord.Emoji | None:
+        ...
+
+    def emoji(self, accessor: str, *, stringify: bool = False) -> str | discord.Emoji:
         """Return an emoji from the global emoji table.
 
         The string you pass accesses the :attr:`BotConfig.emojis` dict using
@@ -141,29 +156,47 @@ class BotBase(commands.bot.BotBase, GroupMixin['lifesaver.Cog']):
             found.
         RuntimeError
             The custom emoji with the ID of the value in the global emoji table
-            could not be found.
+            could not be found, or was an incorrect type.
         """
         try:
-            emoji_id = dot_access(self.config.emojis, accessor)
+            emoji_string_or_id = dot_access(self.config.emojis, accessor)
         except KeyError as exc:
-            raise LookupError(f"No such emoji \"{accessor}\" in global emoji table") from exc
+            raise LookupError(
+                f'No such emoji "{accessor}" in global emoji table'
+            ) from exc
+        if not isinstance(emoji_string_or_id, str | int):
+            raise RuntimeError(
+                f"Expected emoji to be Unicode emoji or Discord emoji ID, but found {emoji_string_or_id!r} instead"
+            )
 
-        if isinstance(emoji_id, int):
-            emoji = self.get_emoji(emoji_id)  # type: ignore
+        if isinstance(emoji_string_or_id, int):
+            emoji = cast(commands.Bot, self).get_emoji(emoji_string_or_id)
         else:
-            emoji = emoji_id
+            emoji = emoji_string_or_id
 
         if emoji is None:
-            raise RuntimeError(f"Cannot find custom emoji with ID of {emoji_id} (while looking up \"{accessor}\")")
+            raise RuntimeError(
+                f'Cannot find custom emoji with ID of {emoji_string_or_id} (while looking up "{accessor}")'
+            )
 
         return str(emoji) if stringify else emoji
 
-    def tick(self, affirmative: bool = True) -> Union[str, discord.Emoji]:
+    def tick(self, affirmative: bool = True) -> str | discord.Emoji:
         """Return a tick emoji.
 
         Uses ``generic.yes`` and ``generic.no`` from the global emoji table.
+
+        Raises
+        ------
+        RuntimeError
+            Raised if the emojis weren't found.
         """
-        return self.emoji("generic.yes" if affirmative else "generic.no")
+        accessor = "generic.yes" if affirmative else "generic.no"
+        emoji = self.emoji(accessor)
+
+        if not emoji:
+            raise RuntimeError(f"The emoji for {accessor} wasn't found")
+        return emoji
 
     async def _setup_hot_reload(self) -> None:
         self.log.debug("Setting up hot reload.")
@@ -175,7 +208,9 @@ class BotBase(commands.bot.BotBase, GroupMixin['lifesaver.Cog']):
         self._hot_plug = PollerPlug(self)
 
         # infinitely consume hot reload events
-        self._hot_task = self.loop.create_task(self._consume_hot_reload())  # type: ignore
+        self._hot_task = cast(commands.Bot, self).loop.create_task(
+            self._consume_hot_reload()
+        )
 
     async def _consume_hot_reload(self):
         assert self._hot_reload_poller is not None
@@ -229,7 +264,9 @@ class BotBase(commands.bot.BotBase, GroupMixin['lifesaver.Cog']):
         self.dispatch("load_all", reload)
 
     async def on_ready(self):
-        self.log.info("Ready! Logged in as %s (%d)", self.user, self.user.id)  # type: ignore
+        bot = cast(commands.Bot, self)
+        assert bot.user is not None
+        self.log.info("Ready! Logged in as %s (%d)", bot.user, bot.user.id)
 
         if self.config.hot_reload and self._hot_plug is None:
             await self._setup_hot_reload()
@@ -252,10 +289,8 @@ class BotBase(commands.bot.BotBase, GroupMixin['lifesaver.Cog']):
 
 
 class Bot(BotBase, discord.Client):
-    def run(self):
-        super().run(self.config.token)
+    pass
 
 
 class AutoShardedBot(BotBase, discord.AutoShardedClient):
-    def run(self):
-        super().run(self.config.token)
+    pass

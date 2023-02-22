@@ -1,0 +1,7 @@
+{
+  "include": ["lifesaver"],
+  "pythonVersion": "3.10"
+  "typeCheckingMode": "strict",
+  "useLibraryCodeForTypes": true,
+  "reportMissingTypeStubs": false
+}

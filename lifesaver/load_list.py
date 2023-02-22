@@ -2,7 +2,6 @@
 
 import importlib
 import logging
-import typing
 from collections import UserList
 from pathlib import Path
 
@@ -18,11 +17,11 @@ FORBIDDEN_EXTENSIONS = {
 FORBIDDEN_NAMES = {"__pycache__"}
 
 
-def transform_path(path: typing.Union[Path, str]) -> str:
+def transform_path(path: Path | str) -> str:
     return str(path).replace("/", ".").replace(".py", "")
 
 
-def filter_path(path: typing.Union[Path, str]) -> bool:
+def filter_path(path: Path | str) -> bool:
     """Return whether a path is appropriate for extension loading."""
     string_path = str(path)
 
@@ -35,14 +34,16 @@ def filter_path(path: typing.Union[Path, str]) -> bool:
     return True
 
 
-class LoadList(UserList):
-    """A class that encompasses behavior related to discovering extensions and loading them."""
+class LoadList(UserList[str]):
+    """A list of extensions to be loaded."""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self) -> None:
+        super().__init__()
         self.log = logging.getLogger(__name__)
 
-    def build(self, exts_path: Path):
+    def build(self, exts_path: Path) -> None:
+        """Repopulates the list of extensions to be loaded."""
+
         if not exts_path.is_dir():
             self.log.warning(
                 "Cannot build load list: %s is not a directory.", exts_path

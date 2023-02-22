@@ -2,14 +2,24 @@
 
 __all__ = ["Context"]
 
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Type, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Literal,
+    Optional,
+    Type,
+    TypeVar,
+    overload,
+)
+from collections.abc import Awaitable
 
 import discord
-import jishaku
 from jishaku.paginators import PaginatorInterface
 from discord.ext import commands
 
 import lifesaver
+import lifesaver.utils
 
 if TYPE_CHECKING:
     import asyncpg
@@ -17,11 +27,11 @@ if TYPE_CHECKING:
 T = TypeVar("T")
 
 
-class Context(commands.Context):
+class Context(commands.Context[lifesaver.Bot]):  # type: ignore
     bot: lifesaver.Bot
 
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
 
         #: The paginator associated with this context.
         #:
@@ -31,13 +41,18 @@ class Context(commands.Context):
         #: (see :meth:`paginate`).
         self.paginator = commands.Paginator(prefix="", suffix="", max_size=1900)
 
-    def emoji(self, *args, **kwargs) -> Union[str, discord.Emoji]:
-        """A shortcut to :meth:`lifesaver.bot.BotBase.emoji`."""
-        return self.bot.emoji(*args, **kwargs)
+    # The following two shortcuts are properties so I don't have to repeat the
+    # type signatures. Isn't statically typing Python fun?
 
-    def tick(self, *args, **kwargs) -> Union[str, discord.Emoji]:
+    @property
+    def emoji(self):
+        """A shortcut to :meth:`lifesaver.bot.BotBase.emoji`."""
+        return self.bot.emoji
+
+    @property
+    def tick(self):
         """A shortcut to :meth:`lifesaver.bot.BotBase.tick`."""
-        return self.bot.tick(*args, **kwargs)
+        return self.bot.tick
 
     @property
     def pool(self) -> "Optional[asyncpg.pool.Pool]":
@@ -53,30 +68,14 @@ class Context(commands.Context):
         perms = self.channel.permissions_for(self.guild.me)
         return perms.embed_links
 
-    async def send(
-        self, content: Any = None, *args, scrub: bool = True, **kwargs
-    ) -> discord.Message:
-        """Send a message to this context. Identical to :meth:`discord.abc.Messageable.send`.
-
-        If ``scrub`` is ``True``, then @everyone and @here mentions are removed
-        from the content (after going through :py:func:`str`).
-        """
-        if content is not None:
-            content = str(content)
-            if scrub:
-                content = content.replace("@everyone", "@\u200beveryone").replace(
-                    "@here", "@\u200bhere"
-                )
-        return await super().send(content, *args, **kwargs)
-
     async def confirm(
         self,
         title: str,
-        message=None,
+        message: Optional[str] = None,
         *,
         color: discord.Color = discord.Color.red(),
         delete_after: bool = False,
-        cancellation_message: str = None,
+        cancellation_message: Optional[str] = None,
     ) -> bool:
         """Create a confirmation prompt for the user. Returns whether the user
         reacted with an affirmative emoji.
@@ -94,6 +93,12 @@ class Context(commands.Context):
         cancellation_message
             A message to send after cancelling.
 
+        Raises
+        ------
+        RuntimeError
+            If the ``generic.yes`` or ``generic.no`` emojis couldn't be found
+            in the global emoji table.
+
         Returns
         -------
         bool
@@ -102,7 +107,7 @@ class Context(commands.Context):
         embed = discord.Embed(title=title, description=message, color=color)
         msg: discord.Message = await self.send(embed=embed)
 
-        reactions = [self.emoji("generic.yes"), self.emoji("generic.no")]
+        reactions = [self.tick(True), self.tick(False)]
         for emoji in reactions:
             await msg.add_reaction(emoji)
 
@@ -147,10 +152,10 @@ class Context(commands.Context):
 
     async def pick_from_list(
         self,
-        choices: List[T],
+        choices: list[T],
         *,
         delete_after_choice: bool = False,
-        formatter: Callable[[T, int], str] = None,
+        formatter: Optional[Callable[[T, int], str]] = None,
         tries: int = 3,
     ) -> Optional[T]:
         """Send a list of items, allowing the user to pick one. Returns the
@@ -207,7 +212,7 @@ class Context(commands.Context):
 
         return picked
 
-    def add_line(self, line) -> None:
+    def add_line(self, line: str) -> None:
         """Add a line to the paginator.
 
         Works exactly like :meth:`discord.ext.commands.Paginator.add_line`.
@@ -288,17 +293,31 @@ class Context(commands.Context):
 
         If all of these fail, the message author will not be notified.
 
+        Raises
+        ------
+        RuntimeError
+            No appropriate OK emoji could be found. This method looks up
+            ``generic.ok`` in the global emoji table if no emoji was provided.
+            If this lookup fails, this exception is raised.
+
         Parameters
         ----------
         emoji
             The emoji to react with.
         """
-        emoji = emoji or self.emoji("generic.ok")
-        actions = [self.message.add_reaction, self.send, self.author.send]
+        ok_emoji = emoji or self.emoji("generic.ok", stringify=True)
+        if not ok_emoji:
+            raise RuntimeError("No appropriate OK emoji could be found.")
+
+        actions: list[Callable[[str], Awaitable[Any]]] = [
+            self.message.add_reaction,
+            self.send,
+            self.author.send,
+        ]
 
         for action in actions:
             try:
-                await action(emoji)
+                await action(ok_emoji)
                 break
             except discord.HTTPException:
                 pass
