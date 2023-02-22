@@ -23,24 +23,27 @@
 
         jishaku = pkgs.callPackage ./nix/jishaku.nix { python3 = py; };
 
+        filterPath = root:
+          nix-filter.lib {
+            inherit root;
+            exclude = [
+              ./flake.nix
+              ./flake.lock
+              ./result
+              ./README.md
+              ./LICENSE
+              (nix-filter.lib.matchExt "egg-info")
+              (nix-filter.lib.matchExt "yml")
+              (nix-filter.lib.matchExt "yaml")
+            ];
+          };
+
         lifesaver = py.pkgs.buildPythonPackage rec {
           pname = "lifesaver";
           version = "0.0.0";
 
           src = builtins.path {
-            path = nix-filter.lib {
-              root = self.outPath;
-              exclude = [
-                ./flake.nix
-                ./flake.lock
-                ./result
-                ./README.md
-                ./LICENSE
-                (nix-filter.lib.matchExt "egg-info")
-                (nix-filter.lib.matchExt "yml")
-                (nix-filter.lib.matchExt "yaml")
-              ];
-            };
+            path = filterPath self.outPath;
             name = "lifesaver";
           };
 
@@ -53,22 +56,57 @@
             inherit jishaku;
           };
         };
+
+        mkDevShell = { nativeBuildInputs ? [ ], extraPythonPackages ? [ ] }:
+          pkgs.mkShell {
+            nativeBuildInputs = [
+              (builtins.attrValues {
+                inherit (py.pkgs) black sphinx sphinxcontrib-asyncio;
+              })
+              pkgs.nodePackages.pyright
+              (py.withPackages (p: [ lifesaver ] ++ extraPythonPackages))
+            ] ++ nativeBuildInputs;
+          };
+
       in {
-        lib.mkDiscordBotModule = import ./nix/mkDiscordBot.nix {
-          inherit lifesaver;
-          python = py;
+        lib = {
+          # Create an attrset representing a flake for a Lifesaver bot. It is
+          # intended to be used with `flake-utils.lib.eachDefaultSystem`.
+          mkFlake = gen:
+            let
+              bot = gen {
+                python = py;
+                inherit jishaku lifesaver pkgs;
+                lib = pkgs.lib;
+              };
+
+              generatedPackage = py.pkgs.buildPythonPackage ({
+                pname = bot.name;
+                version = bot.version or "0.0.0";
+                src = builtins.path {
+                  path = filterPath bot.path;
+                  name = bot.name;
+                };
+                doCheck = false;
+                propagatedBuildInputs = [ lifesaver ]
+                  ++ (bot.propagatedBuildInputs or [ ]);
+              } // (bot.pythonPackageOptions or { }));
+            in {
+              packages.default = generatedPackage;
+              devShells.default = mkDevShell {
+                nativeBuildInputs = bot.devShellInputs or [ ];
+                extraPythonPackages = (bot.devShellPythonPackages or [ ])
+                  ++ (bot.propagatedBuildInputs or [ ]);
+              };
+            };
+
+          mkDiscordBotModule = import ./nix/mkDiscordBot.nix {
+            inherit lifesaver;
+            python = py;
+          };
         };
 
-        devShells.default = pkgs.mkShell {
-          nativeBuildInputs = [
-            (builtins.attrValues {
-              inherit (py.pkgs) black sphinx sphinxcontrib-asyncio;
-            })
-            pkgs.nodePackages.pyright
-            (py.withPackages (p: [ lifesaver ]))
-          ];
-        };
-
+        devShells.default = mkDevShell { };
         packages.default = lifesaver;
       });
 }
