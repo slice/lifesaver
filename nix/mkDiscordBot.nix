@@ -1,6 +1,6 @@
 { lifesaver, python }:
 
-{ name, src, description ? "Lifesaver bot ${name}", ... }:
+{ name, src, description ? "Lifesaver bot ${name}", hardConfig ? { }, ... }:
 
 { config, lib, pkgs, ... }:
 
@@ -104,7 +104,7 @@ in {
       botYamlConfig = yaml.generate "lifesaver-${name}-config.yml" ({
         token = cfg.token;
         logging.file = "${cfg.dataDir}/bot.log";
-      } // cfg.settings);
+      } // cfg.settings // hardConfig);
 
       cogConfigs = lib.mapAttrs (cogName: config:
         yaml.generate "lifesaver-${name}-cog-${cogName}-config.yml" config)
