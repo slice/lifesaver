@@ -2,6 +2,7 @@
 
 import importlib
 import logging
+from typing import Optional
 from collections import UserList
 from pathlib import Path
 
@@ -37,8 +38,8 @@ def filter_path(path: Path | str) -> bool:
 class LoadList(UserList[str]):
     """A list of extensions to be loaded."""
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, data: Optional[list[str]] = None) -> None:
+        super().__init__(data or [])
         self.log = logging.getLogger(__name__)
 
     def build(self, exts_path: Path) -> None:
