@@ -105,7 +105,7 @@ def human_delta(
         A human readable version of the time.
     """
     if isinstance(delta, datetime.datetime):
-        delta = datetime.datetime.utcnow() - delta
+        delta = discord.utils.utcnow() - delta
 
     if isinstance(delta, datetime.timedelta):
         delta = delta.total_seconds()
