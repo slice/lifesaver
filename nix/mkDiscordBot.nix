@@ -140,7 +140,13 @@ in {
         cd ${src}
         ${python}/bin/python -mlifesaver.cli --config=${botYamlConfig}
       '';
-      environment.NIX = "1";
+      environment = {
+        NIX = "1";
+        # When running, $TEMP, $TEMPDIR, and $TMP will be empty. Manually set
+        # it to somewhere writable for the bot, because
+        # `lifesaver.storage.Storage` needs to atomically write JSON files.
+        TEMP = cfg.dataDir;
+      };
       inherit description;
       serviceConfig = {
         Type = "simple";
