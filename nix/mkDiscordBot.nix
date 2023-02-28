@@ -1,4 +1,10 @@
-{ lifesaver, python }:
+{ lifesaver,
+
+# The Python interpreter must be configured with packages (incl. Lifesaver) by
+# the caller. This file does not call `withPackages` because it doesn't stack,
+# so if we did it here, it would just override all of the dependencies the
+# caller wants.
+python }:
 
 { name, src, description ? "Lifesaver bot ${name}", hardConfig ? { }, ... }:
 
@@ -98,8 +104,7 @@ in {
       [ "d ${cfg.dataDir} 0750 ${cfg.user} ${cfg.group} -" ];
 
     systemd.services."lifesaver-${name}" = let
-      python = cfg.python.withPackages
-        (pythonPackages: [ lifesaver pythonPackages.discordpy ]);
+      python = cfg.python;
 
       botYamlConfig = yaml.generate "lifesaver-${name}-config.yml" ({
         token = cfg.token;
