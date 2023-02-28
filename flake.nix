@@ -19,7 +19,12 @@
               ++ [ self.brotli self.aiodns self.orjson ];
           });
         };
-        py = pkgs.python310.override { inherit packageOverrides; };
+        py = pkgs.python310.override {
+          inherit packageOverrides;
+
+          # This is needed or else we'll get conflict errors.
+          self = py;
+        };
 
         jishaku = pkgs.callPackage ./nix/jishaku.nix { python3 = py; };
 
