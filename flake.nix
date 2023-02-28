@@ -73,6 +73,10 @@
             ] ++ nativeBuildInputs;
           };
 
+        mkDiscordBot = import ./nix/mkDiscordBot.nix {
+          inherit lifesaver;
+          python = py;
+        };
       in {
         lib = {
           # Create an attrset representing a flake for a Lifesaver bot. It is
@@ -98,17 +102,48 @@
               } // (bot.pythonPackageOptions or { }));
             in {
               packages.default = generatedPackage;
+
               devShells.default = mkDevShell {
                 nativeBuildInputs = bot.devShellInputs or [ ];
                 extraPythonPackages = (bot.devShellPythonPackages or [ ])
                   ++ (bot.propagatedBuildInputs or [ ]);
               };
+
+              nixosModules.default = (import ./nix/mkDiscordBot.nix) {
+                inherit lifesaver;
+                python = py.withPackages (pkgs: [ generatedPackage ]);
+              } {
+                name = bot.name;
+
+                # XXX: This is a bit of a hack, because `mkDiscordBot` takes an
+                # "ad hoc" approach to bots - only accepting a directory that
+                # contains source code, and leaving dependencies to be handled
+                # by overriding the Python interpreter package. This is
+                # consistent with how Lifesaver bots used to be deployed in the
+                # real world.
+                #
+                # However, now that we're actually generating a _real_ Python
+                # package, we have to figure out how to give that to
+                # `mkDiscordBot` and have it work. This is important because the
+                # `extensions_path` configuration option goes hand in hand with
+                # this "ad hoc" deployment style - it takes a filesystem path,
+                # iterates over everything in that directory, and converts it to
+                # Python module names to import at startup. It isn't equipped
+                # to handle real Python packages.
+                #
+                # We'll be able to handle this better once we force Lifesaver
+                # bots to be Python packages, but I'm not entirely sure if
+                # that's a good idea. Ad hoc can be nice sometimes.
+                src = "${generatedPackage}/lib/${py.libPrefix}/site-packages";
+
+                description =
+                  bot.description or "Lifesaver flake bot ${bot.name}";
+
+                hardConfig = (bot.hardConfig or { });
+              };
             };
 
-          mkDiscordBotModule = import ./nix/mkDiscordBot.nix {
-            inherit lifesaver;
-            python = py;
-          };
+          mkDiscordBotModule = mkDiscordBot;
         };
 
         devShells.default = mkDevShell { };
