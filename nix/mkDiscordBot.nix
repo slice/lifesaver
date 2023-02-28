@@ -130,7 +130,8 @@ in {
       else
         linkCogConfigsPreamble + (builtins.concatStringsSep "\n"
           (lib.mapAttrsToList
-            (cogName: file: "ln -s ${file} config/${cogName}.yml") cogConfigs));
+            (cogName: file: "ln -sf ${file} config/${cogName}.yml")
+            cogConfigs));
     in {
       wantedBy = [ "multi-user.target" ];
       script = ''
