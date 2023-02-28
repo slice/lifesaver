@@ -345,7 +345,7 @@ def pluralize(
 
 
 def format_traceback(
-    exc: BaseException, *, limit: int = 7, hide_paths: bool = False
+    exc: BaseException, *, limit: int = 7, shorten_paths: bool = False
 ) -> str:
     """Format an exception into a traceback, akin to ones emitted by the
     interpreter during runtime.
@@ -354,15 +354,16 @@ def format_traceback(
     ----------
     limit
         The maximum number of lines to include.
-    hide_paths
-        Conceals the current working directory and packages path.
+    shorten_paths
+        Attempts to shorten the current working directory and Python packages
+        path.
     """
 
     formatted = "".join(
         traceback.format_exception(type(exc), exc, exc.__traceback__, limit=limit)
     )
 
-    if hide_paths:
+    if shorten_paths:
         # Hide the current working directory to shorten text.
         formatted = formatted.replace(os.getcwd(), "/...")
 
