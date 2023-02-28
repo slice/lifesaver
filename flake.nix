@@ -81,14 +81,19 @@
         lib = {
           # Create an attrset representing a flake for a Lifesaver bot. It is
           # intended to be used with `flake-utils.lib.eachDefaultSystem`.
-          mkFlake = gen:
+          mkFlake = generateBotMetadata:
             let
-              bot = gen {
+              # The caller receives the Nixpkgs, Python, etc. that we are using,
+              # and returns some metadata for the bot needed to generate a
+              # corresponding Python package and NixOS module.
+              bot = generateBotMetadata {
                 python = py;
                 inherit jishaku lifesaver pkgs;
                 lib = pkgs.lib;
               };
 
+              # Generate a Python package to have as a flake output, and to use
+              # in the NixOS module for deployment.
               generatedPackage = py.pkgs.buildPythonPackage ({
                 pname = bot.name;
                 version = bot.version or "0.0.0";

@@ -59,6 +59,10 @@ in {
 
         options = let opt = type: default: mkOption { inherit type default; };
         in {
+          # Troubling: if we want to specify the types of these settings, we
+          # also have to give a default value which _will_ be used unless
+          # overridden. These have to ~match the defaults in Lifesaver.
+
           bot_class = opt (types.nullOr types.str) null;
           config_class = opt (types.nullOr types.str) null;
           extensions_path = opt types.str "./exts";
@@ -144,7 +148,7 @@ in {
         NIX = "1";
         # When running, $TEMP, $TEMPDIR, and $TMP will be empty. Manually set
         # it to somewhere writable for the bot, because
-        # `lifesaver.storage.Storage` needs to atomically write JSON files.
+        # `lifesaver.bot.Storage` needs to atomically write JSON files.
         TEMP = cfg.dataDir;
       };
       inherit description;
