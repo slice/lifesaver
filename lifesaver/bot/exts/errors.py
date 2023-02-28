@@ -11,7 +11,7 @@ import discord
 from discord.ext import commands
 
 import lifesaver
-from lifesaver.bot.storage import AsyncJSONStorage
+from lifesaver.bot.storage import Storage
 from lifesaver.utils import (
     codeblock,
     format_traceback,
@@ -33,7 +33,7 @@ def summarize_traceback(traceback: str, *, max_len: int = 30) -> str:
 class Errors(lifesaver.Cog):
     def __init__(self, bot):
         super().__init__(bot)
-        self.insects = AsyncJSONStorage("./insects.json")
+        self.insects = Storage("./insects.json")
         self.insect_creation_lock = asyncio.Lock()
 
         # clobber original on_error because it's a faux-event

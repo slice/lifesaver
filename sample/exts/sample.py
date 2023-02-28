@@ -3,7 +3,7 @@ import asyncio
 from discord.ext import commands
 
 import lifesaver
-from lifesaver.bot.storage import AsyncJSONStorage
+from lifesaver.bot.storage import Storage
 from lifesaver.config import Config
 from lifesaver.utils.formatting import codeblock
 
@@ -16,7 +16,7 @@ class SampleConfig(Config):
 class Sample(lifesaver.Cog):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.tags = AsyncJSONStorage("tags.json")
+        self.tags = Storage("tags.json")
 
     def cog_unload(self):
         print("Calling super unload:", super().cog_unload)
