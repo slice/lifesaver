@@ -64,7 +64,7 @@ in {
             opt (types.either (types.listOf types.str) types.str) "default";
           description = opt types.str description;
           dm_help = opt (types.nullOr types.bool) null;
-          command_prefix_include_mentions = opt (types.nullOr types.bool) null;
+          command_prefix_include_mentions = opt (types.nullOr types.bool) true;
           hot_reload = opt types.bool false;
           emojis = opt (types.attrsOf types.anything) { };
           postgres = opt (types.nullOr (types.attrsOf types.anything)) null;
