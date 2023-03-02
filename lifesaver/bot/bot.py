@@ -231,8 +231,15 @@ class BotBase(commands.bot.BotBase, GroupMixin["lifesaver.Cog"]):
         self.pool = await asyncpg.create_pool(dsn=self.config.postgres["dsn"])
         self.log.debug("created postgres pool")
 
+    @property
+    def _is_hardcoding_load_list(self) -> list[str]:
+        return bool(self.config.load_list)
+
     def _rebuild_load_list(self):
-        self.load_list.build(Path(self.config.extensions_path))
+        if self._is_hardcoding_load_list:
+            self.load_list = LoadList(self.config.load_list)
+        else:
+            self.load_list.build(Path(self.config.extensions_path))
 
     async def load_all(self, *, reload: bool = False, exclude_default: bool = False):
         """Load all extensions in the load list.
@@ -268,7 +275,7 @@ class BotBase(commands.bot.BotBase, GroupMixin["lifesaver.Cog"]):
         assert bot.user is not None
         self.log.info("Ready! Logged in as %s (%d)", bot.user, bot.user.id)
 
-        if self.config.hot_reload and self._hot_plug is None:
+        if not self._is_hardcoding_load_list and self.config.hot_reload and self._hot_plug is None:
             await self._setup_hot_reload()
 
     async def on_message(self, message: discord.Message):

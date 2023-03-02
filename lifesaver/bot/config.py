@@ -53,6 +53,10 @@ class BotConfig(Config):
     #: The path to load extensions from.
     extensions_path: str = "./exts"
 
+    #: Hardcode the list of extensions to load, ignoring ``extensions_path``.
+    #: This option isn't compatible with hot reloading.
+    load_list: Optional[list[str]] = None
+
     #: The path for cog-specific configuration files.
     cog_config_path: str = "./config"
 

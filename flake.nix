@@ -120,8 +120,8 @@
               } {
                 name = bot.name;
 
-                # XXX: This is a bit of a hack, because `mkDiscordBot` takes an
-                # "ad hoc" approach to bots - only accepting a directory that
+                # XXX: This is a bit of a hack, because `mkDiscordBot` can an
+                # "ad-hoc" approach to bots - only accepting a directory that
                 # contains source code, and leaving dependencies to be handled
                 # by overriding the Python interpreter package. This is
                 # consistent with how Lifesaver bots used to be deployed in the
@@ -138,13 +138,18 @@
                 #
                 # We'll be able to handle this better once we force Lifesaver
                 # bots to be Python packages, but I'm not entirely sure if
-                # that's a good idea. Ad hoc can be nice sometimes.
+                # that's a good idea. Ad-hoc can be nice sometimes.
                 src = "${generatedPackage}/lib/${py.libPrefix}/site-packages";
 
                 description =
                   bot.description or "Lifesaver flake bot ${bot.name}";
 
                 hardConfig = (bot.hardConfig or { });
+
+                # We always generate a real Python package, so we are never
+                # ad-hoc. See the comment in `mkDiscordBot.nix`.
+                adhoc = false;
+                loadList = bot.loadList or [ ];
               };
             };
 
