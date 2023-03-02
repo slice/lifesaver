@@ -50,7 +50,7 @@ class Config:
 
             if isinstance(default_value, Mapping) and isinstance(value, dict):
                 # Merge the provided dict into the default mapping instead of overwriting.
-                value = merge_defaults(value, defaults=default_value)
+                merge_defaults(value, defaults=default_value)
 
             setattr(self, name, value)
 

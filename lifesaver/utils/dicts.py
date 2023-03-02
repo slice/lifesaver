@@ -8,16 +8,17 @@ from typing import Any, Mapping, MutableMapping
 
 def merge_defaults(
     source: MutableMapping[Any, Any], *, defaults: Mapping[Any, Any]
-) -> Mapping[Any, Any]:
+) -> None:
     """Deeply merge default values from a mapping onto another."""
-    for key, value in defaults.items():
-        if isinstance(value, Mapping) and key in source:
-            new_mapping = source[key]
-            merge_defaults(new_mapping, defaults=value)
-            source[key] = new_mapping
-        else:
-            source[key] = value
-    return source
+    for default_key, default_value in defaults.items():
+        if (
+            isinstance(default_value, Mapping)
+            and default_key in source
+            and isinstance(source[default_key], Mapping)
+        ):
+            merge_defaults(source[default_key], defaults=default_value)
+        elif default_key not in source:
+            source[default_key] = default_value
 
 
 def dot_access(source: Mapping[Any, Any], access: str) -> Any:
