@@ -195,10 +195,13 @@ in {
       '';
       environment = {
         NIX = "1";
+
         # When running, $TEMP, $TEMPDIR, and $TMP will be empty. Manually set
         # it to somewhere writable for the bot, because
         # `lifesaver.bot.Storage` needs to atomically write JSON files.
         TEMP = cfg.dataDir;
+
+        DATA_DIRECTORY = cfg.dataDir;
       };
       inherit description;
       serviceConfig = {
