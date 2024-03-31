@@ -14,6 +14,13 @@
 
         packageOverrides = self: super: {
           discordpy = super.discordpy.overridePythonAttrs (old: {
+            version = "2.3.2";
+            src = pkgs.fetchFromGitHub {
+              owner = "Rapptz";
+              repo = "discord.py";
+              rev = "refs/tags/v2.3.2";
+              hash = "sha256-bZoYdDpk34x+Vw1pAZ3EcTFp2JJ/Ow0Jfof/XjqeRmY=";
+            };
             # Include packages that speed up the library.
             propagatedBuildInputs = old.propagatedBuildInputs
               ++ [ self.brotli self.aiodns self.orjson ];
