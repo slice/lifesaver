@@ -14,12 +14,12 @@
 
         packageOverrides = self: super: {
           discordpy = super.discordpy.overridePythonAttrs (old: {
-            version = "2.3.2";
+            version = "2.5.2";
             src = pkgs.fetchFromGitHub {
               owner = "Rapptz";
               repo = "discord.py";
-              rev = "refs/tags/v2.3.2";
-              hash = "sha256-bZoYdDpk34x+Vw1pAZ3EcTFp2JJ/Ow0Jfof/XjqeRmY=";
+              rev = "refs/tags/v2.5.2";
+              hash = "sha256-xaZeOkfOhm1CL5ceu9g/Vlas4jpYoQDlGMEtACFY7PE=";
             };
             # Include packages that speed up the library.
             propagatedBuildInputs = old.propagatedBuildInputs
